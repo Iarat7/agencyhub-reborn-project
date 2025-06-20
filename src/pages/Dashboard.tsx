@@ -118,7 +118,23 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Atividades Recentes */}
+        {/* Gráfico de Oportunidades por Estágio - movido para ficar embaixo do de clientes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Oportunidades por Estágio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: chartData.opportunitiesByStage,
+                tasksByStatus: [],
+                clientsByStatus: []
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Atividades Recentes - movido para ficar embaixo do de tarefas */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -151,22 +167,6 @@ export function Dashboard() {
                 <p className="text-sm text-gray-500">Nenhuma atividade recente</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Gráfico de Oportunidades por Estágio */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Oportunidades por Estágio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReportsCharts 
-              data={{
-                opportunitiesByStage: chartData.opportunitiesByStage,
-                tasksByStatus: [],
-                clientsByStatus: []
-              }}
-            />
           </CardContent>
         </Card>
       </div>

@@ -11,6 +11,8 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
   return useQuery({
     queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
+      console.log('Buscando atividades recentes...');
+      
       const recentActivities = [
         ...data.clients?.slice(-2).map(client => ({
           action: 'Novo cliente cadastrado',
@@ -35,6 +37,8 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
 
       return recentActivities;
     },
-    enabled: !!data.clients && !!data.allOpportunities && !!data.tasks,
+    enabled: !!data && !!data.clients && !!data.allOpportunities && !!data.tasks,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 };

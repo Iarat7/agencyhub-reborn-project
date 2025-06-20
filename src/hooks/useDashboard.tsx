@@ -3,18 +3,22 @@ import { useQuery } from '@tanstack/react-query';
 import { useDashboardMetrics } from './useDashboardMetrics';
 import { useDashboardActivities } from './useDashboardActivities';
 import { usePeriodUtils } from './usePeriodUtils';
+import { useMemo } from 'react';
 
 export const useDashboardData = (selectedPeriod: string = '6m') => {
   const { calculatePeriodDates } = usePeriodUtils();
   
+  const periodDates = useMemo(() => {
+    return calculatePeriodDates(selectedPeriod);
+  }, [selectedPeriod, calculatePeriodDates]);
+  
   return useQuery({
     queryKey: ['dashboard-data', selectedPeriod],
     queryFn: async () => {
-      const { startDate, endDate, periodConfig } = calculatePeriodDates(selectedPeriod);
+      const { startDate, endDate, periodConfig } = periodDates;
       
       console.log('Período selecionado:', selectedPeriod, 'Data início:', startDate, 'Data fim:', endDate);
 
-      // Usar o hook de métricas (mas como estamos dentro de queryFn, vamos buscar diretamente)
       const now = new Date();
       
       // Gerar dados para gráficos baseado no tipo de período
@@ -45,17 +49,24 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
       }
 
       return {
-        period: { startDate, endDate, periodConfig },
+        period: periodDates,
         chartData
       };
     },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 };
 
 // Hook composto que usa os hooks menores
 export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
   const { calculatePeriodDates } = usePeriodUtils();
-  const { startDate, endDate } = calculatePeriodDates(selectedPeriod);
+  
+  const periodDates = useMemo(() => {
+    return calculatePeriodDates(selectedPeriod);
+  }, [selectedPeriod, calculatePeriodDates]);
+  
+  const { startDate, endDate } = periodDates;
   
   const metricsQuery = useDashboardMetrics(startDate, endDate);
   const dashboardQuery = useDashboardData(selectedPeriod);

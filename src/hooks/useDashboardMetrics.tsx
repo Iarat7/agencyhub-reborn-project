@@ -6,6 +6,8 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
   return useQuery({
     queryKey: ['dashboard-metrics', startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
+      console.log('Buscando métricas do dashboard...');
+      
       const startDateISO = startDate.toISOString();
       const endDateISO = endDate.toISOString();
 
@@ -74,5 +76,7 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
         }
       };
     },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 };

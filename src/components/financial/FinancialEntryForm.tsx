@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,9 +75,19 @@ export const FinancialEntryForm = ({
   const selectedType = form.watch('type');
   const categories = selectedType === 'income' ? incomeCategories : expenseCategories;
 
+  const handleSubmit = (data: FinancialEntryFormData) => {
+    // Converter "none" de volta para undefined para campos opcionais
+    const cleanedData = {
+      ...data,
+      client_id: data.client_id && data.client_id !== 'none' ? data.client_id : undefined,
+      contract_id: data.contract_id && data.contract_id !== 'none' ? data.contract_id : undefined,
+    };
+    onSubmit(cleanedData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="type"
@@ -152,14 +161,14 @@ export const FinancialEntryForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Cliente (Opcional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um cliente" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhum cliente</SelectItem>
+                  <SelectItem value="none">Nenhum cliente</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
@@ -178,14 +187,14 @@ export const FinancialEntryForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Contrato (Opcional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um contrato" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhum contrato</SelectItem>
+                  <SelectItem value="none">Nenhum contrato</SelectItem>
                   {contracts.map((contract) => (
                     <SelectItem key={contract.id} value={contract.id}>
                       {contract.title}

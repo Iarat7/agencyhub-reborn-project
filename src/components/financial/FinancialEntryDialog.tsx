@@ -36,7 +36,6 @@ export const FinancialEntryDialog = ({
           clients={clients}
           contracts={contracts}
           onSubmit={onSubmit}
-          onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
         />
       </DialogContent>

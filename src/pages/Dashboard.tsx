@@ -24,6 +24,26 @@ export function Dashboard() {
   const charts = data?.charts;
   const recentActivities = data?.recentActivities || [];
 
+  // Preparar dados para os gráficos no formato esperado pelo ReportsCharts
+  const chartData = {
+    opportunitiesByStage: [
+      { stage: 'Prospecção', count: 0 },
+      { stage: 'Qualificação', count: 0 },
+      { stage: 'Proposta', count: 0 },
+      { stage: 'Negociação', count: 0 },
+      { stage: 'Fechada', count: 0 }
+    ],
+    tasksByStatus: [
+      { status: 'Pendente', count: 0 },
+      { status: 'Em Progresso', count: 0 },
+      { status: 'Concluída', count: 0 }
+    ],
+    clientsByStatus: [
+      { status: 'Ativo', count: metrics?.activeClients || 0 },
+      { status: 'Inativo', count: (metrics?.totalClients || 0) - (metrics?.activeClients || 0) }
+    ]
+  };
+
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -68,8 +88,7 @@ export function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4">
           <ReportsCharts 
-            data={charts?.salesData || []}
-            opportunityData={charts?.opportunityData || []}
+            data={chartData}
           />
         </div>
         <Card className="col-span-3">

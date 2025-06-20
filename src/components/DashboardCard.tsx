@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 interface DashboardCardProps {
   title: string;
   value: string | number;
+  subtitle?: string;
   icon: LucideIcon;
   trend?: {
     value: number;
@@ -17,6 +18,7 @@ interface DashboardCardProps {
 export const DashboardCard = ({ 
   title, 
   value, 
+  subtitle,
   icon: Icon, 
   trend,
   className = ""
@@ -31,6 +33,11 @@ export const DashboardCard = ({
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-slate-900">{value}</div>
+        {subtitle && (
+          <p className="text-xs text-slate-600 mt-1">
+            {subtitle}
+          </p>
+        )}
         {trend && (
           <p className="text-xs text-slate-600 mt-1">
             <span className={trend.isPositive ? 'text-green-600' : 'text-red-600'}>

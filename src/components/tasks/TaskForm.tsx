@@ -74,8 +74,17 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
   });
 
   const handleSubmit = (data: TaskFormData) => {
-    console.log('Enviando dados da tarefa:', data);
-    onSubmit(data);
+    // Converter strings vazias para null para campos UUID opcionais
+    const cleanedData = {
+      ...data,
+      client_id: data.client_id && data.client_id.trim() ? data.client_id : undefined,
+      assigned_to: data.assigned_to && data.assigned_to.trim() ? data.assigned_to : undefined,
+      due_date: data.due_date && data.due_date.trim() ? data.due_date : undefined,
+      description: data.description && data.description.trim() ? data.description : undefined,
+    };
+    
+    console.log('Enviando dados da tarefa (limpos):', cleanedData);
+    onSubmit(cleanedData);
   };
 
   return (
@@ -109,6 +118,7 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="">Nenhum cliente</SelectItem>
                     {clients.map((client: Client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}

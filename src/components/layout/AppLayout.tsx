@@ -13,10 +13,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 w-full">
           <Header />
-          <main className="flex-1 p-6 w-full max-w-none">
-            {children}
+          <main className="flex-1 p-6 w-full">
+            <div className="w-full max-w-none">
+              {children}
+            </div>
           </main>
         </SidebarInset>
       </div>

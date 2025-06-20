@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OpportunitiesTable } from '@/components/opportunities/OpportunitiesTable';
 import { OpportunityDialog } from '@/components/opportunities/OpportunityDialog';
+import { KanbanBoard } from '@/components/opportunities/KanbanBoard';
+import { ViewToggle } from '@/components/opportunities/ViewToggle';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
 import { useOpportunities } from '@/hooks/useOpportunities';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
@@ -37,6 +39,7 @@ export const Oportunidades = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null);
+  const [view, setView] = useState<'table' | 'kanban'>('kanban');
 
   const { data: opportunities = [], isLoading, error } = useOpportunities();
 
@@ -153,7 +156,10 @@ export const Oportunidades = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Pipeline de Vendas ({searchFilteredOpportunities.length})</CardTitle>
+            <div className="flex items-center gap-4">
+              <CardTitle>Pipeline de Vendas ({searchFilteredOpportunities.length})</CardTitle>
+              <ViewToggle view={view} onViewChange={setView} />
+            </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
@@ -192,6 +198,8 @@ export const Oportunidades = () => {
                 </Button>
               )}
             </div>
+          ) : view === 'kanban' ? (
+            <KanbanBoard opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
           ) : (
             <OpportunitiesTable opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
           )}

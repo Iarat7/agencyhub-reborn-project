@@ -14,6 +14,7 @@ export const Relatorios = () => {
       <div className="space-y-6">
         <div className="text-center py-8">
           <p className="text-red-600">Erro ao carregar relatórios. Tente novamente.</p>
+          <p className="text-sm text-gray-500 mt-2">Erro: {error.message}</p>
         </div>
       </div>
     );
@@ -29,7 +30,7 @@ export const Relatorios = () => {
     );
   }
 
-  const { metrics, charts } = reportsData || {
+  const { metrics, charts, details } = reportsData || {
     metrics: {
       totalClients: 0,
       activeClients: 0,
@@ -43,6 +44,13 @@ export const Relatorios = () => {
       opportunitiesByStage: [],
       tasksByStatus: [],
       clientsByStatus: [],
+    },
+    details: {
+      recentOpportunities: [],
+      urgentTasks: [],
+      clients: [],
+      opportunities: [],
+      tasks: [],
     },
   };
 
@@ -65,7 +73,7 @@ export const Relatorios = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Relatórios</h1>
-        <p className="text-slate-600 mt-2">Visualize métricas e indicadores importantes</p>
+        <p className="text-slate-600 mt-2">Visualize métricas e indicadores importantes com dados reais</p>
       </div>
 
       {/* Métricas Principais */}
@@ -132,7 +140,62 @@ export const Relatorios = () => {
       {/* Gráficos */}
       <ReportsCharts data={charts} />
 
-      {/* Resumo Mensal */}
+      {/* Informações Detalhadas */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Oportunidades Recentes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Oportunidades Recentes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {details.recentOpportunities.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhuma oportunidade encontrada</p>
+            ) : (
+              <div className="space-y-3">
+                {details.recentOpportunities.map((opportunity) => (
+                  <div key={opportunity.id} className="border-l-4 border-blue-500 pl-3">
+                    <h4 className="font-medium text-sm">{opportunity.title}</h4>
+                    <div className="text-xs text-gray-600 flex items-center gap-2">
+                      <span>{opportunity.stage}</span>
+                      {opportunity.value && (
+                        <span>• {formatCurrency(opportunity.value)}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tarefas Urgentes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tarefas Urgentes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {details.urgentTasks.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhuma tarefa urgente</p>
+            ) : (
+              <div className="space-y-3">
+                {details.urgentTasks.map((task) => (
+                  <div key={task.id} className="border-l-4 border-red-500 pl-3">
+                    <h4 className="font-medium text-sm">{task.title}</h4>
+                    <div className="text-xs text-gray-600">
+                      Status: {task.status}
+                      {task.due_date && (
+                        <span> • Prazo: {new Date(task.due_date).toLocaleDateString('pt-BR')}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Resumo do Período */}
       <Card>
         <CardHeader>
           <CardTitle>Resumo do Período</CardTitle>

@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, DollarSign, Calendar, TrendingUp } from 'lucide-react';
+import { Edit, DollarSign, Calendar, TrendingUp, ArrowRight, ArrowLeft, Trophy, X } from 'lucide-react';
 import { Opportunity } from '@/services/api/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useUpdateOpportunity } from '@/hooks/useOpportunities';
 
 interface KanbanBoardProps {
   opportunities: Opportunity[];
@@ -46,7 +47,13 @@ const stageConfig = {
   }
 };
 
+const stageOrder: (keyof typeof stageConfig)[] = [
+  'prospection', 'qualification', 'proposal', 'negotiation', 'closed_won', 'closed_lost'
+];
+
 export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
+  const updateOpportunity = useUpdateOpportunity();
+
   const groupedOpportunities = opportunities.reduce((acc, opportunity) => {
     const stage = opportunity.stage;
     if (!acc[stage]) {
@@ -58,6 +65,112 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
 
   const calculateStageValue = (opportunities: Opportunity[]) => {
     return opportunities.reduce((sum, opp) => sum + (opp.value || 0), 0);
+  };
+
+  const moveOpportunity = (opportunity: Opportunity, newStage: Opportunity['stage']) => {
+    updateOpportunity.mutate({
+      id: opportunity.id,
+      data: { stage: newStage }
+    });
+  };
+
+  const getNextStage = (currentStage: Opportunity['stage']): Opportunity['stage'] | null => {
+    const currentIndex = stageOrder.indexOf(currentStage);
+    if (currentIndex < 3) { // Only move forward until negotiation
+      return stageOrder[currentIndex + 1];
+    }
+    return null;
+  };
+
+  const getPreviousStage = (currentStage: Opportunity['stage']): Opportunity['stage'] | null => {
+    const currentIndex = stageOrder.indexOf(currentStage);
+    if (currentIndex > 0) {
+      return stageOrder[currentIndex - 1];
+    }
+    return null;
+  };
+
+  const renderStageControls = (opportunity: Opportunity) => {
+    const { stage } = opportunity;
+
+    // For closed stages (won/lost), only show back to negotiation
+    if (stage === 'closed_won' || stage === 'closed_lost') {
+      return (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveOpportunity(opportunity, 'negotiation')}
+            className="h-6 px-2"
+          >
+            <ArrowLeft className="h-3 w-3 mr-1" />
+            Voltar
+          </Button>
+        </div>
+      );
+    }
+
+    // For negotiation stage, show back button + won/lost buttons
+    if (stage === 'negotiation') {
+      const previousStage = getPreviousStage(stage);
+      return (
+        <div className="flex flex-col gap-1 pt-2">
+          <div className="flex justify-center">
+            {previousStage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => moveOpportunity(opportunity, previousStage)}
+                className="h-6 px-2"
+              >
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                Voltar
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveOpportunity(opportunity, 'closed_won')}
+              className="h-6 px-2 flex-1 text-green-600 border-green-200 hover:bg-green-50"
+            >
+              <Trophy className="h-3 w-3 mr-1" />
+              Ganho
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveOpportunity(opportunity, 'closed_lost')}
+              className="h-6 px-2 flex-1 text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Perdido
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // For other stages (prospection, qualification, proposal), show forward arrow
+    const nextStage = getNextStage(stage);
+    if (nextStage) {
+      return (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveOpportunity(opportunity, nextStage)}
+            className="h-6 px-2"
+          >
+            Avançar
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -89,7 +202,7 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
 
             <div className="flex-1 space-y-3 overflow-y-auto">
               {stageOpportunities.map((opportunity) => (
-                <Card key={opportunity.id} className="bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <Card key={opportunity.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium line-clamp-2">
                       {opportunity.title}
@@ -140,6 +253,8 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
                           <Edit className="h-3 w-3" />
                         </Button>
                       </div>
+
+                      {renderStageControls(opportunity)}
                     </div>
                   </CardContent>
                 </Card>

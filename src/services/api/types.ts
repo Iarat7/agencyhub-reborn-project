@@ -70,6 +70,37 @@ export interface Event {
   updated_at?: string;
 }
 
+export interface Contract {
+  id: string;
+  title: string;
+  client_id?: string;
+  value: number;
+  cost?: number;
+  start_date: string;
+  end_date: string;
+  status: 'draft' | 'active' | 'expired' | 'cancelled';
+  description?: string;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FinancialEntry {
+  id: string;
+  type: 'income' | 'expense';
+  category: string;
+  amount: number;
+  description?: string;
+  due_date?: string;
+  paid_date?: string;
+  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  client_id?: string;
+  contract_id?: string;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface AuthResponse {
   user: User | null;
   session: any;

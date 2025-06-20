@@ -3,7 +3,7 @@
 // Aqui você pode facilmente trocar as implementações no futuro
 import { SupabaseAuthApi, SupabaseApi, SupabaseFileApi } from './api/supabaseApi';
 import { ProfilesApi } from './api/profilesApi';
-import type { Client, Opportunity, Task, User } from './api/types';
+import type { Client, Opportunity, Task, User, Contract, FinancialEntry } from './api/types';
 
 // Serviços de API - podem ser facilmente trocados por implementações FastAPI
 export const authService = new SupabaseAuthApi();
@@ -13,6 +13,8 @@ export const tasksService = new SupabaseApi<Task>('tasks');
 export const usersService = new SupabaseApi<User>('profiles');
 export const profilesService = new ProfilesApi();
 export const fileService = new SupabaseFileApi('attachments');
+export const contractsService = new SupabaseApi<Contract>('contracts');
+export const financialEntriesService = new SupabaseApi<FinancialEntry>('financial_entries');
 
 // Para migração futura:
 // export const authService = new FastApiAuthService();

@@ -1,5 +1,5 @@
 
-import { Home, Users, Target, BarChart3, Settings, Calendar, DollarSign, FileText } from 'lucide-react';
+import { Home, Users, Target, BarChart3, Settings, Calendar, DollarSign, FileText, CheckSquare } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -30,6 +30,11 @@ const menuItems = [
     title: 'Oportunidades',
     url: '/oportunidades',
     icon: Target,
+  },
+  {
+    title: 'Tarefas',
+    url: '/tarefas',
+    icon: CheckSquare,
   },
   {
     title: 'Relatórios',

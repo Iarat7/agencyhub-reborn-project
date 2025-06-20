@@ -13,6 +13,7 @@ import { Auth } from "@/pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
 import { Clientes } from "./pages/Clientes";
 import { Oportunidades } from "./pages/Oportunidades";
+import { Tarefas } from "./pages/Tarefas";
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -50,6 +51,13 @@ const App = () => (
               <ProtectedRoute>
                 <NewLayout>
                   <Oportunidades />
+                </NewLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/tarefas" element={
+              <ProtectedRoute>
+                <NewLayout>
+                  <Tarefas />
                 </NewLayout>
               </ProtectedRoute>
             } />

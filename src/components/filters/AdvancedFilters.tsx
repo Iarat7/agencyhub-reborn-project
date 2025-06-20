@@ -99,14 +99,14 @@ export const AdvancedFilters = ({
               )}
               {field.type === 'select' && (
                 <Select
-                  value={values[field.key] as string || ''}
-                  onValueChange={(value) => handleFieldChange(field.key, value)}
+                  value={values[field.key] as string || 'placeholder'}
+                  onValueChange={(value) => handleFieldChange(field.key, value === 'placeholder' ? '' : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={`Selecionar ${field.label.toLowerCase()}`} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="placeholder">Todos</SelectItem>
                     {field.options?.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}

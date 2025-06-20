@@ -15,11 +15,11 @@ export const filterClients = (client: Client, filters: FilterValues): boolean =>
     return false;
   }
   
-  if (filters.segment && client.segment !== filters.segment) {
+  if (filters.segment && filters.segment !== 'placeholder' && client.segment !== filters.segment) {
     return false;
   }
   
-  if (filters.status && client.status !== filters.status) {
+  if (filters.status && filters.status !== 'placeholder' && client.status !== filters.status) {
     return false;
   }
   
@@ -35,7 +35,7 @@ export const filterOpportunities = (opportunity: Opportunity, filters: FilterVal
     return false;
   }
   
-  if (filters.stage && opportunity.stage !== filters.stage) {
+  if (filters.stage && filters.stage !== 'placeholder' && opportunity.stage !== filters.stage) {
     return false;
   }
   
@@ -67,11 +67,11 @@ export const filterTasks = (task: Task, filters: FilterValues): boolean => {
     return false;
   }
   
-  if (filters.status && task.status !== filters.status) {
+  if (filters.status && filters.status !== 'placeholder' && task.status !== filters.status) {
     return false;
   }
   
-  if (filters.priority && task.priority !== filters.priority) {
+  if (filters.priority && filters.priority !== 'placeholder' && task.priority !== filters.priority) {
     return false;
   }
 

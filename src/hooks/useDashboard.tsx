@@ -132,43 +132,76 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         }).reverse();
       }
 
-      // Vendas por período
-      const salesData = chartData.map(item => ({
-        ...item,
-        vendas: allOpportunities?.filter(o => {
-          if (o.stage !== 'closed_won' || !o.updated_at) return false;
-          const opDate = new Date(o.updated_at);
+      // Vendas por período - CORRIGIDO para usar apenas dados do período
+      const salesData = chartData.map(item => {
+        let salesValue = 0;
+        
+        if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
+          // Para períodos diários, filtrar vendas fechadas no período e no dia específico
+          const itemDate = item.name.split('/');
+          const itemDay = parseInt(itemDate[0]);
+          const itemMonth = parseInt(itemDate[1]);
           
-          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
-            const itemDate = item.name.split('/');
-            const itemDay = parseInt(itemDate[0]);
-            const itemMonth = parseInt(itemDate[1]);
-            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth && opDate.getFullYear() === now.getFullYear();
-          } else {
+          salesValue = allOpportunities?.filter(o => {
+            if (o.stage !== 'closed_won' || !o.updated_at) return false;
+            const opDate = new Date(o.updated_at);
+            // Verificar se está no período geral E no dia específico
+            return opDate >= startDate && opDate <= endDate &&
+                   opDate.getDate() === itemDay && 
+                   (opDate.getMonth() + 1) === itemMonth && 
+                   opDate.getFullYear() === now.getFullYear();
+          }).reduce((sum, o) => sum + (o.value || 0), 0) || 0;
+        } else {
+          // Para períodos mensais, usar lógica anterior mas filtrada
+          salesValue = allOpportunities?.filter(o => {
+            if (o.stage !== 'closed_won' || !o.updated_at) return false;
+            const opDate = new Date(o.updated_at);
+            const monthName = opDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase();
+            // Verificar se está no período geral E no mês específico
+            return opDate >= startDate && opDate <= endDate && monthName === item.name;
+          }).reduce((sum, o) => sum + (o.value || 0), 0) || 0;
+        }
+        
+        return {
+          ...item,
+          vendas: salesValue
+        };
+      });
+
+      // Oportunidades por período - CORRIGIDO para usar apenas dados do período
+      const opportunityData = chartData.map(item => {
+        let opportunityCount = 0;
+        
+        if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
+          // Para períodos diários
+          const itemDate = item.name.split('/');
+          const itemDay = parseInt(itemDate[0]);
+          const itemMonth = parseInt(itemDate[1]);
+          
+          opportunityCount = opportunities?.filter(o => {
+            if (!o.created_at) return false;
+            const opDate = new Date(o.created_at);
+            return opDate.getDate() === itemDay && 
+                   (opDate.getMonth() + 1) === itemMonth && 
+                   opDate.getFullYear() === now.getFullYear();
+          }).length || 0;
+        } else {
+          // Para períodos mensais
+          opportunityCount = opportunities?.filter(o => {
+            if (!o.created_at) return false;
+            const opDate = new Date(o.created_at);
             const monthName = opDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase();
             return monthName === item.name;
-          }
-        }).reduce((sum, o) => sum + (o.value || 0), 0) || 0
-      }));
+          }).length || 0;
+        }
+        
+        return {
+          ...item,
+          oportunidades: opportunityCount
+        };
+      });
 
-      const opportunityData = chartData.map(item => ({
-        ...item,
-        oportunidades: opportunities?.filter(o => {
-          if (!o.created_at) return false;
-          const opDate = new Date(o.created_at);
-          
-          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
-            const itemDate = item.name.split('/');
-            const itemDay = parseInt(itemDate[0]);
-            const itemMonth = parseInt(itemDate[1]);
-            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth && opDate.getFullYear() === now.getFullYear();
-          } else {
-            const monthName = opDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase();
-            return monthName === item.name;
-          }
-        }).length || 0
-      }));
-
+      // Atividades recentes - CORRIGIDO para usar apenas dados do período
       const recentActivities = [
         ...clients?.slice(-2).map(client => ({
           action: 'Novo cliente cadastrado',

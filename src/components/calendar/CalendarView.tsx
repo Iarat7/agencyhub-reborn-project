@@ -4,22 +4,29 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { useEvents } from '@/hooks/useEvents';
-import { useTasks } from '@/hooks/useTasks';
-import { format, isSameDay, startOfMonth, endOfMonth } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import type { Event } from '@/services/api/types';
+import type { Task } from '@/services/api/types';
 
 interface CalendarViewProps {
   onDateSelect: (date: Date) => void;
+  events?: Event[];
+  tasks?: Task[];
+  onEventClick?: (event: Event) => void;
+  onTaskClick?: (task: Task) => void;
 }
 
-export const CalendarView = ({ onDateSelect }: CalendarViewProps) => {
+export const CalendarView = ({ 
+  onDateSelect, 
+  events = [], 
+  tasks = [],
+  onEventClick,
+  onTaskClick 
+}: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  const { data: events = [] } = useEvents();
-  const { data: tasks = [] } = useTasks();
 
   const handleDateClick = (date: Date | undefined) => {
     if (date) {
@@ -166,7 +173,11 @@ export const CalendarView = ({ onDateSelect }: CalendarViewProps) => {
                 <p className="text-xs md:text-sm text-muted-foreground">Nenhum evento</p>
               ) : (
                 selectedDateEvents.map((event) => (
-                  <div key={event.id} className="p-2 bg-blue-50 rounded-lg">
+                  <div 
+                    key={event.id} 
+                    className="p-2 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => onEventClick?.(event)}
+                  >
                     <p className="font-medium text-xs md:text-sm line-clamp-2">{event.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(event.start_date), 'HH:mm')} - {format(new Date(event.end_date), 'HH:mm')}
@@ -190,10 +201,14 @@ export const CalendarView = ({ onDateSelect }: CalendarViewProps) => {
                 <p className="text-xs md:text-sm text-muted-foreground">Nenhuma tarefa</p>
               ) : (
                 selectedDateTasks.map((task) => (
-                  <div key={task.id} className="p-2 bg-orange-50 rounded-lg">
+                  <div 
+                    key={task.id} 
+                    className="p-2 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors"
+                    onClick={() => onTaskClick?.(task)}
+                  >
                     <p className="font-medium text-xs md:text-sm line-clamp-2">{task.title}</p>
                     <Badge 
-                      variant={task.priority === 'high' ? 'destructive' : 'secondary'}
+                      variant={task.priority === 'high' || task.priority === 'urgent' ? 'destructive' : 'secondary'}
                       className="mt-1 text-xs"
                     >
                       {task.priority}

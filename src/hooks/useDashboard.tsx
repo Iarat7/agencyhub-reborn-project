@@ -17,6 +17,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
       if (periodConfig?.type === 'days') {
         if (periodConfig.value === 'today') {
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
         } else {
           startDate = new Date(now.getTime() - (periodConfig.days! * 24 * 60 * 60 * 1000));
         }
@@ -27,10 +28,10 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         endDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
       } else if (periodConfig?.type === 'current_month') {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
       } else if (periodConfig?.type === 'last_month') {
         startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
       } else {
         // months type - comportamento anterior
         const months = periodConfig?.months || 6;
@@ -39,28 +40,64 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
 
       console.log('Período selecionado:', selectedPeriod, 'Data início:', startDate, 'Data fim:', endDate);
 
-      // Buscar dados de clientes
+      // Buscar dados com filtro de data quando aplicável
+      const startDateISO = startDate.toISOString();
+      const endDateISO = endDate.toISOString();
+
       const { data: clients } = await supabase
+        .from('clients')
+        .select('*')
+        .gte('created_at', startDateISO)
+        .lte('created_at', endDateISO);
+
+      const { data: allClients } = await supabase
         .from('clients')
         .select('*');
 
       const { data: opportunities } = await supabase
         .from('opportunities')
+        .select('*')
+        .gte('created_at', startDateISO)
+        .lte('created_at', endDateISO);
+
+      const { data: allOpportunities } = await supabase
+        .from('opportunities')
         .select('*');
 
       const { data: tasks } = await supabase
         .from('tasks')
+        .select('*')
+        .gte('created_at', startDateISO)
+        .lte('created_at', endDateISO);
+
+      const { data: allTasks } = await supabase
+        .from('tasks')
         .select('*');
 
-      console.log('Dashboard dados carregados:', { clients, opportunities, tasks });
+      console.log('Dashboard dados carregados:', { 
+        clientsNoPeriodo: clients?.length, 
+        opportunitiesNoPeriodo: opportunities?.length, 
+        tasksNoPeriodo: tasks?.length 
+      });
 
-      // Calcular métricas
+      // Calcular métricas baseadas no período selecionado
       const totalClients = clients?.length || 0;
-      const activeClients = clients?.filter(c => c.status === 'active').length || 0;
+      const activeClients = allClients?.filter(c => c.status === 'active').length || 0;
       const totalOpportunities = opportunities?.length || 0;
-      const wonOpportunities = opportunities?.filter(o => o.stage === 'closed_won').length || 0;
-      const totalRevenue = opportunities?.filter(o => o.stage === 'closed_won')
-        .reduce((sum, o) => sum + (o.value || 0), 0) || 0;
+      
+      // Para oportunidades fechadas, filtrar por updated_at no período
+      const wonOpportunities = allOpportunities?.filter(o => {
+        if (o.stage !== 'closed_won' || !o.updated_at) return false;
+        const opDate = new Date(o.updated_at);
+        return opDate >= startDate && opDate <= endDate;
+      }).length || 0;
+
+      const totalRevenue = allOpportunities?.filter(o => {
+        if (o.stage !== 'closed_won' || !o.updated_at) return false;
+        const opDate = new Date(o.updated_at);
+        return opDate >= startDate && opDate <= endDate;
+      }).reduce((sum, o) => sum + (o.value || 0), 0) || 0;
+
       const pendingTasks = tasks?.filter(t => t.status === 'pending').length || 0;
       const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0;
 
@@ -73,7 +110,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         // Para períodos de dias, gerar dados diários
         const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const daysToShow = Math.min(diffDays, 30); // Máximo 30 dias para visualização
+        const daysToShow = Math.min(diffDays + 1, 30); // +1 para incluir o dia atual, máximo 30 dias
         
         chartData = Array.from({ length: daysToShow }, (_, i) => {
           const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
@@ -98,7 +135,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
       // Vendas por período
       const salesData = chartData.map(item => ({
         ...item,
-        vendas: opportunities?.filter(o => {
+        vendas: allOpportunities?.filter(o => {
           if (o.stage !== 'closed_won' || !o.updated_at) return false;
           const opDate = new Date(o.updated_at);
           
@@ -106,7 +143,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
             const itemDate = item.name.split('/');
             const itemDay = parseInt(itemDate[0]);
             const itemMonth = parseInt(itemDate[1]);
-            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth;
+            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth && opDate.getFullYear() === now.getFullYear();
           } else {
             const monthName = opDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase();
             return monthName === item.name;
@@ -124,7 +161,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
             const itemDate = item.name.split('/');
             const itemDay = parseInt(itemDate[0]);
             const itemMonth = parseInt(itemDate[1]);
-            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth;
+            return opDate.getDate() === itemDay && (opDate.getMonth() + 1) === itemMonth && opDate.getFullYear() === now.getFullYear();
           } else {
             const monthName = opDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase();
             return monthName === item.name;
@@ -138,7 +175,11 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
           client: client.name,
           time: new Date(client.created_at!).toLocaleDateString('pt-BR'),
         })) || [],
-        ...opportunities?.filter(o => o.stage === 'closed_won').slice(-1).map(opp => ({
+        ...allOpportunities?.filter(o => {
+          if (o.stage !== 'closed_won' || !o.updated_at) return false;
+          const opDate = new Date(o.updated_at);
+          return opDate >= startDate && opDate <= endDate;
+        }).slice(-1).map(opp => ({
           action: 'Oportunidade fechada',
           client: opp.title,
           time: new Date(opp.updated_at!).toLocaleDateString('pt-BR'),

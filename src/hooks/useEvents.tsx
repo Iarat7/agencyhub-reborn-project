@@ -3,6 +3,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Event } from '@/services/api/types';
 
+// Tipo específico para criação de eventos
+type CreateEventData = {
+  title: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  event_type?: 'meeting' | 'call' | 'deadline' | 'reminder';
+  client_id?: string;
+  attendees?: string[];
+};
+
+// Tipo específico para atualização de eventos
+type UpdateEventData = {
+  id: string;
+  title?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  event_type?: 'meeting' | 'call' | 'deadline' | 'reminder';
+  client_id?: string;
+  attendees?: string[];
+};
+
 export const useEvents = () => {
   const queryClient = useQueryClient();
 
@@ -27,7 +50,7 @@ export const useEvents = () => {
   });
 
   const createEvent = useMutation({
-    mutationFn: async (eventData: Partial<Event>) => {
+    mutationFn: async (eventData: CreateEventData) => {
       const { data, error } = await supabase
         .from('events')
         .insert(eventData)
@@ -47,7 +70,7 @@ export const useEvents = () => {
   });
 
   const updateEvent = useMutation({
-    mutationFn: async ({ id, ...eventData }: Partial<Event> & { id: string }) => {
+    mutationFn: async ({ id, ...eventData }: UpdateEventData) => {
       const { data, error } = await supabase
         .from('events')
         .update(eventData)

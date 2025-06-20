@@ -1,15 +1,19 @@
 
 import React, { useState } from "react";
 import { useCompleteDashboardData } from "@/hooks/useDashboard";
+import { usePredictiveAnalytics } from "@/hooks/usePredictiveAnalytics";
+import { useSmartInsights } from "@/hooks/useSmartInsights";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
-import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
-import { DashboardActivities } from "@/components/dashboard/DashboardActivities";
-import { NotificationAlerts } from "@/components/dashboard/NotificationAlerts";
+import { DashboardWidgets } from "@/components/dashboard/DashboardWidgets";
 
 export function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
-  const { data, isLoading } = useCompleteDashboardData(selectedPeriod);
+  
+  const { data: dashboardData, isLoading: isDashboardLoading } = useCompleteDashboardData(selectedPeriod);
+  const { data: predictiveData, isLoading: isPredictiveLoading } = usePredictiveAnalytics(selectedPeriod);
+  const { data: insights, isLoading: isInsightsLoading } = useSmartInsights(selectedPeriod);
+
+  const isLoading = isDashboardLoading || isPredictiveLoading || isInsightsLoading;
 
   if (isLoading) {
     return (
@@ -19,9 +23,6 @@ export function Dashboard() {
     );
   }
 
-  const metrics = data?.metrics;
-  const recentActivities = data?.recentActivities || [];
-
   return (
     <div className="flex-1 space-y-6 p-6">
       <DashboardHeader 
@@ -29,13 +30,11 @@ export function Dashboard() {
         onPeriodChange={setSelectedPeriod} 
       />
 
-      <NotificationAlerts />
-
-      <DashboardMetrics metrics={metrics} />
-
-      <DashboardCharts metrics={metrics} />
-
-      <DashboardActivities recentActivities={recentActivities} />
+      <DashboardWidgets
+        metrics={dashboardData?.metrics}
+        predictiveData={predictiveData}
+        insights={insights}
+      />
     </div>
   );
 }

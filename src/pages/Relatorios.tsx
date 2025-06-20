@@ -1,188 +1,110 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAdvancedReports } from '@/hooks/useAdvancedReports';
+import { ReportsFilters } from '@/components/reports/ReportsFilters';
 import { ReportsMetrics } from '@/components/reports/ReportsMetrics';
 import { ReportsCharts } from '@/components/reports/ReportsCharts';
-import { AdvancedCharts } from '@/components/reports/AdvancedCharts';
-import { PerformanceIndicators } from '@/components/reports/PerformanceIndicators';
+import { ReportsTable } from '@/components/reports/ReportsTable';
 import { ReportsDetails } from '@/components/reports/ReportsDetails';
-import { PeriodSummary } from '@/components/reports/PeriodSummary';
-import { ReportsFilters } from '@/components/reports/ReportsFilters';
 import { AdvancedMetricsCard } from '@/components/reports/AdvancedMetricsCard';
-import { ExportDialog } from '@/components/reports/ExportDialog';
-import { useReportsData } from '@/hooks/useReports';
-import { useAdvancedReports } from '@/hooks/useAdvancedReports';
-import { useAdvancedReportsData } from '@/hooks/useAdvancedReportsData';
+import { DateRange } from 'react-day-picker';
 
-export const Relatorios = () => {
-  const [reportFilters, setReportFilters] = useState({
-    period: '6m',
-    dateRange: { from: undefined as Date | undefined, to: undefined as Date | undefined }
+export function Relatorios() {
+  const [selectedPeriod, setSelectedPeriod] = useState('6m');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined
   });
 
-  const { data: reportsData, isLoading: reportsLoading, error } = useReportsData();
-  const { data: advancedData, isLoading: advancedLoading } = useAdvancedReports();
-  const { data: filteredReportsData, isLoading: filteredLoading } = useAdvancedReportsData(reportFilters);
+  const { data, isLoading } = useAdvancedReports(selectedPeriod, dateRange);
 
-  const handleApplyFilters = () => {
-    // A query será automaticamente re-executada quando reportFilters mudar
-    console.log('Applying filters:', reportFilters);
-  };
-
-  if (error) {
+  if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <div className="text-center py-8">
-          <p className="text-red-600">Erro ao carregar relatórios. Tente novamente.</p>
-          <p className="text-sm text-gray-500 mt-2">Erro: {error.message}</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (reportsLoading || advancedLoading || filteredLoading) {
-    return (
-      <div className="space-y-6 p-4 md:p-6">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-slate-600 mt-2">Carregando relatórios avançados...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const metrics = reportsData?.metrics || {
-    totalClients: 0,
-    activeClients: 0,
-    totalOpportunities: 0,
-    wonOpportunities: 0,
-    totalRevenue: 0,
-    pendingTasks: 0,
-    completedTasks: 0,
-  };
-
-  const charts = reportsData?.charts || {
-    opportunitiesByStage: [],
-    tasksByStatus: [],
-    clientsByStatus: [],
-  };
-
-  const details = reportsData?.details || {
-    recentOpportunities: [],
-    urgentTasks: [],
-    clients: [],
-    opportunities: [],
-    tasks: [],
-  };
-
+  
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex justify-between items-center">
+    <div className="flex-1 space-y-6 p-6">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Relatórios Avançados</h1>
-          <p className="text-slate-600 mt-2 text-sm md:text-base">
-            Análise detalhada com gráficos interativos e métricas avançadas
+          <h2 className="text-3xl font-bold tracking-tight">Relatórios</h2>
+          <p className="text-muted-foreground">
+            Análise completa do desempenho do seu negócio
           </p>
         </div>
-        <div className="flex gap-2">
-          <ExportDialog 
-            data={details.opportunities} 
-            filename="oportunidades" 
-            title="Oportunidades"
-          />
-          <ExportDialog 
-            data={details.clients} 
-            filename="clientes" 
-            title="Clientes"
-          />
-          <ExportDialog 
-            data={details.tasks} 
-            filename="tarefas" 
-            title="Tarefas"
-          />
-        </div>
       </div>
 
-      {/* Filtros Avançados */}
       <ReportsFilters
-        period={reportFilters.period}
-        onPeriodChange={(period) => setReportFilters({ ...reportFilters, period })}
-        dateRange={reportFilters.dateRange}
-        onDateRangeChange={(dateRange) => setReportFilters({ ...reportFilters, dateRange })}
-        onApplyFilters={handleApplyFilters}
+        selectedPeriod={selectedPeriod}
+        onPeriodChange={setSelectedPeriod}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
       />
 
-      {/* Métricas Avançadas com Comparação */}
-      {filteredReportsData && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <AdvancedMetricsCard
-            title="Novos Clientes"
-            value={filteredReportsData.metrics.newClients}
-            previousValue={filteredReportsData.prevMetrics.newClients}
-            target={50}
-            description="Meta mensal: 50 clientes"
-          />
-          <AdvancedMetricsCard
-            title="Receita Gerada"
-            value={filteredReportsData.metrics.totalRevenue}
-            previousValue={filteredReportsData.prevMetrics.totalRevenue}
-            format="currency"
-            target={100000}
-            description="Meta mensal: R$ 100.000"
-          />
-          <AdvancedMetricsCard
-            title="Taxa de Conversão"
-            value={filteredReportsData.metrics.conversionRate}
-            format="percentage"
-            target={25}
-            description="Meta: 25%"
-          />
-          <AdvancedMetricsCard
-            title="Ticket Médio"
-            value={filteredReportsData.metrics.averageDealSize}
-            format="currency"
-            description="Por oportunidade fechada"
-          />
-        </div>
-      )}
-
-      {/* Métricas Principais */}
-      <ReportsMetrics 
-        metrics={metrics} 
-        advancedMetrics={advancedData?.metrics}
-      />
-
-      {/* Gráficos Avançados */}
-      {advancedData && (
-        <AdvancedCharts 
-          salesData={advancedData.charts.salesData}
-          revenueData={advancedData.charts.revenueData}
-          conversionData={advancedData.charts.conversionData}
-          activityData={advancedData.charts.activityData}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <AdvancedMetricsCard
+          title="Receita Total"
+          value={data?.metrics?.totalRevenue || 0}
+          previousValue={data?.metrics?.previousRevenue || 0}
+          format="currency"
+          description="Receita do período selecionado"
         />
-      )}
+        <AdvancedMetricsCard
+          title="Taxa de Conversão"
+          value={data?.metrics?.conversionRate || 0}
+          previousValue={data?.metrics?.previousConversionRate || 0}
+          format="percentage"
+          description="% de oportunidades fechadas"
+        />
+        <AdvancedMetricsCard
+          title="Novos Clientes"
+          value={data?.metrics?.newClients || 0}
+          previousValue={data?.metrics?.previousNewClients || 0}
+          description="Clientes adquiridos"
+        />
+        <AdvancedMetricsCard
+          title="Tarefas Concluídas"
+          value={data?.metrics?.completedTasks || 0}
+          previousValue={data?.metrics?.previousCompletedTasks || 0}
+          description="Produtividade da equipe"
+        />
+      </div>
 
-      {/* Indicadores de Performance */}
-      <PerformanceIndicators 
-        metrics={metrics}
-        advancedData={advancedData}
-      />
+      <ReportsMetrics metrics={data?.metrics} />
 
-      {/* Gráficos Básicos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Visão Geral por Categoria</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ReportsCharts data={charts} />
-        </CardContent>
-      </Card>
+      <ReportsCharts data={data?.charts} />
 
-      {/* Informações Detalhadas */}
-      <ReportsDetails details={details} />
+      <div className="grid gap-6 md:grid-cols-2">
+        <ReportsTable
+          title="Relatório de Clientes"
+          data={data?.tables?.clients || []}
+          columns={[
+            { key: 'name', label: 'Nome' },
+            { key: 'email', label: 'Email' },
+            { key: 'status', label: 'Status' },
+            { key: 'created_at', label: 'Data de Cadastro' }
+          ]}
+          filename="relatorio-clientes"
+        />
 
-      {/* Resumo do Período */}
-      <PeriodSummary metrics={metrics} />
+        <ReportsTable
+          title="Relatório de Oportunidades"
+          data={data?.tables?.opportunities || []}
+          columns={[
+            { key: 'title', label: 'Título' },
+            { key: 'value', label: 'Valor' },
+            { key: 'stage', label: 'Estágio' },
+            { key: 'client_name', label: 'Cliente' }
+          ]}
+          filename="relatorio-oportunidades"
+        />
+      </div>
+
+      <ReportsDetails data={data} />
     </div>
   );
-};
+}

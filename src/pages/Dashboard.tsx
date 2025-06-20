@@ -1,14 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Users, Target, DollarSign, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
 import { DashboardCard } from '@/components/DashboardCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { useDashboardData } from '@/hooks/useDashboard';
+import { PeriodSelector, periodOptions } from '@/components/dashboard/PeriodSelector';
 
 export const Dashboard = () => {
-  const { data: dashboardData, isLoading, error } = useDashboardData();
+  const [selectedPeriod, setSelectedPeriod] = useState('6');
+  const periodMonths = periodOptions.find(p => p.value === selectedPeriod)?.months || 6;
+  const { data: dashboardData, isLoading, error } = useDashboardData(periodMonths);
 
   if (isLoading) {
     return (
@@ -43,9 +46,12 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600 mt-2">Visão geral do seu negócio</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-slate-600 mt-2">Visão geral do seu negócio</p>
+        </div>
+        <PeriodSelector value={selectedPeriod} onChange={setSelectedPeriod} />
       </div>
 
       {/* Cards de métricas */}

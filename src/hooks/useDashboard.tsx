@@ -2,9 +2,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useDashboardData = () => {
+export const useDashboardData = (periodMonths: number = 6) => {
   return useQuery({
-    queryKey: ['dashboard-data'],
+    queryKey: ['dashboard-data', periodMonths],
     queryFn: async () => {
       // Buscar dados de clientes
       const { data: clients } = await supabase
@@ -36,9 +36,9 @@ export const useDashboardData = () => {
       // Taxa de conversão
       const conversionRate = totalOpportunities > 0 ? (wonOpportunities / totalOpportunities) * 100 : 0;
 
-      // Dados para gráficos - últimos 6 meses
+      // Dados para gráficos - período dinâmico
       const currentDate = new Date();
-      const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const monthsData = Array.from({ length: periodMonths }, (_, i) => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         return {
           month: date.toLocaleDateString('pt-BR', { month: 'short' }),
@@ -48,7 +48,7 @@ export const useDashboardData = () => {
       }).reverse();
 
       // Vendas por mês (oportunidades ganhas)
-      const salesData = last6Months.map(month => ({
+      const salesData = monthsData.map(month => ({
         ...month,
         vendas: opportunities?.filter(o => {
           if (o.stage !== 'closed_won' || !o.updated_at) return false;
@@ -59,7 +59,7 @@ export const useDashboardData = () => {
       }));
 
       // Oportunidades por mês
-      const opportunityData = last6Months.map(month => ({
+      const opportunityData = monthsData.map(month => ({
         ...month,
         oportunidades: opportunities?.filter(o => {
           if (!o.created_at) return false;

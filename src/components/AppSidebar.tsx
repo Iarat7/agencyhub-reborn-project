@@ -1,55 +1,17 @@
 
-import { Home, Users, Target, BarChart3, Settings, Calendar, DollarSign, FileText, CheckSquare } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/hooks/useAuth';
-
-const menuItems = [
-  {
-    title: 'Dashboard',
-    url: '/dashboard',
-    icon: Home,
-  },
-  {
-    title: 'Clientes',
-    url: '/clientes',
-    icon: Users,
-  },
-  {
-    title: 'Oportunidades',
-    url: '/oportunidades',
-    icon: Target,
-  },
-  {
-    title: 'Tarefas',
-    url: '/tarefas',
-    icon: CheckSquare,
-  },
-  {
-    title: 'Relatórios',
-    url: '/relatorios',
-    icon: BarChart3,
-  },
-  {
-    title: 'Configurações',
-    url: '/configuracoes',
-    icon: Settings,
-  },
-];
+import { MainNavigation } from '@/components/navigation/MainNavigation';
 
 export function AppSidebar() {
-  const location = useLocation();
   const { user } = useAuth();
 
   return (
@@ -67,21 +29,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = location.pathname === item.url;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link to={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            <MainNavigation />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

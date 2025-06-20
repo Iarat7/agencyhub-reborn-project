@@ -3,11 +3,11 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
-interface ProtectedRouteProps {
+interface AuthGuardProps {
   children: React.ReactNode;
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+export const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {

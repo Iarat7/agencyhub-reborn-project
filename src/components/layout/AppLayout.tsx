@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from './AppSidebar';
-import { Header } from './Header';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
+import { Header } from '@/components/Header';
 
-interface NewLayoutProps {
+interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export const NewLayout = ({ children }: NewLayoutProps) => {
+export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

@@ -6,8 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OpportunitiesTable } from '@/components/opportunities/OpportunitiesTable';
 import { OpportunityDialog } from '@/components/opportunities/OpportunityDialog';
+import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
 import { useOpportunities } from '@/hooks/useOpportunities';
+import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
+import { filterOpportunities } from '@/utils/filterUtils';
 import { Opportunity } from '@/services/api/types';
+
+const opportunityFilterFields: FilterField[] = [
+  { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da oportunidade' },
+  { 
+    key: 'stage', 
+    label: 'Estágio', 
+    type: 'select',
+    options: [
+      { label: 'Prospecção', value: 'prospection' },
+      { label: 'Qualificação', value: 'qualification' },
+      { label: 'Proposta', value: 'proposal' },
+      { label: 'Negociação', value: 'negotiation' },
+      { label: 'Fechado - Ganho', value: 'closed_won' },
+      { label: 'Fechado - Perdido', value: 'closed_lost' }
+    ]
+  },
+  { key: 'min_value', label: 'Valor Mínimo', type: 'number', placeholder: 'Valor mínimo' },
+  { key: 'max_value', label: 'Valor Máximo', type: 'number', placeholder: 'Valor máximo' },
+  { key: 'min_probability', label: 'Probabilidade Mín.', type: 'number', placeholder: 'Probabilidade mínima (%)' },
+  { key: 'expected_close_date', label: 'Data Limite de Fechamento', type: 'date' }
+];
 
 export const Oportunidades = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +40,17 @@ export const Oportunidades = () => {
 
   const { data: opportunities = [], isLoading, error } = useOpportunities();
 
-  const filteredOpportunities = opportunities.filter(opportunity =>
+  const {
+    filters,
+    setFilters,
+    filteredData: filteredOpportunities,
+    resetFilters,
+    isFilterOpen,
+    toggleFilters
+  } = useAdvancedFilters(opportunities, filterOpportunities);
+
+  // Aplicar busca simples sobre os dados já filtrados
+  const searchFilteredOpportunities = filteredOpportunities.filter(opportunity =>
     opportunity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (opportunity.description && opportunity.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -36,11 +70,11 @@ export const Oportunidades = () => {
     setEditingOpportunity(null);
   };
 
-  const totalValue = filteredOpportunities.reduce((acc, opportunity) => {
+  const totalValue = searchFilteredOpportunities.reduce((acc, opportunity) => {
     return acc + (opportunity.value || 0);
   }, 0);
 
-  const activeOpportunities = filteredOpportunities.filter(
+  const activeOpportunities = searchFilteredOpportunities.filter(
     opp => !['closed_won', 'closed_lost'].includes(opp.stage)
   );
 
@@ -70,6 +104,16 @@ export const Oportunidades = () => {
           Nova Oportunidade
         </Button>
       </div>
+
+      {/* Filtros Avançados */}
+      <AdvancedFilters
+        fields={opportunityFilterFields}
+        values={filters}
+        onChange={setFilters}
+        onReset={resetFilters}
+        isOpen={isFilterOpen}
+        onToggle={toggleFilters}
+      />
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -109,7 +153,7 @@ export const Oportunidades = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Pipeline de Vendas ({filteredOpportunities.length})</CardTitle>
+            <CardTitle>Pipeline de Vendas ({searchFilteredOpportunities.length})</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
@@ -120,10 +164,12 @@ export const Oportunidades = () => {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" size="sm">
-                <Filter size={16} className="mr-2" />
-                Filtros
-              </Button>
+              {!isFilterOpen && (
+                <Button variant="outline" size="sm" onClick={toggleFilters}>
+                  <Filter size={16} className="mr-2" />
+                  Filtros
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -132,12 +178,14 @@ export const Oportunidades = () => {
             <div className="text-center py-8">
               <p className="text-slate-600">Carregando oportunidades...</p>
             </div>
-          ) : filteredOpportunities.length === 0 ? (
+          ) : searchFilteredOpportunities.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-slate-600">
-                {searchTerm ? 'Nenhuma oportunidade encontrada com este termo.' : 'Nenhuma oportunidade cadastrada ainda.'}
+                {searchTerm || Object.values(filters).some(v => v) 
+                  ? 'Nenhuma oportunidade encontrada com os filtros aplicados.' 
+                  : 'Nenhuma oportunidade cadastrada ainda.'}
               </p>
-              {!searchTerm && (
+              {!searchTerm && !Object.values(filters).some(v => v) && (
                 <Button onClick={handleNewOpportunity} className="mt-4">
                   <Plus size={16} className="mr-2" />
                   Criar primeira oportunidade
@@ -145,7 +193,7 @@ export const Oportunidades = () => {
               )}
             </div>
           ) : (
-            <OpportunitiesTable opportunities={filteredOpportunities} onEdit={handleEditOpportunity} />
+            <OpportunitiesTable opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
           )}
         </CardContent>
       </Card>

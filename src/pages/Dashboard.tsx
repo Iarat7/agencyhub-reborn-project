@@ -85,13 +85,39 @@ export function Dashboard() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4">
-          <ReportsCharts 
-            data={chartData}
-          />
-        </div>
-        <Card className="col-span-3">
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Primeira linha */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Clientes por Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: [],
+                tasksByStatus: [],
+                clientsByStatus: chartData.clientsByStatus
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Tarefas por Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: [],
+                tasksByStatus: chartData.tasksByStatus,
+                clientsByStatus: []
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1 row-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -123,6 +149,22 @@ export function Dashboard() {
                 <p className="text-sm text-gray-500">Nenhuma atividade recente</p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Segunda linha */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Oportunidades por Estágio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: chartData.opportunitiesByStage,
+                tasksByStatus: [],
+                clientsByStatus: []
+              }}
+            />
           </CardContent>
         </Card>
       </div>

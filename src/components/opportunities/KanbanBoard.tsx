@@ -153,22 +153,57 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
       );
     }
 
-    // For other stages (prospection, qualification, proposal), show forward arrow
-    const nextStage = getNextStage(stage);
-    if (nextStage) {
+    // For other stages (qualification, proposal), show both back and forward arrows
+    if (stage === 'qualification' || stage === 'proposal') {
+      const nextStage = getNextStage(stage);
+      const previousStage = getPreviousStage(stage);
+      
       return (
-        <div className="flex justify-center pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => moveOpportunity(opportunity, nextStage)}
-            className="h-6 px-2"
-          >
-            Avançar
-            <ArrowRight className="h-3 w-3 ml-1" />
-          </Button>
+        <div className="flex justify-between pt-2 gap-1">
+          {previousStage && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveOpportunity(opportunity, previousStage)}
+              className="h-6 px-2"
+            >
+              <ArrowLeft className="h-3 w-3 mr-1" />
+              Voltar
+            </Button>
+          )}
+          {nextStage && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveOpportunity(opportunity, nextStage)}
+              className="h-6 px-2"
+            >
+              Avançar
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Button>
+          )}
         </div>
       );
+    }
+
+    // For prospection stage, only show forward arrow
+    if (stage === 'prospection') {
+      const nextStage = getNextStage(stage);
+      if (nextStage) {
+        return (
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => moveOpportunity(opportunity, nextStage)}
+              className="h-6 px-2"
+            >
+              Avançar
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Button>
+          </div>
+        );
+      }
     }
 
     return null;

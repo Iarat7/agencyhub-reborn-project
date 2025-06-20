@@ -15,7 +15,8 @@ export const useMetricsCalculation = (rawData: RawData, startDate: Date, endDate
     const { clients, opportunities, tasks, allOpportunities } = rawData;
 
     const totalClients = clients?.length || 0;
-    const activeClients = allOpportunities?.filter(c => c.status === 'active').length || 0;
+    // Corrigir o cálculo de clientes ativos - usar clients ao invés de allOpportunities
+    const activeClients = clients?.filter(c => c.status === 'active').length || 0;
     const totalOpportunities = opportunities?.length || 0;
     
     const wonOpportunities = allOpportunities?.filter(o => {

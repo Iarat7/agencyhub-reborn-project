@@ -12,13 +12,14 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
       const startDateISO = startDate.toISOString();
       const endDateISO = endDate.toISOString();
 
-      // Buscar dados com filtro de data
+      // Buscar dados com filtro de data para métricas específicas do período
       const { data: clients } = await supabase
         .from('clients')
         .select('*')
         .gte('created_at', startDateISO)
         .lte('created_at', endDateISO);
 
+      // Buscar TODOS os clientes para cálculo de clientes ativos
       const { data: allClients } = await supabase
         .from('clients')
         .select('*');
@@ -40,7 +41,7 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
         .lte('created_at', endDateISO);
 
       const rawData = {
-        clients: clients || [],
+        clients: allClients || [], // Usar todos os clientes para o cálculo de ativos
         opportunities: opportunities || [],
         tasks: tasks || [],
         allOpportunities: allOpportunities || []

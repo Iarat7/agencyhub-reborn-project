@@ -1,205 +1,116 @@
-import React, { useState } from 'react';
-import { Users, Target, DollarSign, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
-import { DashboardCard } from '@/components/DashboardCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { useDashboardData } from '@/hooks/useDashboard';
-import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
 
-export const Dashboard = () => {
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardCard } from "@/components/DashboardCard";
+import { ReportsCharts } from "@/components/reports/ReportsCharts";
+import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
+import { NotificationAlerts } from "@/components/dashboard/NotificationAlerts";
+import { useDashboardData } from "@/hooks/useDashboard";
+import { Users, Target, DollarSign, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
+import { useState } from "react";
+
+export function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
-  const { data: dashboardData, isLoading, error } = useDashboardData(selectedPeriod);
+  const { data, isLoading } = useDashboardData(selectedPeriod);
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-600 mt-2">Carregando dados...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-red-600 mt-2">Erro ao carregar dados do dashboard</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { metrics, charts, recentActivities } = dashboardData || {};
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  const metrics = data?.metrics;
+  const charts = data?.charts;
+  const recentActivities = data?.recentActivities || [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex-1 space-y-6 p-6">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-600 mt-2">Visão geral do seu negócio</p>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Visão geral do seu negócio
+          </p>
         </div>
         <PeriodSelector value={selectedPeriod} onChange={setSelectedPeriod} />
       </div>
 
-      {/* Cards de métricas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <NotificationAlerts />
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
           title="Total de Clientes"
-          value={metrics?.totalClients || 0}
+          value={metrics?.totalClients?.toString() || "0"}
+          description={`${metrics?.activeClients || 0} ativos`}
           icon={Users}
-          trend={{ value: metrics?.activeClients || 0, isPositive: true }}
-          className="bg-gradient-to-br from-blue-50 to-blue-100"
+          trend={undefined}
         />
         <DashboardCard
-          title="Oportunidades Ativas"
-          value={metrics?.totalOpportunities || 0}
+          title="Oportunidades"
+          value={metrics?.totalOpportunities?.toString() || "0"}
+          description={`${metrics?.wonOpportunities || 0} fechadas`}
           icon={Target}
-          trend={{ value: metrics?.wonOpportunities || 0, isPositive: true }}
-          className="bg-gradient-to-br from-green-50 to-green-100"
+          trend={undefined}
         />
         <DashboardCard
           title="Receita Total"
-          value={formatCurrency(metrics?.totalRevenue || 0)}
+          value={`R$ ${(metrics?.totalRevenue || 0).toLocaleString('pt-BR')}`}
+          description={`Taxa de conversão: ${metrics?.conversionRate?.toFixed(1) || 0}%`}
           icon={DollarSign}
-          trend={{ value: Math.round(metrics?.conversionRate || 0), isPositive: true }}
-          className="bg-gradient-to-br from-purple-50 to-purple-100"
+          trend={undefined}
         />
         <DashboardCard
-          title="Tarefas Pendentes"
-          value={metrics?.pendingTasks || 0}
-          icon={Calendar}
-          trend={{ value: metrics?.completedTasks || 0, isPositive: true }}
-          className="bg-gradient-to-br from-orange-50 to-orange-100"
+          title="Tarefas"
+          value={`${metrics?.completedTasks || 0}/${(metrics?.completedTasks || 0) + (metrics?.pendingTasks || 0)}`}
+          description={`${metrics?.pendingTasks || 0} pendentes`}
+          icon={CheckCircle}
+          trend={undefined}
         />
       </div>
 
-      {/* Resumo rápido */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="col-span-4">
+          <ReportsCharts 
+            salesData={charts?.salesData || []}
+            opportunityData={charts?.opportunityData || []}
+          />
+        </div>
+        <Card className="col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Taxa de Conversão
+              Atividades Recentes
             </CardTitle>
+            <CardDescription>
+              Últimas atividades da sua equipe
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {metrics?.conversionRate?.toFixed(1) || 0}%
-            </div>
-            <p className="text-sm text-slate-600 mt-2">
-              {metrics?.wonOpportunities || 0} de {metrics?.totalOpportunities || 0} oportunidades fechadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Clientes Ativos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
-              {metrics?.activeClients || 0}
-            </div>
-            <p className="text-sm text-slate-600 mt-2">
-              de {metrics?.totalClients || 0} clientes totais
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Produtividade
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-600">
-              {((metrics?.completedTasks || 0) / Math.max((metrics?.completedTasks || 0) + (metrics?.pendingTasks || 0), 1) * 100).toFixed(0)}%
-            </div>
-            <p className="text-sm text-slate-600 mt-2">
-              {metrics?.completedTasks || 0} tarefas concluídas
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Receita por Mês</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={charts?.salesData || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Bar dataKey="vendas" fill="#2563eb" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Oportunidades por Mês</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={charts?.opportunityData || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="oportunidades" stroke="#16a34a" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Atividades recentes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Atividades Recentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities && recentActivities.length > 0 ? (
+          <CardContent className="space-y-4">
+            {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-slate-900">{activity.action}</p>
-                    <p className="text-sm text-slate-600">{activity.client}</p>
+                <div key={index} className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    {activity.action.includes('cliente') && <Users className="h-4 w-4 text-blue-500 mt-1" />}
+                    {activity.action.includes('Oportunidade') && <Target className="h-4 w-4 text-green-500 mt-1" />}
+                    {activity.action.includes('Tarefa') && <CheckCircle className="h-4 w-4 text-purple-500 mt-1" />}
                   </div>
-                  <Badge variant="outline">{activity.time}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                    <p className="text-sm text-gray-500 truncate">{activity.client}</p>
+                    <p className="text-xs text-gray-400">{activity.time}</p>
+                  </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-8">
-                <p className="text-slate-600">Nenhuma atividade recente encontrada</p>
+              <div className="text-center py-4">
+                <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Nenhuma atividade recente</p>
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-};
+}

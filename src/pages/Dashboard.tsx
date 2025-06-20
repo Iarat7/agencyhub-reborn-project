@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardCard } from "@/components/DashboardCard";
 import { ReportsCharts } from "@/components/reports/ReportsCharts";
@@ -84,8 +85,8 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Gráficos reorganizados */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Gráficos com tamanho ajustado */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
         <ReportsCharts 
           data={chartData}
         />

@@ -17,13 +17,13 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
 export const ReportsCharts = ({ data }: ReportsChartsProps) => {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <>
       <Card className="col-span-1">
         <CardHeader>
           <CardTitle>Oportunidades por Estágio</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={data.opportunitiesByStage}
@@ -31,7 +31,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ stage, count }) => `${stage}: ${count}`}
-                outerRadius={80}
+                outerRadius={70}
                 fill="#8884d8"
                 dataKey="count"
               >
@@ -50,7 +50,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
           <CardTitle>Tarefas por Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart data={data.tasksByStatus}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="status" />
@@ -67,7 +67,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
           <CardTitle>Clientes por Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={data.clientsByStatus}
@@ -75,7 +75,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ status, count }) => `${status}: ${count}`}
-                outerRadius={80}
+                outerRadius={70}
                 fill="#8884d8"
                 dataKey="count"
               >
@@ -88,6 +88,6 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 };

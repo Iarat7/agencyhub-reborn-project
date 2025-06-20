@@ -9,7 +9,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { Menu, LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,15 +36,8 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
     : user?.email?.[0]?.toUpperCase() || 'U';
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onMenuToggle}
-        className="lg:hidden"
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
+    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
+      <SidebarTrigger />
 
       <div className="flex-1" />
 

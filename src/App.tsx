@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { NewLayout } from "@/components/NewLayout";
 
 // Pages
 import { Landing } from "@/pages/Landing";
@@ -30,37 +31,49 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             
-            {/* Rotas protegidas */}
+            {/* Rotas protegidas com layout */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <NewLayout>
+                  <Dashboard />
+                </NewLayout>
               </ProtectedRoute>
             } />
             <Route path="/clientes" element={
               <ProtectedRoute>
-                <Clientes />
+                <NewLayout>
+                  <Clientes />
+                </NewLayout>
               </ProtectedRoute>
             } />
             <Route path="/oportunidades" element={
               <ProtectedRoute>
-                <Oportunidades />
+                <NewLayout>
+                  <Oportunidades />
+                </NewLayout>
               </ProtectedRoute>
             } />
             <Route path="/relatorios" element={
               <ProtectedRoute>
-                <Relatorios />
+                <NewLayout>
+                  <Relatorios />
+                </NewLayout>
               </ProtectedRoute>
             } />
             <Route path="/configuracoes" element={
               <ProtectedRoute>
-                <Configuracoes />
+                <NewLayout>
+                  <Configuracoes />
+                </NewLayout>
               </ProtectedRoute>
             } />
             
             {/* Rota antiga para compatibilidade */}
             <Route path="/index" element={
               <ProtectedRoute>
-                <Index />
+                <NewLayout>
+                  <Index />
+                </NewLayout>
               </ProtectedRoute>
             } />
             

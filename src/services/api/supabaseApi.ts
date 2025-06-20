@@ -89,6 +89,8 @@ export class SupabaseAuthApi implements IAuthApi {
 
 // Implementação Supabase para operações CRUD genéricas
 export class SupabaseApi<T extends { id: string }> implements IBaseApi {
+  protected supabase = supabase;
+
   constructor(private tableName: keyof Database['public']['Tables']) {}
 
   async get<T>(id: string): Promise<T | null> {

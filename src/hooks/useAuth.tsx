@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService } from '@/services';
+import { ProfilesApi } from '@/services/api/profilesApi';
 import type { User } from '@/services/api/types';
 
 interface AuthContextType {
@@ -10,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData?: any) => Promise<any>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,20 +20,40 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+const profilesApi = new ProfilesApi();
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshProfile = async () => {
+    try {
+      const profile = await profilesApi.getCurrentUserProfile();
+      setUser(profile);
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+    }
+  };
+
   useEffect(() => {
     // Configurar listener de mudanças de autenticação
-    const unsubscribe = authService.onAuthStateChange((user) => {
-      setUser(user);
+    const unsubscribe = authService.onAuthStateChange(async (authUser) => {
+      if (authUser) {
+        // Buscar dados completos do perfil
+        await refreshProfile();
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
     // Verificar usuário atual na inicialização
-    authService.getCurrentUser().then(({ user }) => {
-      setUser(user);
+    authService.getCurrentUser().then(async ({ user: authUser }) => {
+      if (authUser) {
+        await refreshProfile();
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
@@ -40,7 +62,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     const result = await authService.signIn(email, password);
-    return result;
+    
+    if (result.user && !result.error) {
+      // Buscar dados completos do perfil após login
+      await refreshProfile();
+    }
+    
+    return {
+      ...result,
+      user: user // Retornar o user com dados completos do perfil
+    };
   };
 
   const signUp = async (email: string, password: string, userData?: any) => {
@@ -64,7 +95,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signUp,
     signOut,
-    resetPassword
+    resetPassword,
+    refreshProfile
   };
 
   return (

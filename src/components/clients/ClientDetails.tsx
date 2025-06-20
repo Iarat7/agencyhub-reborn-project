@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useClientTasks, useClientOpportunities } from '@/hooks/useReports';
 import { Target, CheckSquare, Plus, Calendar, DollarSign } from 'lucide-react';
+import { ClientDetailsMetrics } from './ClientDetailsMetrics';
 import type { Client } from '@/services/api/types';
 
 interface ClientDetailsProps {
@@ -42,6 +43,9 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
 
   return (
     <div className="space-y-6">
+      {/* Métricas do Cliente */}
+      <ClientDetailsMetrics client={client} />
+
       {/* Informações do Cliente */}
       <Card>
         <CardHeader>
@@ -110,7 +114,7 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
             <p className="text-sm text-gray-500">Nenhuma oportunidade encontrada</p>
           ) : (
             <div className="space-y-3">
-              {opportunities?.map((opportunity) => (
+              {opportunities?.slice(0, 5).map((opportunity) => (
                 <div key={opportunity.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{opportunity.title}</h4>
@@ -145,6 +149,11 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
                   )}
                 </div>
               ))}
+              {opportunities && opportunities.length > 5 && (
+                <p className="text-sm text-gray-500 text-center">
+                  E mais {opportunities.length - 5} oportunidades...
+                </p>
+              )}
             </div>
           )}
         </CardContent>
@@ -156,7 +165,7 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckSquare className="h-5 w-5" />
-              Tarefas
+              Tarefas Recentes
             </div>
             <Button size="sm" onClick={onCreateTask}>
               <Plus className="h-4 w-4 mr-2" />
@@ -171,7 +180,7 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
             <p className="text-sm text-gray-500">Nenhuma tarefa encontrada</p>
           ) : (
             <div className="space-y-3">
-              {tasks?.map((task) => (
+              {tasks?.slice(0, 5).map((task) => (
                 <div key={task.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{task.title}</h4>
@@ -201,6 +210,11 @@ export const ClientDetails = ({ client, onCreateTask, onCreateOpportunity }: Cli
                   )}
                 </div>
               ))}
+              {tasks && tasks.length > 5 && (
+                <p className="text-sm text-gray-500 text-center">
+                  E mais {tasks.length - 5} tarefas...
+                </p>
+              )}
             </div>
           )}
         </CardContent>

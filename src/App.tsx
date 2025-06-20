@@ -1,68 +1,46 @@
+
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { PWAProvider } from "@/contexts/PWAContext";
-import { OfflineNotification } from "@/components/pwa/OfflineNotification";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-import { usePWAContext } from "@/contexts/PWAContext";
-
-// Pages
-import { Landing } from "@/pages/Landing";
-import { Auth } from "@/pages/Auth";
-import { Dashboard } from "./pages/Dashboard";
-import { Clientes } from "./pages/Clientes";
-import { Oportunidades } from "./pages/Oportunidades";
-import { Tarefas } from "./pages/Tarefas";
-import { Relatorios } from "./pages/Relatorios";
-import { Configuracoes } from "./pages/Configuracoes";
-import Agenda from "./pages/Agenda";
-import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Clientes from "./pages/Clientes";
+import ClienteDashboard from "./pages/ClienteDashboard";
+import Oportunidades from "./pages/Oportunidades";
+import Tarefas from "./pages/Tarefas";
+import Agenda from "./pages/Agenda";
+import Relatorios from "./pages/Relatorios";
+import Configuracoes from "./pages/Configuracoes";
+import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      retry: (failureCount, error) => {
-        // Não tentar novamente se estiver offline
-        if (!navigator.onLine) return false;
-        return failureCount < 3;
-      },
-    },
-  },
-});
-
-const PWAComponents = () => {
-  const { showInstallPrompt, dismissInstallPrompt } = usePWAContext();
-
-  return (
-    <>
-      <OfflineNotification />
-      {showInstallPrompt && (
-        <InstallPrompt onDismiss={dismissInstallPrompt} />
-      )}
-    </>
-  );
-};
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <PWAProvider>
-      <AuthProvider>
+      <NotificationProvider>
         <TooltipProvider>
           <Toaster />
-          <PWAComponents />
+          <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Rotas públicas */}
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
-              
-              {/* Rotas protegidas com layout */}
+              <Route path="/app" element={
+                <AuthGuard>
+                  <AppLayout>
+                    <Index />
+                  </AppLayout>
+                </AuthGuard>
+              } />
               <Route path="/dashboard" element={
                 <AuthGuard>
                   <AppLayout>
@@ -74,6 +52,13 @@ const App = () => (
                 <AuthGuard>
                   <AppLayout>
                     <Clientes />
+                  </AppLayout>
+                </AuthGuard>
+              } />
+              <Route path="/clientes/:clientId/dashboard" element={
+                <AuthGuard>
+                  <AppLayout>
+                    <ClienteDashboard />
                   </AppLayout>
                 </AuthGuard>
               } />
@@ -112,22 +97,11 @@ const App = () => (
                   </AppLayout>
                 </AuthGuard>
               } />
-              
-              {/* Rota antiga para compatibilidade */}
-              <Route path="/index" element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Index />
-                  </AppLayout>
-                </AuthGuard>
-              } />
-              
-              {/* Rota 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthProvider>
+      </NotificationProvider>
     </PWAProvider>
   </QueryClientProvider>
 );

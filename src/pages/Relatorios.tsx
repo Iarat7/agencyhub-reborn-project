@@ -30,28 +30,29 @@ export const Relatorios = () => {
     );
   }
 
-  const { metrics, charts, details } = reportsData || {
-    metrics: {
-      totalClients: 0,
-      activeClients: 0,
-      totalOpportunities: 0,
-      wonOpportunities: 0,
-      totalRevenue: 0,
-      pendingTasks: 0,
-      completedTasks: 0,
-    },
-    charts: {
-      opportunitiesByStage: [],
-      tasksByStatus: [],
-      clientsByStatus: [],
-    },
-    details: {
-      recentOpportunities: [],
-      urgentTasks: [],
-      clients: [],
-      opportunities: [],
-      tasks: [],
-    },
+  // Verificar se reportsData existe e tem a estrutura esperada
+  const metrics = reportsData?.metrics || {
+    totalClients: 0,
+    activeClients: 0,
+    totalOpportunities: 0,
+    wonOpportunities: 0,
+    totalRevenue: 0,
+    pendingTasks: 0,
+    completedTasks: 0,
+  };
+
+  const charts = reportsData?.charts || {
+    opportunitiesByStage: [],
+    tasksByStatus: [],
+    clientsByStatus: [],
+  };
+
+  const details = reportsData?.details || {
+    recentOpportunities: [],
+    urgentTasks: [],
+    clients: [],
+    opportunities: [],
+    tasks: [],
   };
 
   const formatCurrency = (value: number) => {

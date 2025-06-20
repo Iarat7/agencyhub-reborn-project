@@ -1,14 +1,39 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsService } from '@/services';
 import { Client } from '@/services/api/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useClients = () => {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const query = useQuery({
     queryKey: ['clients'],
     queryFn: () => clientsService.list<Client>(),
   });
+
+  const deleteClient = useMutation({
+    mutationFn: (id: string) => clientsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      toast({
+        title: 'Cliente excluído',
+        description: 'Cliente excluído com sucesso!',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir cliente. Tente novamente.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  return {
+    ...query,
+    deleteClient,
+  };
 };
 
 export const useClient = (id: string) => {

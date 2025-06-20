@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,14 +116,14 @@ export const ClientsTable = () => {
 
       {/* Dialog para criar cliente */}
       <ClientDialog
-        isOpen={isCreating}
-        onClose={() => setIsCreating(false)}
+        open={isCreating}
+        onOpenChange={setIsCreating}
       />
 
       {/* Dialog para editar cliente */}
       <ClientDialog
-        isOpen={!!editingClient}
-        onClose={() => setEditingClient(null)}
+        open={!!editingClient}
+        onOpenChange={() => setEditingClient(null)}
         client={editingClient || undefined}
       />
 
@@ -138,11 +137,9 @@ export const ClientsTable = () => {
             <ClientDetails 
               client={viewingClient}
               onCreateTask={() => {
-                // TODO: Implementar criação de tarefa com cliente pré-selecionado
                 console.log('Criar tarefa para cliente:', viewingClient.id);
               }}
               onCreateOpportunity={() => {
-                // TODO: Implementar criação de oportunidade com cliente pré-selecionado
                 console.log('Criar oportunidade para cliente:', viewingClient.id);
               }}
             />

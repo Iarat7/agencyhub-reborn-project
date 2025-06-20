@@ -13,6 +13,7 @@ interface WeekViewProps {
   onEventClick: (event: Event) => void;
   onTaskClick: (task: Task) => void;
   onDateClick: (date: Date) => void;
+  dragAndDrop?: any;
 }
 
 export const WeekView = ({ 
@@ -21,7 +22,8 @@ export const WeekView = ({
   tasks, 
   onEventClick, 
   onTaskClick, 
-  onDateClick 
+  onDateClick,
+  dragAndDrop
 }: WeekViewProps) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -41,6 +43,14 @@ export const WeekView = ({
 
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
+  const handleDayClick = (date: Date, e: React.MouseEvent) => {
+    if (dragAndDrop?.isDragging) {
+      e.preventDefault();
+      return;
+    }
+    onDateClick(date);
+  };
+
   return (
     <div className="space-y-4">
       {/* Headers - Mobile friendly */}
@@ -50,7 +60,14 @@ export const WeekView = ({
         </div>
         
         {weekDays.map((day) => (
-          <div key={day.toISOString()} className="text-center">
+          <div 
+            key={day.toISOString()} 
+            className={`text-center ${
+              dragAndDrop?.dragOverDate && isSameDay(day, dragAndDrop.dragOverDate) 
+                ? 'bg-blue-100 rounded' 
+                : ''
+            }`}
+          >
             <div className="text-xs font-medium text-muted-foreground">
               {format(day, 'EEE', { locale: ptBR })}
             </div>
@@ -58,7 +75,7 @@ export const WeekView = ({
               className={`text-sm md:text-lg font-semibold cursor-pointer hover:bg-accent rounded p-1 ${
                 isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground' : ''
               }`}
-              onClick={() => onDateClick(day)}
+              onClick={(e) => handleDayClick(day, e)}
             >
               {format(day, 'd')}
             </div>
@@ -84,18 +101,27 @@ export const WeekView = ({
                 });
                 
                 const dayTasks = getTasksForDate(day);
+                const isDropZone = dragAndDrop?.dragOverDate && isSameDay(day, dragAndDrop.dragOverDate);
                 
                 return (
                   <div 
                     key={`${day.toISOString()}-${hour}`} 
-                    className="min-h-8 md:min-h-12 border border-border/50 p-0.5 md:p-1 cursor-pointer hover:bg-accent/50"
-                    onClick={() => onDateClick(day)}
+                    className={`min-h-8 md:min-h-12 border border-border/50 p-0.5 md:p-1 cursor-pointer hover:bg-accent/50 ${
+                      isDropZone ? 'bg-blue-100 border-blue-300' : ''
+                    }`}
+                    onClick={(e) => handleDayClick(day, e)}
+                    onDragOver={(e) => dragAndDrop?.handleDragOver(e, day)}
+                    onDragLeave={dragAndDrop?.handleDragLeave}
+                    onDrop={(e) => dragAndDrop?.handleDrop(e, day)}
                   >
                     {/* Events */}
                     {dayEvents.map((event) => (
                       <div
                         key={event.id}
-                        className="mb-0.5 md:mb-1 p-0.5 md:p-1 bg-blue-100 rounded text-xs cursor-pointer hover:bg-blue-200"
+                        className="mb-0.5 md:mb-1 p-0.5 md:p-1 bg-blue-100 rounded text-xs cursor-pointer hover:bg-blue-200 transition-colors"
+                        draggable={!!dragAndDrop}
+                        onDragStart={() => dragAndDrop?.handleDragStart('event', event.id, event)}
+                        onDragEnd={dragAndDrop?.handleDragEnd}
                         onClick={(e) => {
                           e.stopPropagation();
                           onEventClick(event);
@@ -112,7 +138,10 @@ export const WeekView = ({
                     {hour === 0 && dayTasks.map((task) => (
                       <div
                         key={task.id}
-                        className="mb-0.5 md:mb-1 p-0.5 md:p-1 bg-orange-100 rounded text-xs cursor-pointer hover:bg-orange-200"
+                        className="mb-0.5 md:mb-1 p-0.5 md:p-1 bg-orange-100 rounded text-xs cursor-pointer hover:bg-orange-200 transition-colors"
+                        draggable={!!dragAndDrop}
+                        onDragStart={() => dragAndDrop?.handleDragStart('task', task.id, task)}
+                        onDragEnd={dragAndDrop?.handleDragEnd}
                         onClick={(e) => {
                           e.stopPropagation();
                           onTaskClick(task);

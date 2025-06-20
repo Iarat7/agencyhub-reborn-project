@@ -14,6 +14,7 @@ interface DayViewProps {
   tasks: Task[];
   onEventClick: (event: Event) => void;
   onTaskClick: (task: Task) => void;
+  dragAndDrop?: any;
 }
 
 export const DayView = ({ 
@@ -21,7 +22,8 @@ export const DayView = ({
   events, 
   tasks, 
   onEventClick, 
-  onTaskClick 
+  onTaskClick,
+  dragAndDrop
 }: DayViewProps) => {
   const dayEvents = events.filter(event => 
     isSameDay(parseISO(event.start_date), currentDate)
@@ -62,7 +64,17 @@ export const DayView = ({
                   const hourEvents = getEventsForHour(hour);
                   
                   return (
-                    <div key={hour} className="flex gap-3">
+                    <div 
+                      key={hour} 
+                      className={`flex gap-3 ${
+                        dragAndDrop?.dragOverDate && isSameDay(currentDate, dragAndDrop.dragOverDate) 
+                          ? 'bg-blue-50 rounded p-2' 
+                          : ''
+                      }`}
+                      onDragOver={(e) => dragAndDrop?.handleDragOver(e, currentDate)}
+                      onDragLeave={dragAndDrop?.handleDragLeave}
+                      onDrop={(e) => dragAndDrop?.handleDrop(e, currentDate)}
+                    >
                       <div className="text-sm text-muted-foreground font-mono min-w-16">
                         {hour.toString().padStart(2, '0')}:00
                       </div>
@@ -71,6 +83,9 @@ export const DayView = ({
                           <div
                             key={event.id}
                             className="mb-2 p-2 bg-blue-50 rounded cursor-pointer hover:bg-blue-100 transition-colors"
+                            draggable={!!dragAndDrop}
+                            onDragStart={() => dragAndDrop?.handleDragStart('event', event.id, event)}
+                            onDragEnd={dragAndDrop?.handleDragEnd}
                             onClick={() => onEventClick(event)}
                           >
                             <div className="font-medium text-sm">{event.title}</div>
@@ -94,7 +109,16 @@ export const DayView = ({
               <h3 className="font-semibold mb-4">
                 Tarefas ({dayTasks.length})
               </h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div 
+                className={`space-y-2 max-h-96 overflow-y-auto ${
+                  dragAndDrop?.dragOverDate && isSameDay(currentDate, dragAndDrop.dragOverDate) 
+                    ? 'bg-orange-50 rounded p-2' 
+                    : ''
+                }`}
+                onDragOver={(e) => dragAndDrop?.handleDragOver(e, currentDate)}
+                onDragLeave={dragAndDrop?.handleDragLeave}
+                onDrop={(e) => dragAndDrop?.handleDrop(e, currentDate)}
+              >
                 {dayTasks.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Nenhuma tarefa para hoje</p>
                 ) : (
@@ -102,6 +126,9 @@ export const DayView = ({
                     <div
                       key={task.id}
                       className="p-3 bg-orange-50 rounded cursor-pointer hover:bg-orange-100 transition-colors"
+                      draggable={!!dragAndDrop}
+                      onDragStart={() => dragAndDrop?.handleDragStart('task', task.id, task)}
+                      onDragEnd={dragAndDrop?.handleDragEnd}
                       onClick={() => onTaskClick(task)}
                     >
                       <div className="font-medium text-sm mb-1">{task.title}</div>

@@ -16,6 +16,7 @@ interface CalendarViewProps {
   tasks?: Task[];
   onEventClick?: (event: Event) => void;
   onTaskClick?: (task: Task) => void;
+  dragAndDrop?: any;
 }
 
 export const CalendarView = ({ 
@@ -23,7 +24,8 @@ export const CalendarView = ({
   events = [], 
   tasks = [],
   onEventClick,
-  onTaskClick 
+  onTaskClick,
+  dragAndDrop
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -132,7 +134,9 @@ export const CalendarView = ({
               head_row: "flex",
               head_cell: "text-muted-foreground rounded-md w-8 md:w-9 font-normal text-[0.8rem]",
               row: "flex w-full mt-2",
-              cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+              cell: `text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 ${
+                dragAndDrop?.dragOverDate ? 'hover:bg-blue-100' : ''
+              }`,
               day: "h-8 w-8 md:h-9 md:w-9 p-0 font-normal aria-selected:opacity-100 text-xs md:text-sm",
               day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
               day_today: "bg-accent text-accent-foreground",
@@ -143,7 +147,12 @@ export const CalendarView = ({
             }}
             components={{
               DayContent: ({ date }) => (
-                <div className="relative w-full h-full p-1 md:p-2">
+                <div 
+                  className="relative w-full h-full p-1 md:p-2"
+                  onDragOver={(e) => dragAndDrop?.handleDragOver(e, date)}
+                  onDragLeave={dragAndDrop?.handleDragLeave}
+                  onDrop={(e) => dragAndDrop?.handleDrop(e, date)}
+                >
                   <span className="text-xs md:text-sm">{date.getDate()}</span>
                   {getDayContent(date)}
                 </div>
@@ -176,6 +185,9 @@ export const CalendarView = ({
                   <div 
                     key={event.id} 
                     className="p-2 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                    draggable={!!dragAndDrop}
+                    onDragStart={() => dragAndDrop?.handleDragStart('event', event.id, event)}
+                    onDragEnd={dragAndDrop?.handleDragEnd}
                     onClick={() => onEventClick?.(event)}
                   >
                     <p className="font-medium text-xs md:text-sm line-clamp-2">{event.title}</p>
@@ -204,6 +216,9 @@ export const CalendarView = ({
                   <div 
                     key={task.id} 
                     className="p-2 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors"
+                    draggable={!!dragAndDrop}
+                    onDragStart={() => dragAndDrop?.handleDragStart('task', task.id, task)}
+                    onDragEnd={dragAndDrop?.handleDragEnd}
                     onClick={() => onTaskClick?.(task)}
                   >
                     <p className="font-medium text-xs md:text-sm line-clamp-2">{task.title}</p>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { WeekView } from '@/components/calendar/WeekView';
@@ -5,12 +6,18 @@ import { DayView } from '@/components/calendar/DayView';
 import { EventDialog } from '@/components/calendar/EventDialog';
 import { EventDetailsDialog } from '@/components/calendar/EventDetailsDialog';
 import { TaskDetailsDialog } from '@/components/calendar/TaskDetailsDialog';
+import { TaskEditDialog } from '@/components/tasks/TaskEditDialog';
+import { QuickCreateDialog } from '@/components/calendar/QuickCreateDialog';
+import { CalendarNavigation } from '@/components/calendar/CalendarNavigation';
 import { CalendarViewToggle, CalendarViewType } from '@/components/calendar/CalendarViewToggle';
 import { CalendarFilters, CalendarFilters as CalendarFiltersType } from '@/components/calendar/CalendarFilters';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Zap } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useTasks } from '@/hooks/useTasks';
+import { useCalendarNotifications } from '@/hooks/useCalendarNotifications';
+import { useCalendarRealtime } from '@/hooks/useCalendarRealtime';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import type { Event } from '@/services/api/types';
 import type { Task } from '@/services/api/types';
 
@@ -18,6 +25,8 @@ const Agenda = () => {
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
+  const [isTaskEditOpen, setIsTaskEditOpen] = useState(false);
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -33,6 +42,11 @@ const Agenda = () => {
 
   const { data: allEvents = [] } = useEvents();
   const { data: allTasks = [] } = useTasks();
+
+  // Hooks para funcionalidades avançadas
+  useCalendarNotifications();
+  useCalendarRealtime();
+  const dragAndDrop = useDragAndDrop();
 
   // Filter events and tasks based on active filters
   const filteredEvents = allEvents.filter(event => {
@@ -68,6 +82,11 @@ const Agenda = () => {
     setIsEventDialogOpen(true);
   };
 
+  const handleQuickCreate = (date: Date) => {
+    setSelectedDate(date);
+    setIsQuickCreateOpen(true);
+  };
+
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailsOpen(true);
@@ -86,41 +105,39 @@ const Agenda = () => {
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
-    // TODO: Abrir dialog de edição de tarefa quando implementado
-    console.log('Edit task:', task);
+    setIsTaskEditOpen(true);
   };
 
   const renderCalendarView = () => {
+    const baseProps = {
+      events: filteredEvents,
+      tasks: filteredTasks,
+      onEventClick: handleEventClick,
+      onTaskClick: handleTaskClick,
+      dragAndDrop,
+    };
+
     switch (view) {
       case 'week':
         return (
           <WeekView
             currentDate={currentDate}
-            events={filteredEvents}
-            tasks={filteredTasks}
-            onEventClick={handleEventClick}
-            onTaskClick={handleTaskClick}
-            onDateClick={handleDateSelect}
+            onDateClick={handleQuickCreate}
+            {...baseProps}
           />
         );
       case 'day':
         return (
           <DayView
             currentDate={currentDate}
-            events={filteredEvents}
-            tasks={filteredTasks}
-            onEventClick={handleEventClick}
-            onTaskClick={handleTaskClick}
+            {...baseProps}
           />
         );
       default:
         return (
           <CalendarView 
             onDateSelect={handleDateSelect}
-            events={filteredEvents}
-            tasks={filteredTasks}
-            onEventClick={handleEventClick}
-            onTaskClick={handleTaskClick}
+            {...baseProps}
           />
         );
     }
@@ -137,17 +154,30 @@ const Agenda = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <CalendarViewToggle view={view} onViewChange={setView} />
-          <Button 
-            onClick={() => {
-              setEditingEvent(undefined);
-              setSelectedDate(undefined);
-              setIsEventDialogOpen(true);
-            }}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Evento
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setSelectedDate(new Date());
+                setIsQuickCreateOpen(true);
+              }}
+              className="flex-1 sm:flex-none"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Criação Rápida
+            </Button>
+            <Button 
+              onClick={() => {
+                setEditingEvent(undefined);
+                setSelectedDate(undefined);
+                setIsEventDialogOpen(true);
+              }}
+              className="flex-1 sm:flex-none"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Evento
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -155,6 +185,20 @@ const Agenda = () => {
         filters={filters} 
         onFiltersChange={setFilters} 
       />
+
+      {view !== 'month' && (
+        <CalendarNavigation
+          currentDate={currentDate}
+          view={view}
+          onDateChange={setCurrentDate}
+        />
+      )}
+
+      {dragAndDrop.isDragging && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center text-blue-700">
+          Arraste para uma data para mover o item
+        </div>
+      )}
 
       {renderCalendarView()}
 
@@ -177,6 +221,18 @@ const Agenda = () => {
         onOpenChange={setIsTaskDetailsOpen}
         task={selectedTask}
         onEdit={handleEditTask}
+      />
+
+      <TaskEditDialog
+        open={isTaskEditOpen}
+        onOpenChange={setIsTaskEditOpen}
+        task={editingTask}
+      />
+
+      <QuickCreateDialog
+        open={isQuickCreateOpen}
+        onOpenChange={setIsQuickCreateOpen}
+        selectedDate={selectedDate || new Date()}
       />
     </div>
   );

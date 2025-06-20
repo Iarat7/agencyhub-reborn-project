@@ -56,6 +56,20 @@ export interface Task {
   updated_at?: string;
 }
 
+export interface Event {
+  id: string;
+  title: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  event_type: 'meeting' | 'call' | 'deadline' | 'reminder';
+  client_id?: string;
+  created_by?: string;
+  attendees?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface AuthResponse {
   user: User | null;
   session: any;

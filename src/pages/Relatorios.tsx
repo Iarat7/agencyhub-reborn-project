@@ -1,13 +1,15 @@
-
 import React from 'react';
-import { Users, Target, CheckSquare, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, Target, CheckSquare, DollarSign, TrendingUp, AlertCircle, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MetricsCard } from '@/components/reports/MetricsCard';
 import { ReportsCharts } from '@/components/reports/ReportsCharts';
+import { AdvancedCharts } from '@/components/reports/AdvancedCharts';
 import { useReportsData } from '@/hooks/useReports';
+import { useAdvancedReports } from '@/hooks/useAdvancedReports';
 
 export const Relatorios = () => {
-  const { data: reportsData, isLoading, error } = useReportsData();
+  const { data: reportsData, isLoading: reportsLoading, error } = useReportsData();
+  const { data: advancedData, isLoading: advancedLoading } = useAdvancedReports();
 
   if (error) {
     return (
@@ -20,11 +22,12 @@ export const Relatorios = () => {
     );
   }
 
-  if (isLoading) {
+  if (reportsLoading || advancedLoading) {
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
-          <p className="text-slate-600">Carregando relatórios...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-slate-600 mt-2">Carregando relatórios avançados...</p>
         </div>
       </div>
     );
@@ -73,11 +76,11 @@ export const Relatorios = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Relatórios</h1>
-        <p className="text-slate-600 mt-2">Visualize métricas e indicadores importantes com dados reais</p>
+        <h1 className="text-3xl font-bold text-slate-900">Relatórios Avançados</h1>
+        <p className="text-slate-600 mt-2">Análise detalhada com gráficos interativos e métricas avançadas</p>
       </div>
 
-      {/* Métricas Principais */}
+      {/* Métricas Principais Expandidas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricsCard
           title="Total de Clientes"
@@ -98,15 +101,25 @@ export const Relatorios = () => {
           description="Oportunidades fechadas"
         />
         <MetricsCard
-          title="Tarefas Pendentes"
-          value={metrics.pendingTasks}
-          icon={AlertCircle}
-          description={`${metrics.completedTasks} concluídas`}
+          title="Ticket Médio"
+          value={formatCurrency(advancedData?.metrics.avgDealSize || 0)}
+          icon={Activity}
+          description="Por oportunidade fechada"
         />
       </div>
 
+      {/* Gráficos Avançados */}
+      {advancedData && (
+        <AdvancedCharts 
+          salesData={advancedData.charts.salesData}
+          revenueData={advancedData.charts.revenueData}
+          conversionData={advancedData.charts.conversionData}
+          activityData={advancedData.charts.activityData}
+        />
+      )}
+
       {/* Indicadores de Performance */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -136,10 +149,34 @@ export const Relatorios = () => {
             </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Projeção Mensal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-600">
+              {formatCurrency((advancedData?.metrics.totalRevenue || 0) / 6)}
+            </div>
+            <p className="text-sm text-slate-600 mt-1">
+              Baseado nos últimos 6 meses
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Gráficos */}
-      <ReportsCharts data={charts} />
+      {/* Gráficos Básicos (mantidos para comparação) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Visão Geral por Categoria</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReportsCharts data={charts} />
+        </CardContent>
+      </Card>
 
       {/* Informações Detalhadas */}
       <div className="grid gap-6 md:grid-cols-2">

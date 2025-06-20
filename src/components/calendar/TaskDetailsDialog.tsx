@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -13,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, Trash2, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useTasks } from '@/hooks/useTasks';
+import { useDeleteTask } from '@/hooks/useTasks';
 import { useToast } from '@/hooks/use-toast';
 import { useClients } from '@/hooks/useClients';
 import type { Task } from '@/services/api/types';
@@ -32,7 +31,7 @@ export const TaskDetailsDialog = ({
   onEdit 
 }: TaskDetailsDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { deleteTask } = useTasks();
+  const deleteTask = useDeleteTask();
   const { data: clients = [] } = useClients();
   const { toast } = useToast();
 

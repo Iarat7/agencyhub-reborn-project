@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -77,9 +78,15 @@ export const useCreateNotification = () => {
 
   return useMutation({
     mutationFn: async (notification: Omit<Notification, 'id' | 'user_id' | 'created_at' | 'is_read'>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('notifications')
-        .insert([notification]);
+        .insert([{
+          ...notification,
+          user_id: user.id
+        }]);
 
       if (error) throw error;
     },

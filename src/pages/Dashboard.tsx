@@ -42,37 +42,33 @@ export function Dashboard() {
         <DashboardCard
           title="Total de Clientes"
           value={metrics?.totalClients?.toString() || "0"}
-          description={`${metrics?.activeClients || 0} ativos`}
+          subtitle={`${metrics?.activeClients || 0} ativos`}
           icon={Users}
-          trend={undefined}
         />
         <DashboardCard
           title="Oportunidades"
           value={metrics?.totalOpportunities?.toString() || "0"}
-          description={`${metrics?.wonOpportunities || 0} fechadas`}
+          subtitle={`${metrics?.wonOpportunities || 0} fechadas`}
           icon={Target}
-          trend={undefined}
         />
         <DashboardCard
           title="Receita Total"
           value={`R$ ${(metrics?.totalRevenue || 0).toLocaleString('pt-BR')}`}
-          description={`Taxa de conversão: ${metrics?.conversionRate?.toFixed(1) || 0}%`}
+          subtitle={`Taxa de conversão: ${metrics?.conversionRate?.toFixed(1) || 0}%`}
           icon={DollarSign}
-          trend={undefined}
         />
         <DashboardCard
           title="Tarefas"
           value={`${metrics?.completedTasks || 0}/${(metrics?.completedTasks || 0) + (metrics?.pendingTasks || 0)}`}
-          description={`${metrics?.pendingTasks || 0} pendentes`}
+          subtitle={`${metrics?.pendingTasks || 0} pendentes`}
           icon={CheckCircle}
-          trend={undefined}
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4">
           <ReportsCharts 
-            salesData={charts?.salesData || []}
+            data={charts?.salesData || []}
             opportunityData={charts?.opportunityData || []}
           />
         </div>

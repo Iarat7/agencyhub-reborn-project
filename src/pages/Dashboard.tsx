@@ -1,19 +1,15 @@
 
 import React, { useState } from "react";
 import { useCompleteDashboardData } from "@/hooks/useDashboard";
-import { usePredictiveAnalytics } from "@/hooks/usePredictiveAnalytics";
-import { useSmartInsights } from "@/hooks/useSmartInsights";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardWidgets } from "@/components/dashboard/DashboardWidgets";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
+import { DashboardActivities } from "@/components/dashboard/DashboardActivities";
 
 export function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
   
-  const { data: dashboardData, isLoading: isDashboardLoading } = useCompleteDashboardData(selectedPeriod);
-  const { data: predictiveData, isLoading: isPredictiveLoading } = usePredictiveAnalytics(selectedPeriod);
-  const { data: insights, isLoading: isInsightsLoading } = useSmartInsights(selectedPeriod);
-
-  const isLoading = isDashboardLoading || isPredictiveLoading || isInsightsLoading;
+  const { data: dashboardData, isLoading } = useCompleteDashboardData(selectedPeriod);
 
   if (isLoading) {
     return (
@@ -30,11 +26,17 @@ export function Dashboard() {
         onPeriodChange={setSelectedPeriod} 
       />
 
-      <DashboardWidgets
-        metrics={dashboardData?.metrics}
-        predictiveData={predictiveData}
-        insights={insights}
-      />
+      <DashboardMetrics metrics={dashboardData?.metrics} />
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <DashboardCharts metrics={dashboardData?.metrics} />
+        </div>
+        
+        <div>
+          <DashboardActivities activities={dashboardData?.recentActivities} />
+        </div>
+      </div>
     </div>
   );
 }

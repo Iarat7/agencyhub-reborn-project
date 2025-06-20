@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAdvancedReports } from '@/hooks/useAdvancedReports';
 import { ReportsFilters } from '@/components/reports/ReportsFilters';
@@ -16,7 +17,7 @@ export function Relatorios() {
     to: undefined
   });
 
-  const { data, isLoading } = useAdvancedReports(selectedPeriod, dateRange);
+  const { data, isLoading } = useAdvancedReports(selectedPeriod);
 
   if (isLoading) {
     return (
@@ -26,7 +27,10 @@ export function Relatorios() {
     );
   }
 
-  
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
+  };
+
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -42,46 +46,46 @@ export function Relatorios() {
         selectedPeriod={selectedPeriod}
         onPeriodChange={setSelectedPeriod}
         dateRange={dateRange}
-        onDateRangeChange={setDateRange}
+        onDateRangeChange={handleDateRangeChange}
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <AdvancedMetricsCard
           title="Receita Total"
           value={data?.metrics?.totalRevenue || 0}
-          previousValue={data?.metrics?.previousRevenue || 0}
+          previousValue={data?.prevMetrics?.totalRevenue || 0}
           format="currency"
           description="Receita do período selecionado"
         />
         <AdvancedMetricsCard
           title="Taxa de Conversão"
           value={data?.metrics?.conversionRate || 0}
-          previousValue={data?.metrics?.previousConversionRate || 0}
+          previousValue={data?.prevMetrics?.conversionRate || 0}
           format="percentage"
           description="% de oportunidades fechadas"
         />
         <AdvancedMetricsCard
           title="Novos Clientes"
-          value={data?.metrics?.newClients || 0}
-          previousValue={data?.metrics?.previousNewClients || 0}
+          value={data?.metrics?.totalClients || 0}
+          previousValue={data?.prevMetrics?.totalClients || 0}
           description="Clientes adquiridos"
         />
         <AdvancedMetricsCard
           title="Tarefas Concluídas"
           value={data?.metrics?.completedTasks || 0}
-          previousValue={data?.metrics?.previousCompletedTasks || 0}
+          previousValue={data?.prevMetrics?.completedTasks || 0}
           description="Produtividade da equipe"
         />
       </div>
 
       <ReportsMetrics metrics={data?.metrics} />
 
-      <ReportsCharts data={data?.charts} />
+      <ReportsCharts data={data?.chartData} />
 
       <div className="grid gap-6 md:grid-cols-2">
         <ReportsTable
           title="Relatório de Clientes"
-          data={data?.tables?.clients || []}
+          data={data?.rawData?.clients || []}
           columns={[
             { key: 'name', label: 'Nome' },
             { key: 'email', label: 'Email' },
@@ -93,18 +97,18 @@ export function Relatorios() {
 
         <ReportsTable
           title="Relatório de Oportunidades"
-          data={data?.tables?.opportunities || []}
+          data={data?.rawData?.opportunities || []}
           columns={[
             { key: 'title', label: 'Título' },
             { key: 'value', label: 'Valor' },
             { key: 'stage', label: 'Estágio' },
-            { key: 'client_name', label: 'Cliente' }
+            { key: 'client_id', label: 'Cliente' }
           ]}
           filename="relatorio-oportunidades"
         />
       </div>
 
-      <ReportsDetails data={data} />
+      <ReportsDetails rawData={data?.rawData} period={data?.period} />
     </div>
   );
 }

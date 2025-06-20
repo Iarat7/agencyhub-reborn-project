@@ -9,7 +9,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 // Pages
 import { Landing } from "@/pages/Landing";
 import { Auth } from "@/pages/Auth";
-import { AdminLogin } from "@/components/AdminLogin";
 import { Dashboard } from "./pages/Dashboard";
 import { Clientes } from "./pages/Clientes";
 import { Oportunidades } from "./pages/Oportunidades";
@@ -30,7 +29,6 @@ const App = () => (
             {/* Rotas públicas */}
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminLogin />} />
             
             {/* Rotas protegidas */}
             <Route path="/dashboard" element={

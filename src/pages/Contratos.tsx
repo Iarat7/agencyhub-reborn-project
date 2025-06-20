@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContractDialog } from '@/components/contracts/ContractDialog';
 import { ContractDetailsDialog } from '@/components/contracts/ContractDetailsDialog';
 import { ContractsTable } from '@/components/contracts/ContractsTable';
+import { ContractFilters } from '@/components/contracts/ContractFilters';
 import { useContracts } from '@/hooks/useContracts';
+import { useContractFilters } from '@/hooks/useContractFilters';
 import { Contract } from '@/services/api/types';
 
 export default function Contratos() {
@@ -26,6 +28,16 @@ export default function Contratos() {
     isUpdating,
     error,
   } = useContracts();
+
+  const {
+    statusFilter,
+    setStatusFilter,
+    dateRange,
+    setDateRange,
+    filteredContracts,
+    resetFilters,
+    stats
+  } = useContractFilters(contracts);
 
   const handleSubmit = (data: any) => {
     console.log('Submitting contract data:', data);
@@ -104,7 +116,7 @@ export default function Contratos() {
       </div>
 
       {/* Métricas dos Contratos */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Contratos Ativos</CardTitle>
@@ -131,16 +143,49 @@ export default function Contratos() {
             <div className="text-2xl font-bold text-purple-900">{formatCurrency(totalProfit)}</div>
           </CardContent>
         </Card>
+
+        <Card className="bg-gradient-to-br from-red-50 to-red-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-1">
+              <AlertTriangle className="h-4 w-4" />
+              Expirados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-900">{stats.expired.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              Expirando (30d)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-900">{stats.expiring.length}</div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Filtros */}
+      <ContractFilters
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onResetFilters={resetFilters}
+      />
 
       {/* Tabela de Contratos */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Contratos ({contracts.length})</CardTitle>
+          <CardTitle>Lista de Contratos ({filteredContracts.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <ContractsTable
-            contracts={contracts}
+            contracts={filteredContracts}
             clients={clients}
             onEdit={handleEdit}
             onDelete={handleDelete}

@@ -1,19 +1,19 @@
 
 import React, { useState } from 'react';
-import { Plus, Filter } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinancialEntryDialog } from '@/components/financial/FinancialEntryDialog';
 import { FinancialTable } from '@/components/financial/FinancialTable';
 import { FinancialMetrics } from '@/components/financial/FinancialMetrics';
+import { FinancialFilters } from '@/components/financial/FinancialFilters';
 import { useFinancialEntries } from '@/hooks/useFinancialEntries';
+import { useFinancialFilters } from '@/hooks/useFinancialFilters';
 import { FinancialEntry } from '@/services/api/types';
 
 export default function Financeiro() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<FinancialEntry | undefined>();
-  const [activeTab, setActiveTab] = useState('all');
   
   const {
     entries,
@@ -26,6 +26,19 @@ export default function Financeiro() {
     isCreating,
     isUpdating,
   } = useFinancialEntries();
+
+  const {
+    periodFilter,
+    setPeriodFilter,
+    typeFilter,
+    setTypeFilter,
+    statusFilter,
+    setStatusFilter,
+    dateRange,
+    setDateRange,
+    filteredEntries,
+    resetFilters
+  } = useFinancialFilters(entries);
 
   const handleSubmit = (data: any) => {
     if (editingEntry) {
@@ -47,21 +60,6 @@ export default function Financeiro() {
       deleteEntry(id);
     }
   };
-
-  const filteredEntries = entries.filter(entry => {
-    switch (activeTab) {
-      case 'income':
-        return entry.type === 'income';
-      case 'expense':
-        return entry.type === 'expense';
-      case 'pending':
-        return entry.status === 'pending';
-      case 'overdue':
-        return entry.status === 'overdue';
-      default:
-        return true;
-    }
-  });
 
   if (isLoading) {
     return (
@@ -85,33 +83,34 @@ export default function Financeiro() {
       </div>
 
       {/* Métricas Financeiras */}
-      <FinancialMetrics entries={entries} />
+      <FinancialMetrics entries={filteredEntries} />
+
+      {/* Filtros */}
+      <FinancialFilters
+        periodFilter={periodFilter}
+        onPeriodFilterChange={setPeriodFilter}
+        typeFilter={typeFilter}
+        onTypeFilterChange={setTypeFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onResetFilters={resetFilters}
+      />
 
       {/* Conteúdo Principal */}
       <Card>
         <CardHeader>
-          <CardTitle>Movimentações Financeiras</CardTitle>
+          <CardTitle>Movimentações Financeiras ({filteredEntries.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="income">Receitas</TabsTrigger>
-              <TabsTrigger value="expense">Despesas</TabsTrigger>
-              <TabsTrigger value="pending">Pendentes</TabsTrigger>
-              <TabsTrigger value="overdue">Vencidas</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab} className="space-y-4">
-              <FinancialTable
-                entries={filteredEntries}
-                clients={clients}
-                contracts={contracts}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </TabsContent>
-          </Tabs>
+          <FinancialTable
+            entries={filteredEntries}
+            clients={clients}
+            contracts={contracts}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
 

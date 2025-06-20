@@ -15,6 +15,12 @@ export const useFinancialEntries = () => {
       console.log('Fetching financial entries...');
       const result = await financialEntriesService.list<FinancialEntry>();
       console.log('Financial entries fetched:', result);
+      
+      // Verificar e atualizar entries vencidas
+      if (result && result.length > 0) {
+        await checkAndUpdateOverdueEntries(result);
+      }
+      
       return result;
     },
   });
@@ -28,6 +34,39 @@ export const useFinancialEntries = () => {
     queryKey: ['contracts'],
     queryFn: () => contractsService.list<Contract>(),
   });
+
+  // Função para verificar e atualizar movimentações vencidas
+  const checkAndUpdateOverdueEntries = async (entries: FinancialEntry[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Zerar horas para comparar apenas datas
+    
+    const entriesToUpdate = entries.filter(entry => {
+      if (!entry.due_date || entry.status === 'paid' || entry.status === 'cancelled') {
+        return false;
+      }
+      
+      const dueDate = new Date(entry.due_date);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      // Se a data de vencimento passou e não está paga, deve ser marcada como vencida
+      return dueDate < today && entry.status !== 'overdue';
+    });
+
+    // Atualizar entries vencidas em lote
+    for (const entry of entriesToUpdate) {
+      try {
+        await financialEntriesService.update<FinancialEntry>(entry.id, { status: 'overdue' });
+        console.log(`Entry ${entry.id} updated to overdue status`);
+      } catch (error) {
+        console.error(`Error updating entry ${entry.id} to overdue:`, error);
+      }
+    }
+
+    // Se houve atualizações, invalidar a query para refetch
+    if (entriesToUpdate.length > 0) {
+      queryClient.invalidateQueries({ queryKey: ['financial-entries'] });
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: Partial<FinancialEntry>) => {
@@ -94,6 +133,17 @@ export const useFinancialEntries = () => {
     console.log('Financial entries loading:', entriesQuery.isLoading);
     console.log('Financial entries error:', entriesQuery.error);
   }, [entriesQuery.data, entriesQuery.isLoading, entriesQuery.error]);
+
+  // Verificar movimentações vencidas periodicamente (a cada 5 minutos)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (entriesQuery.data && entriesQuery.data.length > 0) {
+        checkAndUpdateOverdueEntries(entriesQuery.data);
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(interval);
+  }, [entriesQuery.data]);
 
   return {
     entries: entriesQuery.data || [],

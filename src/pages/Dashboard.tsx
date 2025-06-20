@@ -4,14 +4,11 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
-import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Calendar, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useDashboardActivities } from '@/hooks/useDashboardActivities';
 
 export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
@@ -78,7 +75,6 @@ export default function Dashboard() {
           <div className="xl:col-span-1 space-y-4 md:space-y-6">
             <AIStrategiesCard />
             <NotificationAlerts />
-            <DashboardWidgets />
           </div>
         </div>
       )}

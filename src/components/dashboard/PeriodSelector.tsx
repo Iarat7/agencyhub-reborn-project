@@ -8,7 +8,7 @@ export interface PeriodOption {
   label: string;
   months?: number;
   days?: number;
-  type: 'days' | 'months' | 'current_month' | 'last_month';
+  type: 'days' | 'months' | 'current_month' | 'last_month' | 'yesterday';
 }
 
 interface PeriodSelectorProps {
@@ -18,6 +18,7 @@ interface PeriodSelectorProps {
 
 export const periodOptions: PeriodOption[] = [
   { value: 'today', label: 'Hoje', days: 0, type: 'days' },
+  { value: 'yesterday', label: 'Ontem', type: 'yesterday' },
   { value: '7', label: 'Últimos 7 dias', days: 7, type: 'days' },
   { value: '14', label: 'Últimos 14 dias', days: 14, type: 'days' },
   { value: '30', label: 'Últimos 30 dias', days: 30, type: 'days' },

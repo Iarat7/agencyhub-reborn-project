@@ -20,6 +20,11 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         } else {
           startDate = new Date(now.getTime() - (periodConfig.days! * 24 * 60 * 60 * 1000));
         }
+      } else if (periodConfig?.type === 'yesterday') {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+        endDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
       } else if (periodConfig?.type === 'current_month') {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -39,12 +44,10 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         .from('clients')
         .select('*');
 
-      // Buscar dados de oportunidades
       const { data: opportunities } = await supabase
         .from('opportunities')
         .select('*');
 
-      // Buscar dados de tarefas
       const { data: tasks } = await supabase
         .from('tasks')
         .select('*');
@@ -61,13 +64,12 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
       const pendingTasks = tasks?.filter(t => t.status === 'pending').length || 0;
       const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0;
 
-      // Taxa de conversão
       const conversionRate = totalOpportunities > 0 ? (wonOpportunities / totalOpportunities) * 100 : 0;
 
       // Gerar dados para gráficos baseado no tipo de período
       let chartData = [];
       
-      if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month') {
+      if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
         // Para períodos de dias, gerar dados diários
         const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -100,7 +102,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
           if (o.stage !== 'closed_won' || !o.updated_at) return false;
           const opDate = new Date(o.updated_at);
           
-          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month') {
+          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
             const itemDate = item.name.split('/');
             const itemDay = parseInt(itemDate[0]);
             const itemMonth = parseInt(itemDate[1]);
@@ -112,14 +114,13 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         }).reduce((sum, o) => sum + (o.value || 0), 0) || 0
       }));
 
-      // Oportunidades por período
       const opportunityData = chartData.map(item => ({
         ...item,
         oportunidades: opportunities?.filter(o => {
           if (!o.created_at) return false;
           const opDate = new Date(o.created_at);
           
-          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month') {
+          if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
             const itemDate = item.name.split('/');
             const itemDay = parseInt(itemDate[0]);
             const itemMonth = parseInt(itemDate[1]);
@@ -131,7 +132,6 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         }).length || 0
       }));
 
-      // Atividades recentes
       const recentActivities = [
         ...clients?.slice(-2).map(client => ({
           action: 'Novo cliente cadastrado',

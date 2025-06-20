@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { WeekView } from '@/components/calendar/WeekView';
 import { DayView } from '@/components/calendar/DayView';
+import { CalendarMobileView } from '@/components/calendar/CalendarMobileView';
+import { CalendarIntegrations } from '@/components/calendar/CalendarIntegrations';
 import { EventDialog } from '@/components/calendar/EventDialog';
 import { EventDetailsDialog } from '@/components/calendar/EventDetailsDialog';
 import { TaskDetailsDialog } from '@/components/calendar/TaskDetailsDialog';
@@ -11,13 +13,16 @@ import { QuickCreateDialog } from '@/components/calendar/QuickCreateDialog';
 import { CalendarNavigation } from '@/components/calendar/CalendarNavigation';
 import { CalendarViewToggle, CalendarViewType } from '@/components/calendar/CalendarViewToggle';
 import { CalendarFilters, CalendarFilters as CalendarFiltersType } from '@/components/calendar/CalendarFilters';
+import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { Button } from '@/components/ui/button';
-import { Plus, Zap } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Zap, Settings, Smartphone } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useTasks } from '@/hooks/useTasks';
 import { useCalendarNotifications } from '@/hooks/useCalendarNotifications';
 import { useCalendarRealtime } from '@/hooks/useCalendarRealtime';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import { useMobile } from '@/hooks/use-mobile';
 import type { Event } from '@/services/api/types';
 import type { Task } from '@/services/api/types';
 
@@ -42,6 +47,7 @@ const Agenda = () => {
 
   const { data: allEvents = [] } = useEvents();
   const { data: allTasks = [] } = useTasks();
+  const isMobile = useMobile();
 
   // Hooks para funcionalidades avançadas
   useCalendarNotifications();
@@ -117,6 +123,15 @@ const Agenda = () => {
       dragAndDrop,
     };
 
+    if (isMobile) {
+      return (
+        <CalendarMobileView
+          currentDate={currentDate}
+          {...baseProps}
+        />
+      );
+    }
+
     switch (view) {
       case 'week':
         return (
@@ -153,7 +168,7 @@ const Agenda = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          <CalendarViewToggle view={view} onViewChange={setView} />
+          {!isMobile && <CalendarViewToggle view={view} onViewChange={setView} />}
           <div className="flex gap-2">
             <Button 
               variant="outline"
@@ -181,26 +196,70 @@ const Agenda = () => {
         </div>
       </div>
 
-      <CalendarFilters 
-        filters={filters} 
-        onFiltersChange={setFilters} 
-      />
+      {isMobile ? (
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="calendar" className="text-xs">
+              <Smartphone className="w-4 h-4 mr-1" />
+              Agenda
+            </TabsTrigger>
+            <TabsTrigger value="strategies" className="text-xs">
+              <Zap className="w-4 h-4 mr-1" />
+              IA
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="text-xs">
+              <Settings className="w-4 h-4 mr-1" />
+              Config
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="calendar" className="space-y-4">
+            <CalendarFilters 
+              filters={filters} 
+              onFiltersChange={setFilters} 
+            />
+            {renderCalendarView()}
+          </TabsContent>
+          
+          <TabsContent value="strategies">
+            <AIStrategiesCard />
+          </TabsContent>
+          
+          <TabsContent value="integrations">
+            <CalendarIntegrations />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="xl:col-span-3 space-y-4">
+            <CalendarFilters 
+              filters={filters} 
+              onFiltersChange={setFilters} 
+            />
 
-      {view !== 'month' && (
-        <CalendarNavigation
-          currentDate={currentDate}
-          view={view}
-          onDateChange={setCurrentDate}
-        />
-      )}
+            {view !== 'month' && (
+              <CalendarNavigation
+                currentDate={currentDate}
+                view={view}
+                onDateChange={setCurrentDate}
+              />
+            )}
 
-      {dragAndDrop.isDragging && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center text-blue-700">
-          Arraste para uma data para mover o item
+            {dragAndDrop.isDragging && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center text-blue-700">
+                Arraste para uma data para mover o item
+              </div>
+            )}
+
+            {renderCalendarView()}
+          </div>
+
+          <div className="xl:col-span-1 space-y-6">
+            <AIStrategiesCard />
+            <CalendarIntegrations />
+          </div>
         </div>
       )}
-
-      {renderCalendarView()}
 
       <EventDialog 
         open={isEventDialogOpen} 

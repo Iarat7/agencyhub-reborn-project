@@ -15,6 +15,7 @@ import { Oportunidades } from '@/pages/Oportunidades';
 import Contratos from '@/pages/Contratos';
 import Financeiro from '@/pages/Financeiro';
 import Agenda from '@/pages/Agenda';
+import Estrategias from '@/pages/Estrategias';
 import { Relatorios } from '@/pages/Relatorios';
 import { Configuracoes } from '@/pages/Configuracoes';
 import NotFound from '@/pages/NotFound';
@@ -113,6 +114,16 @@ function App() {
                 <AuthGuard>
                   <AppLayout>
                     <Agenda />
+                  </AppLayout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/estrategias"
+              element={
+                <AuthGuard>
+                  <AppLayout>
+                    <Estrategias />
                   </AppLayout>
                 </AuthGuard>
               }

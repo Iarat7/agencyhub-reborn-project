@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Users, Target, BarChart3, Settings, CheckSquare, Calendar, FileText, DollarSign } from 'lucide-react';
+import { Home, Users, Target, BarChart3, Settings, CheckSquare, Calendar, FileText, DollarSign, Brain } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   SidebarMenu,
@@ -43,6 +43,11 @@ const menuItems = [
     title: 'Agenda',
     url: '/agenda',
     icon: Calendar,
+  },
+  {
+    title: 'Estratégias',
+    url: '/estrategias',
+    icon: Brain,
   },
   {
     title: 'Relatórios',

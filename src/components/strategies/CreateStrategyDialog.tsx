@@ -65,17 +65,25 @@ export const CreateStrategyDialog = ({ open, onOpenChange }: CreateStrategyDialo
       objectives: '',
       challenges: '',
       target_audience: '',
-      client_id: '',
+      client_id: 'none',
     },
   });
 
   const onSubmit = async (data: StrategyFormData) => {
     try {
-      await createStrategy.mutateAsync({
-        ...data,
-        status: 'created',
+      const strategyData = {
+        title: data.title,
+        objectives: data.objectives,
+        challenges: data.challenges,
+        target_audience: data.target_audience,
+        client_id: data.client_id === 'none' ? undefined : data.client_id,
+        budget: data.budget,
+        deadline: data.deadline ? data.deadline.toISOString().split('T')[0] : undefined,
+        status: 'created' as const,
         ai_generated: false,
-      });
+      };
+
+      await createStrategy.mutateAsync(strategyData);
       
       toast({
         title: 'Estratégia criada',
@@ -129,7 +137,7 @@ export const CreateStrategyDialog = ({ open, onOpenChange }: CreateStrategyDialo
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Estratégia geral</SelectItem>
+                      <SelectItem value="none">Estratégia geral</SelectItem>
                       {clients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
                           {client.name}

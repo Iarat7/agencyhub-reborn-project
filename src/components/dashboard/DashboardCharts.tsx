@@ -4,29 +4,33 @@ import { ReportsCharts } from "@/components/reports/ReportsCharts";
 
 interface DashboardChartsProps {
   metrics?: {
-    activeClients: number;
-    totalClients: number;
+    opportunitiesByStage: Array<{ stage: string; count: number }>;
+    tasksByStatus: Array<{ status: string; count: number }>;
+    clientsByStatus: Array<{ status: string; count: number }>;
   };
 }
 
 export const DashboardCharts = ({ metrics }: DashboardChartsProps) => {
-  // Preparar dados para os gráficos no formato esperado pelo ReportsCharts
+  // Usar os dados calculados do hook de métricas
   const chartData = {
-    opportunitiesByStage: [
+    opportunitiesByStage: metrics?.opportunitiesByStage || [
       { stage: 'Prospecção', count: 0 },
       { stage: 'Qualificação', count: 0 },
       { stage: 'Proposta', count: 0 },
       { stage: 'Negociação', count: 0 },
-      { stage: 'Fechada', count: 0 }
+      { stage: 'Fechada - Ganho', count: 0 },
+      { stage: 'Fechada - Perdido', count: 0 }
     ],
-    tasksByStatus: [
+    tasksByStatus: metrics?.tasksByStatus || [
       { status: 'Pendente', count: 0 },
       { status: 'Em Progresso', count: 0 },
+      { status: 'Em Aprovação', count: 0 },
       { status: 'Concluída', count: 0 }
     ],
-    clientsByStatus: [
-      { status: 'Ativo', count: metrics?.activeClients || 0 },
-      { status: 'Inativo', count: (metrics?.totalClients || 0) - (metrics?.activeClients || 0) }
+    clientsByStatus: metrics?.clientsByStatus || [
+      { status: 'Ativo', count: 0 },
+      { status: 'Inativo', count: 0 },
+      { status: 'Prospect', count: 0 }
     ]
   };
 

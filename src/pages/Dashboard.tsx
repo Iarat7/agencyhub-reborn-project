@@ -28,14 +28,10 @@ export function Dashboard() {
 
       <DashboardMetrics metrics={dashboardData?.metrics} />
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2">
-          <DashboardCharts metrics={dashboardData?.metrics} />
-        </div>
+      <div className="space-y-6">
+        <DashboardCharts metrics={dashboardData?.metrics} />
         
-        <div>
-          <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
-        </div>
+        <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
       </div>
     </div>
   );

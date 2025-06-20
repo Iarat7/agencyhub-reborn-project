@@ -6,7 +6,9 @@ import { CalendarIcon } from 'lucide-react';
 export interface PeriodOption {
   value: string;
   label: string;
-  months: number;
+  months?: number;
+  days?: number;
+  type: 'days' | 'months' | 'current_month' | 'last_month';
 }
 
 interface PeriodSelectorProps {
@@ -15,10 +17,16 @@ interface PeriodSelectorProps {
 }
 
 export const periodOptions: PeriodOption[] = [
-  { value: '3', label: 'Últimos 3 meses', months: 3 },
-  { value: '6', label: 'Últimos 6 meses', months: 6 },
-  { value: '12', label: 'Últimos 12 meses', months: 12 },
-  { value: '24', label: 'Últimos 2 anos', months: 24 }
+  { value: 'today', label: 'Hoje', days: 0, type: 'days' },
+  { value: '7', label: 'Últimos 7 dias', days: 7, type: 'days' },
+  { value: '14', label: 'Últimos 14 dias', days: 14, type: 'days' },
+  { value: '30', label: 'Últimos 30 dias', days: 30, type: 'days' },
+  { value: 'current_month', label: 'Este mês', type: 'current_month' },
+  { value: 'last_month', label: 'Mês passado', type: 'last_month' },
+  { value: '3m', label: 'Últimos 3 meses', months: 3, type: 'months' },
+  { value: '6m', label: 'Últimos 6 meses', months: 6, type: 'months' },
+  { value: '12m', label: 'Últimos 12 meses', months: 12, type: 'months' },
+  { value: '24m', label: 'Últimos 2 anos', months: 24, type: 'months' }
 ];
 
 export const PeriodSelector = ({ value, onChange }: PeriodSelectorProps) => {

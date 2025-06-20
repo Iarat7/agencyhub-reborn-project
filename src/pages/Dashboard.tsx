@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Users, Target, DollarSign, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
 import { DashboardCard } from '@/components/DashboardCard';
@@ -6,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { useDashboardData } from '@/hooks/useDashboard';
-import { PeriodSelector, periodOptions } from '@/components/dashboard/PeriodSelector';
+import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
 
 export const Dashboard = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('6');
-  const periodMonths = periodOptions.find(p => p.value === selectedPeriod)?.months || 6;
-  const { data: dashboardData, isLoading, error } = useDashboardData(periodMonths);
+  const [selectedPeriod, setSelectedPeriod] = useState('6m');
+  const { data: dashboardData, isLoading, error } = useDashboardData(selectedPeriod);
 
   if (isLoading) {
     return (

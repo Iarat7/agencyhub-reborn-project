@@ -60,8 +60,8 @@ export const FinancialEntryForm = ({
       ...data,
       due_date: data.due_date && data.due_date.trim() ? data.due_date : null,
       paid_date: data.paid_date && data.paid_date.trim() ? data.paid_date : null,
-      client_id: data.client_id && data.client_id.trim() ? data.client_id : null,
-      contract_id: data.contract_id && data.contract_id.trim() ? data.contract_id : null,
+      client_id: data.client_id && data.client_id.trim() && data.client_id !== 'none' ? data.client_id : null,
+      contract_id: data.contract_id && data.contract_id.trim() && data.contract_id !== 'none' ? data.contract_id : null,
     };
     
     console.log('Submitting financial entry data:', processedData);
@@ -235,7 +235,7 @@ export const FinancialEntryForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhum cliente</SelectItem>
+                  <SelectItem value="none">Nenhum cliente</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
@@ -261,7 +261,7 @@ export const FinancialEntryForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhum contrato</SelectItem>
+                  <SelectItem value="none">Nenhum contrato</SelectItem>
                   {contracts.map((contract) => (
                     <SelectItem key={contract.id} value={contract.id}>
                       {contract.title}

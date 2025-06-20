@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { Task } from '@/services/api/types';
+import { useUsers } from '@/hooks/useUsers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -50,6 +51,14 @@ const priorityColors = {
 };
 
 export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
+  const { data: users = [] } = useUsers();
+
+  const getUserName = (userId?: string) => {
+    if (!userId) return '-';
+    const user = users.find(u => u.id === userId);
+    return user?.full_name || user?.email || 'Usuário não encontrado';
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -58,6 +67,7 @@ export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
             <TableHead>Título</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Prioridade</TableHead>
+            <TableHead>Responsável</TableHead>
             <TableHead>Vencimento</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Criado em</TableHead>
@@ -78,6 +88,7 @@ export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
                   {priorityLabels[task.priority as keyof typeof priorityLabels]}
                 </Badge>
               </TableCell>
+              <TableCell>{getUserName(task.assigned_to)}</TableCell>
               <TableCell>
                 {task.due_date
                   ? format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })

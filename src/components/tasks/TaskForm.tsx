@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Task, Client } from '@/services/api/types';
+import { Task, Client, User } from '@/services/api/types';
 import { useClients } from '@/hooks/useClients';
+import { useUsers } from '@/hooks/useUsers';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -58,6 +59,7 @@ const priorityOptions = [
 
 export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps) => {
   const { data: clients = [] } = useClients();
+  const { data: users = [] } = useUsers();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -77,7 +79,7 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
     const cleanedData = {
       ...data,
       client_id: data.client_id && data.client_id.trim() && data.client_id !== 'none' ? data.client_id : undefined,
-      assigned_to: data.assigned_to && data.assigned_to.trim() ? data.assigned_to : undefined,
+      assigned_to: data.assigned_to && data.assigned_to.trim() && data.assigned_to !== 'none' ? data.assigned_to : undefined,
       due_date: data.due_date && data.due_date.trim() ? data.due_date : undefined,
       description: data.description && data.description.trim() ? data.description : undefined,
     };
@@ -99,6 +101,32 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
                 <FormControl>
                   <Input placeholder="Digite o título da tarefa" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="assigned_to"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Responsável</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um responsável" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum responsável</SelectItem>
+                    {users.map((user: User) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.full_name || user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

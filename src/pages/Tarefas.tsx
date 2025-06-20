@@ -8,35 +8,10 @@ import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { TasksTable } from '@/components/tasks/TasksTable';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
 import { useTasks, useDeleteTask } from '@/hooks/useTasks';
+import { useUsers } from '@/hooks/useUsers';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterTasks } from '@/utils/filterUtils';
 import { Task } from '@/services/api/types';
-
-const taskFilterFields: FilterField[] = [
-  { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
-  { 
-    key: 'status', 
-    label: 'Status', 
-    type: 'select',
-    options: [
-      { label: 'Pendente', value: 'pending' },
-      { label: 'Em Andamento', value: 'in_progress' },
-      { label: 'Concluída', value: 'completed' }
-    ]
-  },
-  { 
-    key: 'priority', 
-    label: 'Prioridade', 
-    type: 'select',
-    options: [
-      { label: 'Baixa', value: 'low' },
-      { label: 'Média', value: 'medium' },
-      { label: 'Alta', value: 'high' },
-      { label: 'Urgente', value: 'urgent' }
-    ]
-  },
-  { key: 'due_date', label: 'Data Limite', type: 'date' }
-];
 
 export const Tarefas = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +19,44 @@ export const Tarefas = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const { data: tasks = [], isLoading } = useTasks();
+  const { data: users = [] } = useUsers();
   const deleteTask = useDeleteTask();
+
+  const taskFilterFields: FilterField[] = [
+    { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
+    { 
+      key: 'status', 
+      label: 'Status', 
+      type: 'select',
+      options: [
+        { label: 'Pendente', value: 'pending' },
+        { label: 'Em Andamento', value: 'in_progress' },
+        { label: 'Em Aprovação', value: 'in_approval' },
+        { label: 'Concluída', value: 'completed' }
+      ]
+    },
+    { 
+      key: 'priority', 
+      label: 'Prioridade', 
+      type: 'select',
+      options: [
+        { label: 'Baixa', value: 'low' },
+        { label: 'Média', value: 'medium' },
+        { label: 'Alta', value: 'high' },
+        { label: 'Urgente', value: 'urgent' }
+      ]
+    },
+    {
+      key: 'assigned_to',
+      label: 'Responsável',
+      type: 'select',
+      options: users.map(user => ({
+        label: user.full_name || user.email || 'Usuário sem nome',
+        value: user.id
+      }))
+    },
+    { key: 'due_date', label: 'Data Limite', type: 'date' }
+  ];
 
   const {
     filters,

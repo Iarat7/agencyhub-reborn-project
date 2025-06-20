@@ -16,6 +16,7 @@ import { useCreateTask, useUpdateTask } from '@/hooks/useTasks';
 import { useEvents } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface QuickCreateDialogProps {
   open: boolean;
@@ -119,7 +120,7 @@ export const QuickCreateDialog = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Criação Rápida - {format(selectedDate, "d 'de' MMMM", { locale: { localize: { month: (month: number) => ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][month] } } })}
+            Criação Rápida - {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
           </DialogTitle>
         </DialogHeader>
 

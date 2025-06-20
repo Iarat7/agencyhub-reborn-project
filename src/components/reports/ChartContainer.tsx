@@ -7,7 +7,7 @@ import { LucideIcon } from 'lucide-react';
 interface ChartContainerProps {
   title: string;
   icon?: LucideIcon;
-  children: React.ReactNode;
+  children: React.ReactElement;
   className?: string;
   height?: number;
 }

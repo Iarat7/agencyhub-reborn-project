@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addDays } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,13 +30,13 @@ export const WeekView = ({
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => 
-      isSameDay(new Date(event.start_date), date)
+      isSameDay(parseISO(event.start_date), date)
     );
   };
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter(task => 
-      task.due_date && isSameDay(new Date(task.due_date), date)
+      task.due_date && isSameDay(parseISO(task.due_date), date)
     );
   };
 
@@ -80,7 +80,7 @@ export const WeekView = ({
               {/* Day columns */}
               {weekDays.map((day) => {
                 const dayEvents = getEventsForDate(day).filter(event => {
-                  const eventHour = new Date(event.start_date).getHours();
+                  const eventHour = parseISO(event.start_date).getHours();
                   return eventHour === hour;
                 });
                 
@@ -103,7 +103,7 @@ export const WeekView = ({
                       >
                         <div className="font-medium truncate">{event.title}</div>
                         <div className="text-muted-foreground">
-                          {format(new Date(event.start_date), 'HH:mm')}
+                          {format(parseISO(event.start_date), 'HH:mm')}
                         </div>
                       </div>
                     ))}

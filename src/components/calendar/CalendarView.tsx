@@ -4,7 +4,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import type { Event } from '@/services/api/types';
@@ -37,13 +37,13 @@ export const CalendarView = ({
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => 
-      isSameDay(new Date(event.start_date), date)
+      isSameDay(parseISO(event.start_date), date)
     );
   };
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter(task => 
-      task.due_date && isSameDay(new Date(task.due_date), date)
+      task.due_date && isSameDay(parseISO(task.due_date), date)
     );
   };
 
@@ -180,7 +180,7 @@ export const CalendarView = ({
                   >
                     <p className="font-medium text-xs md:text-sm line-clamp-2">{event.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(event.start_date), 'HH:mm')} - {format(new Date(event.end_date), 'HH:mm')}
+                      {format(parseISO(event.start_date), 'HH:mm')} - {format(parseISO(event.end_date), 'HH:mm')}
                     </p>
                     <Badge variant="secondary" className="mt-1 text-xs">
                       {event.event_type}

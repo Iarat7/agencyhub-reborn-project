@@ -13,9 +13,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="flex-1">
           <Header />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 w-full max-w-none">
             {children}
           </main>
         </SidebarInset>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,6 +42,7 @@ interface TaskFormProps {
   onSubmit: (data: TaskFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  initialClientId?: string;
 }
 
 const statusOptions = [
@@ -57,7 +59,7 @@ const priorityOptions = [
   { value: 'urgent', label: 'Urgente' },
 ];
 
-export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps) => {
+export const TaskForm = ({ task, onSubmit, onCancel, isLoading, initialClientId }: TaskFormProps) => {
   const { data: clients = [] } = useClients();
   const { data: users = [] } = useUsers();
 
@@ -69,7 +71,7 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
       status: task?.status || 'pending',
       priority: task?.priority || 'medium',
       due_date: task?.due_date || '',
-      client_id: task?.client_id || '',
+      client_id: task?.client_id || initialClientId || '',
       assigned_to: task?.assigned_to || '',
     },
   });

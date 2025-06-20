@@ -41,6 +41,7 @@ interface OpportunityFormProps {
   onSubmit: (data: any) => void;
   onCancel: () => void;
   isLoading: boolean;
+  initialClientId?: string;
 }
 
 const stageOptions = [
@@ -52,14 +53,14 @@ const stageOptions = [
   { value: 'closed_lost', label: 'Fechada (Perdida)' },
 ];
 
-export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading }: OpportunityFormProps) => {
+export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, initialClientId }: OpportunityFormProps) => {
   const { data: clients = [] } = useClients();
 
   const form = useForm<OpportunityFormData>({
     resolver: zodResolver(opportunitySchema),
     defaultValues: {
       title: opportunity?.title || '',
-      client_id: opportunity?.client_id || '',
+      client_id: opportunity?.client_id || initialClientId || '',
       value: opportunity?.value?.toString() || '',
       probability: opportunity?.probability?.toString() || '',
       stage: opportunity?.stage || 'prospection',

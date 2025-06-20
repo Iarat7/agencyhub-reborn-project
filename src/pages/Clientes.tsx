@@ -86,7 +86,7 @@ export const Clientes = () => {
             <div className="text-center py-8">
               <p className="text-slate-600">Carregando clientes...</p>
             </div>
-          ) : filteredClientes.length === 0 ? (
+          ) : filteredClients.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-slate-600">
                 {searchTerm ? 'Nenhum cliente encontrado com este termo.' : 'Nenhum cliente cadastrado ainda.'}
@@ -99,7 +99,7 @@ export const Clientes = () => {
               )}
             </div>
           ) : (
-            <ClientsTable clients={filteredClientes} onEdit={handleEditClient} />
+            <ClientsTable clients={filteredClients} onEdit={handleEditClient} />
           )}
         </CardContent>
       </Card>

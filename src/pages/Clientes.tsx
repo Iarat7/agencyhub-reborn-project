@@ -1,84 +1,51 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-
-const clientesData = [
-  {
-    id: 1,
-    nome: 'Tech Solutions Ltda',
-    email: 'contato@techsolutions.com',
-    telefone: '(11) 99999-9999',
-    status: 'Ativo',
-    ultimoContato: '2024-01-15',
-    valorTotal: 'R$ 15.500,00'
-  },
-  {
-    id: 2,
-    nome: 'Marketing Pro',
-    email: 'info@marketingpro.com',
-    telefone: '(11) 88888-8888',
-    status: 'Ativo',
-    ultimoContato: '2024-01-14',
-    valorTotal: 'R$ 8.200,00'
-  },
-  {
-    id: 3,
-    nome: 'Startup ABC',
-    email: 'hello@startupABC.com',
-    telefone: '(11) 77777-7777',
-    status: 'Inativo',
-    ultimoContato: '2024-01-10',
-    valorTotal: 'R$ 3.800,00'
-  },
-  {
-    id: 4,
-    nome: 'E-commerce XYZ',
-    email: 'vendas@ecommercexyz.com',
-    telefone: '(11) 66666-6666',
-    status: 'Prospecto',
-    ultimoContato: '2024-01-12',
-    valorTotal: 'R$ 22.100,00'
-  },
-];
+import { ClientsTable } from '@/components/clients/ClientsTable';
+import { ClientDialog } from '@/components/clients/ClientDialog';
+import { useClients } from '@/hooks/useClients';
+import { Client } from '@/services/api/types';
 
 export const Clientes = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  const filteredClientes = clientesData.filter(cliente =>
-    cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const { data: clients = [], isLoading, error } = useClients();
+
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.company && client.company.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Ativo':
-        return 'bg-green-100 text-green-800';
-      case 'Inativo':
-        return 'bg-red-100 text-red-800';
-      case 'Prospecto':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const handleNewClient = () => {
+    setEditingClient(null);
+    setDialogOpen(true);
   };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingClient(null);
+  };
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-red-600">Erro ao carregar clientes. Tente novamente.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -87,7 +54,7 @@ export const Clientes = () => {
           <h1 className="text-3xl font-bold text-slate-900">Clientes</h1>
           <p className="text-slate-600 mt-2">Gerencie seus clientes e prospects</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleNewClient} className="bg-blue-600 hover:bg-blue-700">
           <Plus size={16} className="mr-2" />
           Novo Cliente
         </Button>
@@ -96,7 +63,7 @@ export const Clientes = () => {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <CardTitle>Lista de Clientes</CardTitle>
+            <CardTitle>Lista de Clientes ({filteredClients.length})</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
@@ -115,64 +82,33 @@ export const Clientes = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Telefone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden lg:table-cell">Último Contato</TableHead>
-                  <TableHead className="hidden lg:table-cell">Valor Total</TableHead>
-                  <TableHead className="w-12">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClientes.map((cliente) => (
-                  <TableRow key={cliente.id} className="hover:bg-slate-50">
-                    <TableCell className="font-medium">{cliente.nome}</TableCell>
-                    <TableCell className="text-slate-600">{cliente.email}</TableCell>
-                    <TableCell className="hidden md:table-cell text-slate-600">
-                      {cliente.telefone}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(cliente.status)}>
-                        {cliente.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-slate-600">
-                      {new Date(cliente.ultimoContato).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell font-medium">
-                      {cliente.valorTotal}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal size={16} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit size={16} className="mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 size={16} className="mr-2" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p className="text-slate-600">Carregando clientes...</p>
+            </div>
+          ) : filteredClientes.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-slate-600">
+                {searchTerm ? 'Nenhum cliente encontrado com este termo.' : 'Nenhum cliente cadastrado ainda.'}
+              </p>
+              {!searchTerm && (
+                <Button onClick={handleNewClient} className="mt-4">
+                  <Plus size={16} className="mr-2" />
+                  Criar primeiro cliente
+                </Button>
+              )}
+            </div>
+          ) : (
+            <ClientsTable clients={filteredClientes} onEdit={handleEditClient} />
+          )}
         </CardContent>
       </Card>
+
+      <ClientDialog
+        open={dialogOpen}
+        onOpenChange={handleDialogClose}
+        client={editingClient}
+      />
     </div>
   );
 };

@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { WeekView } from '@/components/calendar/WeekView';
 import { DayView } from '@/components/calendar/DayView';
 import { EventDialog } from '@/components/calendar/EventDialog';
 import { EventDetailsDialog } from '@/components/calendar/EventDetailsDialog';
+import { TaskDetailsDialog } from '@/components/calendar/TaskDetailsDialog';
 import { CalendarViewToggle, CalendarViewType } from '@/components/calendar/CalendarViewToggle';
 import { CalendarFilters, CalendarFilters as CalendarFiltersType } from '@/components/calendar/CalendarFilters';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,12 @@ import type { Task } from '@/services/api/types';
 const Agenda = () => {
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
+  const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | undefined>();
+  const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [view, setView] = useState<CalendarViewType>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filters, setFilters] = useState<CalendarFiltersType>({
@@ -71,14 +74,20 @@ const Agenda = () => {
   };
 
   const handleTaskClick = (task: Task) => {
-    // TODO: Implementar dialog de detalhes da tarefa
-    console.log('Task clicked:', task);
+    setSelectedTask(task);
+    setIsTaskDetailsOpen(true);
   };
 
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setSelectedDate(new Date(event.start_date));
     setIsEventDialogOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    // TODO: Abrir dialog de edição de tarefa quando implementado
+    console.log('Edit task:', task);
   };
 
   const renderCalendarView = () => {
@@ -161,6 +170,13 @@ const Agenda = () => {
         onOpenChange={setIsEventDetailsOpen}
         event={selectedEvent}
         onEdit={handleEditEvent}
+      />
+
+      <TaskDetailsDialog
+        open={isTaskDetailsOpen}
+        onOpenChange={setIsTaskDetailsOpen}
+        task={selectedTask}
+        onEdit={handleEditTask}
       />
     </div>
   );

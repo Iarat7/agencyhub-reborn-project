@@ -1,18 +1,6 @@
 
 import '@testing-library/jest-dom';
 
-// Ensure Jest types are available globally
-declare global {
-  var jest: typeof import('jest');
-  var describe: jest.Describe;
-  var it: jest.It;
-  var expect: jest.Expect;
-  var beforeEach: jest.Lifecycle;
-  var afterEach: jest.Lifecycle;
-  var beforeAll: jest.Lifecycle;
-  var afterAll: jest.Lifecycle;
-}
-
 // Mock do Supabase
 jest.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -40,32 +28,22 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock do Intersection Observer
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  observe() {
-    return null;
-  }
-  disconnect() {
-    return null;
-  }
-  unobserve() {
-    return null;
-  }
-};
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+  unobserve: jest.fn(),
+  root: null,
+  rootMargin: '',
+  thresholds: [],
+  takeRecords: jest.fn(() => []),
+}));
 
 // Mock do ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  observe() {
-    return null;
-  }
-  disconnect() {
-    return null;
-  }
-  unobserve() {
-    return null;
-  }
-};
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+  unobserve: jest.fn(),
+}));
 
 // Mock do matchMedia
 Object.defineProperty(window, 'matchMedia', {

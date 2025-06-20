@@ -1,7 +1,20 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useAdvancedFiltering } from '../useAdvancedFiltering';
-import { mockOpportunity } from '@/utils/testUtils';
+
+// Mock data
+const mockOpportunity = {
+  id: '1',
+  title: 'Test Opportunity',
+  client_id: 'client-1',
+  value: 10000,
+  probability: 75,
+  stage: 'qualification' as const,
+  expected_close_date: '2024-12-31',
+  description: 'Test description',
+  created_at: '2024-01-01',
+  updated_at: '2024-01-01',
+};
 
 describe('useAdvancedFiltering', () => {
   const mockData = [

@@ -1,8 +1,12 @@
 
 import React from 'react';
-import { screen, fireEvent } from '@testing-library/react';
-import { render } from '@/utils/testUtils';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AdvancedFilters, FilterField } from '../AdvancedFilters';
+
+// Create wrapper for all providers
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(ui);
+};
 
 describe('AdvancedFilters', () => {
   const mockFields: FilterField[] = [
@@ -34,7 +38,7 @@ describe('AdvancedFilters', () => {
   });
 
   it('renders filter panel when open', () => {
-    render(<AdvancedFilters {...mockProps} />);
+    renderWithProviders(<AdvancedFilters {...mockProps} />);
     
     expect(screen.getByText('Filtros Avançados')).toBeInTheDocument();
     expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
@@ -42,13 +46,13 @@ describe('AdvancedFilters', () => {
   });
 
   it('does not render filter panel when closed', () => {
-    render(<AdvancedFilters {...mockProps} isOpen={false} />);
+    renderWithProviders(<AdvancedFilters {...mockProps} isOpen={false} />);
     
     expect(screen.queryByText('Filtros Avançados')).not.toBeInTheDocument();
   });
 
   it('calls onChange when text input changes', () => {
-    render(<AdvancedFilters {...mockProps} />);
+    renderWithProviders(<AdvancedFilters {...mockProps} />);
     
     const titleInput = screen.getByLabelText(/título/i);
     fireEvent.change(titleInput, { target: { value: 'Test Title' } });
@@ -59,7 +63,7 @@ describe('AdvancedFilters', () => {
   });
 
   it('calls onReset when reset button is clicked', () => {
-    render(<AdvancedFilters {...mockProps} />);
+    renderWithProviders(<AdvancedFilters {...mockProps} />);
     
     const resetButton = screen.getByRole('button', { name: /limpar/i });
     fireEvent.click(resetButton);
@@ -69,7 +73,7 @@ describe('AdvancedFilters', () => {
 
   it('shows active filter count', () => {
     const valuesWithFilters = { title: 'Test', stage: 'prospection' };
-    render(<AdvancedFilters {...mockProps} values={valuesWithFilters} />);
+    renderWithProviders(<AdvancedFilters {...mockProps} values={valuesWithFilters} />);
     
     // Should show count of active filters
     expect(screen.getByText('2')).toBeInTheDocument();

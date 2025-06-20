@@ -1,13 +1,39 @@
 
 import React from 'react';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { render, mockOpportunity, mockClient } from '@/utils/testUtils';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OpportunityForm } from '../OpportunityForm';
 import * as useClientsHook from '@/hooks/useClients';
 
 // Mock the useClients hook
 jest.mock('@/hooks/useClients');
 const mockUseClients = useClientsHook as jest.Mocked<typeof useClientsHook>;
+
+// Mock data
+const mockOpportunity = {
+  id: '1',
+  title: 'Test Opportunity',
+  client_id: 'client-1',
+  value: 10000,
+  probability: 75,
+  stage: 'qualification' as const,
+  expected_close_date: '2024-12-31',
+  description: 'Test description',
+  created_at: '2024-01-01',
+  updated_at: '2024-01-01',
+};
+
+const mockClient = {
+  id: 'client-1',
+  name: 'Test Client',
+  email: 'test@example.com',
+  phone: '(11) 99999-9999',
+  created_at: '2024-01-01',
+  updated_at: '2024-01-01',
+};
+
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(ui);
+};
 
 describe('OpportunityForm', () => {
   const mockOnSubmit = jest.fn();
@@ -23,7 +49,7 @@ describe('OpportunityForm', () => {
   });
 
   it('renders form fields correctly', () => {
-    render(
+    renderWithProviders(
       <OpportunityForm
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
@@ -39,7 +65,7 @@ describe('OpportunityForm', () => {
   });
 
   it('submits form with correct data', async () => {
-    render(
+    renderWithProviders(
       <OpportunityForm
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
@@ -68,7 +94,7 @@ describe('OpportunityForm', () => {
   });
 
   it('pre-fills form when editing opportunity', () => {
-    render(
+    renderWithProviders(
       <OpportunityForm
         opportunity={mockOpportunity}
         onSubmit={mockOnSubmit}
@@ -82,7 +108,7 @@ describe('OpportunityForm', () => {
   });
 
   it('calls onCancel when cancel button is clicked', () => {
-    render(
+    renderWithProviders(
       <OpportunityForm
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
@@ -95,7 +121,7 @@ describe('OpportunityForm', () => {
   });
 
   it('disables submit button when loading', () => {
-    render(
+    renderWithProviders(
       <OpportunityForm
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}

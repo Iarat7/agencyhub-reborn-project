@@ -10,15 +10,26 @@ import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Calendar, Brain, Bell } from 'lucide-react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useDashboardActivities } from '@/hooks/useDashboardActivities';
 
 export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
+
+  // Mock data para atividades recentes
+  const mockRecentActivities = [
+    { action: 'Novo cliente cadastrado', client: 'Empresa ABC', time: '2 horas atrás' },
+    { action: 'Oportunidade fechada', client: 'Projeto XYZ', time: '5 horas atrás' },
+    { action: 'Tarefa concluída', client: 'Reunião de planejamento', time: '1 dia atrás' }
+  ];
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <DashboardHeader />
+      <DashboardHeader 
+        selectedPeriod={selectedPeriod}
+        onPeriodChange={setSelectedPeriod}
+      />
       
       {isMobile ? (
         <Tabs defaultValue="overview" className="w-full">
@@ -38,15 +49,12 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
-            <OptimizedDashboardMetrics 
-              selectedPeriod={selectedPeriod}
-              onPeriodChange={setSelectedPeriod}
-            />
-            <DashboardCharts selectedPeriod={selectedPeriod} />
+            <OptimizedDashboardMetrics />
+            <DashboardCharts />
           </TabsContent>
           
           <TabsContent value="activities">
-            <DashboardActivities />
+            <DashboardActivities recentActivities={mockRecentActivities} />
           </TabsContent>
           
           <TabsContent value="ai">
@@ -60,14 +68,11 @@ export default function Dashboard() {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
           <div className="xl:col-span-3 space-y-4 md:space-y-6">
-            <OptimizedDashboardMetrics 
-              selectedPeriod={selectedPeriod}
-              onPeriodChange={setSelectedPeriod}
-            />
+            <OptimizedDashboardMetrics />
             
-            <DashboardCharts selectedPeriod={selectedPeriod} />
+            <DashboardCharts />
             
-            <DashboardActivities />
+            <DashboardActivities recentActivities={mockRecentActivities} />
           </div>
           
           <div className="xl:col-span-1 space-y-4 md:space-y-6">

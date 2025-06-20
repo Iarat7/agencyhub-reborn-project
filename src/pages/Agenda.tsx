@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { WeekView } from '@/components/calendar/WeekView';
@@ -22,7 +21,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useCalendarNotifications } from '@/hooks/useCalendarNotifications';
 import { useCalendarRealtime } from '@/hooks/useCalendarRealtime';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { Event } from '@/services/api/types';
 import type { Task } from '@/services/api/types';
 
@@ -47,7 +46,7 @@ const Agenda = () => {
 
   const { data: allEvents = [] } = useEvents();
   const { data: allTasks = [] } = useTasks();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   // Hooks para funcionalidades avançadas
   useCalendarNotifications();

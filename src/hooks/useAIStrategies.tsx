@@ -38,7 +38,7 @@ export const useAIStrategies = () => {
       const stalledOpportunities = opportunities.filter(opp => {
         const lastUpdate = new Date(opp.updated_at || opp.created_at!);
         const daysSinceUpdate = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24);
-        return daysSinceUpdate > 7 && opp.status !== 'won' && opp.status !== 'lost';
+        return daysSinceUpdate > 7 && opp.stage !== 'closed_won' && opp.stage !== 'closed_lost';
       });
 
       if (stalledOpportunities.length > 0) {

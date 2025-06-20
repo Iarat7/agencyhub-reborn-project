@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,6 +8,7 @@ import { Opportunity } from '@/services/api/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useUpdateOpportunity } from '@/hooks/useOpportunities';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface KanbanBoardProps {
   opportunities: Opportunity[];
@@ -54,6 +54,7 @@ const stageOrder: (keyof typeof stageConfig)[] = [
 
 export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
   const updateOpportunity = useUpdateOpportunity();
+  const isMobile = useIsMobile();
 
   const groupedOpportunities = opportunities.reduce((acc, opportunity) => {
     const stage = opportunity.stage;
@@ -210,8 +211,8 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
   };
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="flex gap-4 min-w-fit lg:grid lg:grid-cols-6 lg:min-w-0">
+    <div className="w-full">
+      <div className={`${isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-6 gap-4'}`}>
         {Object.entries(stageConfig).map(([stage, config]) => {
           const stageOpportunities = groupedOpportunities[stage] || [];
           const stageValue = calculateStageValue(stageOpportunities);
@@ -219,7 +220,7 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
           return (
             <div
               key={stage}
-              className={`flex flex-col ${config.color} border-2 rounded-lg p-3 w-80 lg:w-auto flex-shrink-0`}
+              className={`flex flex-col ${config.color} border-2 rounded-lg p-3 ${isMobile ? 'w-full' : ''}`}
             >
               <div className={`${config.headerColor} rounded-md p-3 mb-3 border`}>
                 <h3 className="font-semibold text-sm text-gray-800">
@@ -237,7 +238,7 @@ export const KanbanBoard = ({ opportunities, onEdit }: KanbanBoardProps) => {
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 h-[500px]">
+              <ScrollArea className={`flex-1 ${isMobile ? 'h-auto max-h-64' : 'h-[500px]'}`}>
                 <div className="space-y-3 pr-4">
                   {stageOpportunities.map((opportunity) => (
                     <Card key={opportunity.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">

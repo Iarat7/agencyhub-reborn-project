@@ -11,12 +11,12 @@ import { Clientes } from '@/pages/Clientes';
 import { ClienteDashboard } from '@/pages/ClienteDashboard';
 import { Tarefas } from '@/pages/Tarefas';
 import { Oportunidades } from '@/pages/Oportunidades';
-import { Contratos } from '@/pages/Contratos';
-import { Financeiro } from '@/pages/Financeiro';
-import { Agenda } from '@/pages/Agenda';
+import Contratos from '@/pages/Contratos';
+import Financeiro from '@/pages/Financeiro';
+import Agenda from '@/pages/Agenda';
 import { Relatorios } from '@/pages/Relatorios';
 import { Configuracoes } from '@/pages/Configuracoes';
-import { NotFound } from '@/pages/NotFound';
+import NotFound from '@/pages/NotFound';
 import './App.css';
 
 const queryClient = new QueryClient({

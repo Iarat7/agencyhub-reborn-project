@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const AdminLogin = () => {
   const navigate = useNavigate();
-  const { user, signIn } = useAuth();
+  const { user, signIn, signOut } = useAuth();
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);

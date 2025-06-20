@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useDashboardMetrics } from './useDashboardMetrics';
+import { useCalculatedDashboardMetrics } from './useDashboardMetrics';
 import { useDashboardActivities } from './useDashboardActivities';
 import { usePeriodUtils } from './usePeriodUtils';
 import { useMemo } from 'react';
@@ -10,7 +10,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
   
   const periodDates = useMemo(() => {
     return calculatePeriodDates(selectedPeriod);
-  }, [selectedPeriod]);
+  }, [selectedPeriod, calculatePeriodDates]);
   
   return useQuery({
     queryKey: ['dashboard-data', selectedPeriod],
@@ -66,11 +66,11 @@ export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
   
   const periodDates = useMemo(() => {
     return calculatePeriodDates(selectedPeriod);
-  }, [selectedPeriod]);
+  }, [selectedPeriod, calculatePeriodDates]);
   
   const { startDate, endDate } = periodDates;
   
-  const metricsQuery = useDashboardMetrics(startDate, endDate);
+  const metricsQuery = useCalculatedDashboardMetrics(startDate, endDate);
   const dashboardQuery = useDashboardData(selectedPeriod);
   
   const activitiesQuery = useDashboardActivities(

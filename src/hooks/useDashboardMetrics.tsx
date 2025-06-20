@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useMetricsCalculation } from './useMetricsCalculation';
 
 export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
   return useQuery({
@@ -38,47 +39,30 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
         .gte('created_at', startDateISO)
         .lte('created_at', endDateISO);
 
-      // Calcular métricas
-      const totalClients = clients?.length || 0;
-      const activeClients = allClients?.filter(c => c.status === 'active').length || 0;
-      const totalOpportunities = opportunities?.length || 0;
-      
-      const wonOpportunities = allOpportunities?.filter(o => {
-        if (o.stage !== 'closed_won' || !o.updated_at) return false;
-        const opDate = new Date(o.updated_at);
-        return opDate >= startDate && opDate <= endDate;
-      }).length || 0;
-
-      const totalRevenue = allOpportunities?.filter(o => {
-        if (o.stage !== 'closed_won' || !o.updated_at) return false;
-        const opDate = new Date(o.updated_at);
-        return opDate >= startDate && opDate <= endDate;
-      }).reduce((sum, o) => sum + (o.value || 0), 0) || 0;
-
-      const pendingTasks = tasks?.filter(t => t.status === 'pending').length || 0;
-      const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0;
-      const conversionRate = totalOpportunities > 0 ? (wonOpportunities / totalOpportunities) * 100 : 0;
-
-      return {
-        totalClients,
-        activeClients,
-        totalOpportunities,
-        wonOpportunities,
-        totalRevenue,
-        pendingTasks,
-        completedTasks,
-        conversionRate,
-        rawData: {
-          clients: clients || [],
-          opportunities: opportunities || [],
-          tasks: tasks || [],
-          allOpportunities: allOpportunities || []
-        }
+      const rawData = {
+        clients: clients || [],
+        opportunities: opportunities || [],
+        tasks: tasks || [],
+        allOpportunities: allOpportunities || []
       };
+
+      return rawData;
     },
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchInterval: false,
   });
+};
+
+// Hook que combina os dados com os cálculos
+export const useCalculatedDashboardMetrics = (startDate: Date, endDate: Date) => {
+  const { data: rawData, isLoading, error } = useDashboardMetrics(startDate, endDate);
+  const metrics = useMetricsCalculation(rawData || { clients: [], opportunities: [], tasks: [], allOpportunities: [] }, startDate, endDate);
+
+  return {
+    data: metrics ? { ...metrics, rawData } : null,
+    isLoading,
+    error
+  };
 };

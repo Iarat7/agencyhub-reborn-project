@@ -20,10 +20,10 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
     <>
       <Card className="col-span-1">
         <CardHeader>
-          <CardTitle>Oportunidades por Estágio</CardTitle>
+          <CardTitle className="text-lg md:text-xl">Oportunidades por Estágio</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={data.opportunitiesByStage}
@@ -31,7 +31,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ stage, count }) => `${stage}: ${count}`}
-                outerRadius={70}
+                outerRadius={60}
                 fill="#8884d8"
                 dataKey="count"
               >
@@ -47,14 +47,18 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
 
       <Card className="col-span-1">
         <CardHeader>
-          <CardTitle>Tarefas por Status</CardTitle>
+          <CardTitle className="text-lg md:text-xl">Tarefas por Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data.tasksByStatus}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis />
+              <XAxis 
+                dataKey="status" 
+                fontSize={12}
+                tickMargin={5}
+              />
+              <YAxis fontSize={12} />
               <Tooltip />
               <Bar dataKey="count" fill="#8884d8" />
             </BarChart>
@@ -64,10 +68,10 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
 
       <Card className="col-span-1">
         <CardHeader>
-          <CardTitle>Clientes por Status</CardTitle>
+          <CardTitle className="text-lg md:text-xl">Clientes por Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={data.clientsByStatus}
@@ -75,7 +79,7 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ status, count }) => `${status}: ${count}`}
-                outerRadius={70}
+                outerRadius={60}
                 fill="#8884d8"
                 dataKey="count"
               >

@@ -57,7 +57,7 @@ export const EventForm = ({
       start_date: event?.start_date ? format(new Date(event.start_date), "yyyy-MM-dd'T'HH:mm") : defaultStartTime,
       end_date: event?.end_date ? format(new Date(event.end_date), "yyyy-MM-dd'T'HH:mm") : defaultEndTime,
       event_type: event?.event_type || 'meeting',
-      client_id: event?.client_id || '',
+      client_id: event?.client_id || 'no-client',
       attendees: event?.attendees?.join(', ') || '',
     },
   });
@@ -72,7 +72,7 @@ export const EventForm = ({
         start_date: new Date(data.start_date).toISOString(),
         end_date: new Date(data.end_date).toISOString(),
         event_type: data.event_type,
-        client_id: data.client_id || null,
+        client_id: data.client_id === 'no-client' ? null : data.client_id,
         attendees: data.attendees ? data.attendees.split(',').map(email => email.trim()).filter(Boolean) : [],
       };
 
@@ -173,7 +173,7 @@ export const EventForm = ({
               <SelectValue placeholder="Selecione um cliente" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum cliente</SelectItem>
+              <SelectItem value="no-client">Nenhum cliente</SelectItem>
               {clients.map((client) => (
                 <SelectItem key={client.id} value={client.id}>
                   {client.name}

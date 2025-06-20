@@ -4,8 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { NewLayout } from "@/components/NewLayout";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 // Pages
 import { Landing } from "@/pages/Landing";
@@ -34,55 +34,55 @@ const App = () => (
             
             {/* Rotas protegidas com layout */}
             <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Dashboard />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             <Route path="/clientes" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Clientes />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             <Route path="/oportunidades" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Oportunidades />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             <Route path="/tarefas" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Tarefas />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             <Route path="/relatorios" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Relatorios />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             <Route path="/configuracoes" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Configuracoes />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             
             {/* Rota antiga para compatibilidade */}
             <Route path="/index" element={
-              <ProtectedRoute>
-                <NewLayout>
+              <AuthGuard>
+                <AppLayout>
                   <Index />
-                </NewLayout>
-              </ProtectedRoute>
+                </AppLayout>
+              </AuthGuard>
             } />
             
             {/* Rota 404 */}

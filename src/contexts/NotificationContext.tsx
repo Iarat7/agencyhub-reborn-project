@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useNotificationSystem, NotificationItem } from '@/hooks/useNotificationSystem';
+import { useNotificationPermissions } from '@/hooks/useNotificationPermissions';
 
 interface NotificationContextType {
   notifications: NotificationItem[];
@@ -10,6 +11,10 @@ interface NotificationContextType {
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAll: () => void;
+  // Novas funcionalidades
+  permission: NotificationPermission;
+  requestPermission: () => Promise<boolean>;
+  showBrowserNotification: (title: string, options?: NotificationOptions) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -20,18 +25,26 @@ interface NotificationProviderProps {
 
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
   const notificationSystem = useNotificationSystem();
+  const permissions = useNotificationPermissions();
+
+  const contextValue = {
+    ...notificationSystem,
+    permission: permissions.permission,
+    requestPermission: permissions.requestPermission,
+    showBrowserNotification: permissions.showNotification,
+  };
 
   return (
-    <NotificationContext.Provider value={notificationSystem}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-export const useNotifications = () => {
+export const useNotificationContext = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error('useNotificationContext must be used within a NotificationProvider');
   }
   return context;
 };

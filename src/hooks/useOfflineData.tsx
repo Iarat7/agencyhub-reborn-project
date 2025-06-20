@@ -45,9 +45,9 @@ export const useOfflineData = () => {
       const tasks = queryClient.getQueryData(['tasks']) || [];
 
       const offlineData: OfflineStorage = {
-        clients,
-        opportunities,
-        tasks,
+        clients: Array.isArray(clients) ? clients : [],
+        opportunities: Array.isArray(opportunities) ? opportunities : [],
+        tasks: Array.isArray(tasks) ? tasks : [],
         lastSync: new Date().toISOString()
       };
 

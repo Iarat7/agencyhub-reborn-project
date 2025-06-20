@@ -27,11 +27,6 @@ export const Clientes = () => {
     setDialogOpen(true);
   };
 
-  const handleEditClient = (client: Client) => {
-    setEditingClient(client);
-    setDialogOpen(true);
-  };
-
   const handleDialogClose = () => {
     setDialogOpen(false);
     setEditingClient(null);
@@ -99,7 +94,7 @@ export const Clientes = () => {
               )}
             </div>
           ) : (
-            <ClientsTable clients={filteredClients} onEdit={handleEditClient} />
+            <ClientsTable />
           )}
         </CardContent>
       </Card>

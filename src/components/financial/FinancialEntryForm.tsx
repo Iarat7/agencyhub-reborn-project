@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,12 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { FinancialEntry, Client, Contract } from '@/services/api/types';
-import { format } from 'date-fns';
 
 const financialEntrySchema = z.object({
   type: z.enum(['income', 'expense']),
   category: z.string().min(1, 'Categoria é obrigatória'),
-  amount: z.number().min(0, 'Valor deve ser positivo'),
+  amount: z.number().min(0.01, 'Valor deve ser maior que zero'),
   description: z.string().optional(),
   due_date: z.string().optional(),
   paid_date: z.string().optional(),
@@ -28,18 +28,16 @@ interface FinancialEntryFormProps {
   entry?: FinancialEntry;
   clients: Client[];
   contracts: Contract[];
-  onSubmit: (data: FinancialEntryFormData) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
+  onSubmit: (data: any) => void;
+  isSubmitting: boolean;
 }
 
-export const FinancialEntryForm = ({ 
-  entry, 
-  clients, 
-  contracts, 
-  onSubmit, 
-  onCancel, 
-  isSubmitting 
+export const FinancialEntryForm = ({
+  entry,
+  clients,
+  contracts,
+  onSubmit,
+  isSubmitting
 }: FinancialEntryFormProps) => {
   const form = useForm<FinancialEntryFormData>({
     resolver: zodResolver(financialEntrySchema),
@@ -56,59 +54,84 @@ export const FinancialEntryForm = ({
     },
   });
 
-  const incomeCategories = [
-    'Mensalidade',
-    'Projeto',
-    'Consultoria',
-    'Outros Serviços',
-  ];
-
-  const expenseCategories = [
-    'Fornecedores',
-    'Marketing',
-    'Operacional',
-    'Pessoal',
-    'Impostos',
-    'Outros',
-  ];
-
-  const selectedType = form.watch('type');
-  const categories = selectedType === 'income' ? incomeCategories : expenseCategories;
-
   const handleSubmit = (data: FinancialEntryFormData) => {
-    // Converter "none" de volta para undefined para campos opcionais
-    const cleanedData = {
+    // Converter strings vazias para null para evitar erro de SQL
+    const processedData = {
       ...data,
-      client_id: data.client_id && data.client_id !== 'none' ? data.client_id : undefined,
-      contract_id: data.contract_id && data.contract_id !== 'none' ? data.contract_id : undefined,
+      due_date: data.due_date && data.due_date.trim() ? data.due_date : null,
+      paid_date: data.paid_date && data.paid_date.trim() ? data.paid_date : null,
+      client_id: data.client_id && data.client_id.trim() ? data.client_id : null,
+      contract_id: data.contract_id && data.contract_id.trim() ? data.contract_id : null,
     };
-    onSubmit(cleanedData);
+    
+    console.log('Submitting financial entry data:', processedData);
+    onSubmit(processedData);
   };
+
+  const categories = [
+    'Receita de Serviços',
+    'Receita de Produtos',
+    'Consultoria',
+    'Licenciamento',
+    'Despesas Operacionais',
+    'Marketing',
+    'Tecnologia',
+    'Recursos Humanos',
+    'Infraestrutura',
+    'Impostos',
+    'Outros'
+  ];
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="income">Receita</SelectItem>
-                  <SelectItem value="expense">Despesa</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecionar tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="income">Receita</SelectItem>
+                    <SelectItem value="expense">Despesa</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecionar status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="paid">Pago</SelectItem>
+                    <SelectItem value="overdue">Vencido</SelectItem>
+                    <SelectItem value="cancelled">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -119,7 +142,7 @@ export const FinancialEntryForm = ({
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
+                    <SelectValue placeholder="Selecionar categoria" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -157,51 +180,13 @@ export const FinancialEntryForm = ({
 
         <FormField
           control={form.control}
-          name="client_id"
+          name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cliente (Opcional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um cliente" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum cliente</SelectItem>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="contract_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contrato (Opcional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um contrato" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum contrato</SelectItem>
-                  {contracts.map((contract) => (
-                    <SelectItem key={contract.id} value={contract.id}>
-                      {contract.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Descrição da movimentação..." {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -239,21 +224,23 @@ export const FinancialEntryForm = ({
 
         <FormField
           control={form.control}
-          name="status"
+          name="client_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Status</FormLabel>
+              <FormLabel>Cliente (Opcional)</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecionar cliente" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="overdue">Vencido</SelectItem>
-                  <SelectItem value="cancelled">Cancelado</SelectItem>
+                  <SelectItem value="">Nenhum cliente</SelectItem>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -263,28 +250,33 @@ export const FinancialEntryForm = ({
 
         <FormField
           control={form.control}
-          name="description"
+          name="contract_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Detalhes da movimentação..."
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
+              <FormLabel>Contrato (Opcional)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar contrato" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">Nenhum contrato</SelectItem>
+                  {contracts.map((contract) => (
+                    <SelectItem key={contract.id} value={contract.id}>
+                      {contract.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
 
         <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Salvando...' : entry ? 'Atualizar' : 'Criar'}
+            {isSubmitting ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>
       </form>

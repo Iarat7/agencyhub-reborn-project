@@ -11,7 +11,12 @@ export const useFinancialEntries = () => {
 
   const entriesQuery = useQuery({
     queryKey: ['financial-entries'],
-    queryFn: () => financialEntriesService.list<FinancialEntry>(),
+    queryFn: async () => {
+      console.log('Fetching financial entries...');
+      const result = await financialEntriesService.list<FinancialEntry>();
+      console.log('Financial entries fetched:', result);
+      return result;
+    },
   });
 
   const clientsQuery = useQuery({
@@ -25,7 +30,10 @@ export const useFinancialEntries = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Partial<FinancialEntry>) => financialEntriesService.create<FinancialEntry>(data),
+    mutationFn: (data: Partial<FinancialEntry>) => {
+      console.log('Creating financial entry with data:', data);
+      return financialEntriesService.create<FinancialEntry>(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-entries'] });
       toast({
@@ -33,7 +41,8 @@ export const useFinancialEntries = () => {
         description: 'Movimentação financeira criada com sucesso!',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error creating financial entry:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao criar movimentação financeira.',
@@ -78,6 +87,13 @@ export const useFinancialEntries = () => {
       });
     },
   });
+
+  // Log dos dados quando mudarem
+  useEffect(() => {
+    console.log('Financial entries data:', entriesQuery.data);
+    console.log('Financial entries loading:', entriesQuery.isLoading);
+    console.log('Financial entries error:', entriesQuery.error);
+  }, [entriesQuery.data, entriesQuery.isLoading, entriesQuery.error]);
 
   return {
     entries: entriesQuery.data || [],

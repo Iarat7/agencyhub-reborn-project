@@ -19,7 +19,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
       
       <div className="flex-1 flex flex-col lg:ml-64">
-        <Header onMenuToggle={toggleSidebar} />
+        <Header />
         
         <main className="flex-1 p-6">
           {children}

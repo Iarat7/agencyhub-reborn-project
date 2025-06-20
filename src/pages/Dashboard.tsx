@@ -1,16 +1,15 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardCard } from "@/components/DashboardCard";
 import { ReportsCharts } from "@/components/reports/ReportsCharts";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
 import { NotificationAlerts } from "@/components/dashboard/NotificationAlerts";
-import { useDashboardData } from "@/hooks/useDashboard";
+import { useCompleteDashboardData } from "@/hooks/useDashboard";
 import { Users, Target, DollarSign, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
 import { useState } from "react";
 
 export function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
-  const { data, isLoading } = useDashboardData(selectedPeriod);
+  const { data, isLoading } = useCompleteDashboardData(selectedPeriod);
 
   if (isLoading) {
     return (

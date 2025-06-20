@@ -14,7 +14,7 @@ import { Clientes } from "./pages/Clientes";
 import { Oportunidades } from "./pages/Oportunidades";
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
-import { NotFound } from "./pages/NotFound";
+import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
 const queryClient = new QueryClient();

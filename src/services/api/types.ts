@@ -2,7 +2,7 @@
 // Tipos centralizados para toda a aplicação
 export interface User {
   id: string;
-  email: string;
+  email?: string;
   full_name?: string;
   avatar_url?: string;
   role?: 'admin' | 'manager' | 'user';

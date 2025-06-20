@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportsMetrics } from '@/components/reports/ReportsMetrics';
 import { ReportsCharts } from '@/components/reports/ReportsCharts';
@@ -7,12 +7,27 @@ import { AdvancedCharts } from '@/components/reports/AdvancedCharts';
 import { PerformanceIndicators } from '@/components/reports/PerformanceIndicators';
 import { ReportsDetails } from '@/components/reports/ReportsDetails';
 import { PeriodSummary } from '@/components/reports/PeriodSummary';
+import { ReportsFilters } from '@/components/reports/ReportsFilters';
+import { AdvancedMetricsCard } from '@/components/reports/AdvancedMetricsCard';
+import { ExportDialog } from '@/components/reports/ExportDialog';
 import { useReportsData } from '@/hooks/useReports';
 import { useAdvancedReports } from '@/hooks/useAdvancedReports';
+import { useAdvancedReportsData } from '@/hooks/useAdvancedReportsData';
 
 export const Relatorios = () => {
+  const [reportFilters, setReportFilters] = useState({
+    period: '6m',
+    dateRange: { from: undefined as Date | undefined, to: undefined as Date | undefined }
+  });
+
   const { data: reportsData, isLoading: reportsLoading, error } = useReportsData();
   const { data: advancedData, isLoading: advancedLoading } = useAdvancedReports();
+  const { data: filteredReportsData, isLoading: filteredLoading } = useAdvancedReportsData(reportFilters);
+
+  const handleApplyFilters = () => {
+    // A query será automaticamente re-executada quando reportFilters mudar
+    console.log('Applying filters:', reportFilters);
+  };
 
   if (error) {
     return (
@@ -25,7 +40,7 @@ export const Relatorios = () => {
     );
   }
 
-  if (reportsLoading || advancedLoading) {
+  if (reportsLoading || advancedLoading || filteredLoading) {
     return (
       <div className="space-y-6 p-4 md:p-6">
         <div className="text-center py-8">
@@ -62,12 +77,74 @@ export const Relatorios = () => {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Relatórios Avançados</h1>
-        <p className="text-slate-600 mt-2 text-sm md:text-base">
-          Análise detalhada com gráficos interativos e métricas avançadas
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Relatórios Avançados</h1>
+          <p className="text-slate-600 mt-2 text-sm md:text-base">
+            Análise detalhada com gráficos interativos e métricas avançadas
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <ExportDialog 
+            data={details.opportunities} 
+            filename="oportunidades" 
+            title="Oportunidades"
+          />
+          <ExportDialog 
+            data={details.clients} 
+            filename="clientes" 
+            title="Clientes"
+          />
+          <ExportDialog 
+            data={details.tasks} 
+            filename="tarefas" 
+            title="Tarefas"
+          />
+        </div>
       </div>
+
+      {/* Filtros Avançados */}
+      <ReportsFilters
+        period={reportFilters.period}
+        onPeriodChange={(period) => setReportFilters({ ...reportFilters, period })}
+        dateRange={reportFilters.dateRange}
+        onDateRangeChange={(dateRange) => setReportFilters({ ...reportFilters, dateRange })}
+        onApplyFilters={handleApplyFilters}
+      />
+
+      {/* Métricas Avançadas com Comparação */}
+      {filteredReportsData && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <AdvancedMetricsCard
+            title="Novos Clientes"
+            value={filteredReportsData.metrics.newClients}
+            previousValue={filteredReportsData.prevMetrics.newClients}
+            target={50}
+            description="Meta mensal: 50 clientes"
+          />
+          <AdvancedMetricsCard
+            title="Receita Gerada"
+            value={filteredReportsData.metrics.totalRevenue}
+            previousValue={filteredReportsData.prevMetrics.totalRevenue}
+            format="currency"
+            target={100000}
+            description="Meta mensal: R$ 100.000"
+          />
+          <AdvancedMetricsCard
+            title="Taxa de Conversão"
+            value={filteredReportsData.metrics.conversionRate}
+            format="percentage"
+            target={25}
+            description="Meta: 25%"
+          />
+          <AdvancedMetricsCard
+            title="Ticket Médio"
+            value={filteredReportsData.metrics.averageDealSize}
+            format="currency"
+            description="Por oportunidade fechada"
+          />
+        </div>
+      )}
 
       {/* Métricas Principais */}
       <ReportsMetrics 

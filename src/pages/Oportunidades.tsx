@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Search, Filter, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { useOpportunities } from '@/hooks/useOpportunities';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterOpportunities } from '@/utils/filterUtils';
 import { Opportunity } from '@/services/api/types';
+import { OpportunityMetrics } from '@/components/opportunities/OpportunityMetrics';
 
 const opportunityFilterFields: FilterField[] = [
   { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da oportunidade' },
@@ -118,40 +118,8 @@ export const Oportunidades = () => {
         onToggle={toggleFilters}
       />
 
-      {/* Cards de resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-medium text-slate-600">Pipeline Total</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">
-              {totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-50 to-green-100">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-slate-600">Oportunidades Ativas</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{activeOpportunities.length}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-purple-600" />
-              <span className="text-sm font-medium text-slate-600">Taxa de Conversão</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{conversionRate}%</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Métricas Avançadas */}
+      <OpportunityMetrics opportunities={searchFilteredOpportunities} />
 
       <Card>
         <CardHeader>

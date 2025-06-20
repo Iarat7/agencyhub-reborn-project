@@ -9,9 +9,13 @@ interface ActivityData {
 
 export const useDashboardActivities = (startDate: Date, endDate: Date, data: ActivityData) => {
   return useQuery({
-    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString()],
+    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString(), data],
     queryFn: async () => {
       console.log('Buscando atividades recentes...');
+      
+      if (!data || !data.clients || !data.allOpportunities || !data.tasks) {
+        return [];
+      }
       
       const recentActivities = [
         ...data.clients?.slice(-2).map(client => ({
@@ -37,8 +41,10 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
 
       return recentActivities;
     },
-    enabled: !!data && !!data.clients && !!data.allOpportunities && !!data.tasks,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    enabled: !!(data && data.clients && data.allOpportunities && data.tasks),
+    staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchInterval: false,
   });
 };

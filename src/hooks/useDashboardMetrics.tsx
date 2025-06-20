@@ -76,7 +76,9 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
         }
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchInterval: false,
   });
 };

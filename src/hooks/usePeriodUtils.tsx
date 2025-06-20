@@ -1,8 +1,9 @@
 
+import { useCallback } from 'react';
 import { periodOptions } from '@/components/dashboard/PeriodSelector';
 
 export const usePeriodUtils = () => {
-  const calculatePeriodDates = (selectedPeriod: string) => {
+  const calculatePeriodDates = useCallback((selectedPeriod: string) => {
     const periodConfig = periodOptions.find(p => p.value === selectedPeriod);
     const now = new Date();
     let startDate: Date;
@@ -32,7 +33,7 @@ export const usePeriodUtils = () => {
     }
 
     return { startDate, endDate, periodConfig };
-  };
+  }, []);
 
   return { calculatePeriodDates };
 };

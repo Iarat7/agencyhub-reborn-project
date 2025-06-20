@@ -34,7 +34,7 @@ export function Dashboard() {
         </div>
         
         <div>
-          <DashboardActivities activities={dashboardData?.recentActivities} />
+          <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
         </div>
       </div>
     </div>

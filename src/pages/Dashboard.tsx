@@ -85,13 +85,41 @@ export function Dashboard() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4">
-          <ReportsCharts 
-            data={chartData}
-          />
-        </div>
-        <Card className="col-span-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Gráfico de Clientes por Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Clientes por Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: [],
+                tasksByStatus: [],
+                clientsByStatus: chartData.clientsByStatus
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Tarefas por Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tarefas por Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: [],
+                tasksByStatus: chartData.tasksByStatus,
+                clientsByStatus: []
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Atividades Recentes */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -123,6 +151,22 @@ export function Dashboard() {
                 <p className="text-sm text-gray-500">Nenhuma atividade recente</p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Oportunidades por Estágio */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Oportunidades por Estágio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportsCharts 
+              data={{
+                opportunitiesByStage: chartData.opportunitiesByStage,
+                tasksByStatus: [],
+                clientsByStatus: []
+              }}
+            />
           </CardContent>
         </Card>
       </div>

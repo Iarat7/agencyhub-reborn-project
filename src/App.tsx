@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import { Oportunidades } from "./pages/Oportunidades";
 import { Tarefas } from "./pages/Tarefas";
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
+import Agenda from "./pages/Agenda";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -88,6 +88,13 @@ const App = () => (
                 <AuthGuard>
                   <AppLayout>
                     <Tarefas />
+                  </AppLayout>
+                </AuthGuard>
+              } />
+              <Route path="/agenda" element={
+                <AuthGuard>
+                  <AppLayout>
+                    <Agenda />
                   </AppLayout>
                 </AuthGuard>
               } />

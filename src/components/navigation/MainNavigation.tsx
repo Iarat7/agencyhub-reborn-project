@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Users, Target, BarChart3, Settings, CheckSquare } from 'lucide-react';
+import { Home, Users, Target, BarChart3, Settings, CheckSquare, Calendar } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   SidebarMenu,
@@ -28,6 +28,11 @@ const menuItems = [
     title: 'Tarefas',
     url: '/tarefas',
     icon: CheckSquare,
+  },
+  {
+    title: 'Agenda',
+    url: '/agenda',
+    icon: Calendar,
   },
   {
     title: 'Relatórios',

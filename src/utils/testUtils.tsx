@@ -71,8 +71,10 @@ export const mockTask = {
 // Test helpers
 export const waitForLoading = () => new Promise(resolve => setTimeout(resolve, 100));
 
-export const mockApiResponse = <T>(data: T, delay = 100) => 
-  new Promise<T>(resolve => setTimeout(() => resolve(data), delay));
+export function mockApiResponse<T>(data: T, delay = 100): Promise<T> {
+  return new Promise<T>(resolve => setTimeout(() => resolve(data), delay));
+}
 
-export const mockApiError = (message = 'API Error', delay = 100) =>
-  new Promise((_, reject) => setTimeout(() => reject(new Error(message)), delay));
+export function mockApiError(message = 'API Error', delay = 100): Promise<never> {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error(message)), delay));
+}

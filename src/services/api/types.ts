@@ -85,6 +85,17 @@ export interface Contract {
   updated_at?: string;
 }
 
+export interface ContractAttachment {
+  id: string;
+  contract_id: string;
+  file_name: string;
+  file_path: string;
+  file_size?: number;
+  file_type?: string;
+  uploaded_by?: string;
+  created_at?: string;
+}
+
 export interface FinancialEntry {
   id: string;
   type: 'income' | 'expense';

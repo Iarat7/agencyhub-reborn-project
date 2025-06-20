@@ -4,13 +4,16 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContractDialog } from '@/components/contracts/ContractDialog';
+import { ContractDetailsDialog } from '@/components/contracts/ContractDetailsDialog';
 import { ContractsTable } from '@/components/contracts/ContractsTable';
 import { useContracts } from '@/hooks/useContracts';
 import { Contract } from '@/services/api/types';
 
 export default function Contratos() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | undefined>();
+  const [viewingContract, setViewingContract] = useState<Contract | null>(null);
   
   const {
     contracts,
@@ -21,9 +24,11 @@ export default function Contratos() {
     deleteContract,
     isCreating,
     isUpdating,
+    error,
   } = useContracts();
 
   const handleSubmit = (data: any) => {
+    console.log('Submitting contract data:', data);
     if (editingContract) {
       updateContract({ id: editingContract.id, data });
     } else {
@@ -45,8 +50,8 @@ export default function Contratos() {
   };
 
   const handleView = (contract: Contract) => {
-    // Implementar visualização detalhada do contrato
-    console.log('Visualizar contrato:', contract);
+    setViewingContract(contract);
+    setDetailsDialogOpen(true);
   };
 
   const formatCurrency = (value: number) => {
@@ -62,10 +67,25 @@ export default function Contratos() {
   const totalCost = activeContracts.reduce((sum, c) => sum + (c.cost || 0), 0);
   const totalProfit = totalValue - totalCost;
 
+  console.log('Contracts page - contracts:', contracts);
+  console.log('Contracts page - isLoading:', isLoading);
+  console.log('Contracts page - error:', error);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <p>Carregando contratos...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Erro ao carregar contratos</p>
+          <p className="text-sm text-gray-600">{error.toString()}</p>
+        </div>
       </div>
     );
   }
@@ -116,7 +136,7 @@ export default function Contratos() {
       {/* Tabela de Contratos */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Contratos</CardTitle>
+          <CardTitle>Lista de Contratos ({contracts.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <ContractsTable
@@ -137,6 +157,14 @@ export default function Contratos() {
         clients={clients}
         onSubmit={handleSubmit}
         isSubmitting={isCreating || isUpdating}
+      />
+
+      {/* Dialog de Detalhes do Contrato */}
+      <ContractDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        contract={viewingContract}
+        clients={clients}
       />
     </div>
   );

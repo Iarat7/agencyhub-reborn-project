@@ -34,14 +34,33 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
                 outerRadius={60}
                 fill="#8884d8"
                 dataKey="count"
+                className="md:block"
               >
                 {data.opportunitiesByStage.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
+              <Legend 
+                verticalAlign="bottom" 
+                height={36}
+                wrapperStyle={{ fontSize: '12px' }}
+                className="block md:hidden"
+              />
             </PieChart>
           </ResponsiveContainer>
+          {/* Legenda customizada para mobile */}
+          <div className="block md:hidden mt-2 grid grid-cols-2 gap-1 text-xs">
+            {data.opportunitiesByStage.map((entry, index) => (
+              <div key={entry.stage} className="flex items-center gap-1">
+                <div 
+                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="truncate">{entry.stage}: {entry.count}</span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -90,6 +109,18 @@ export const ReportsCharts = ({ data }: ReportsChartsProps) => {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
+          {/* Legenda customizada para mobile */}
+          <div className="block md:hidden mt-2 grid grid-cols-2 gap-1 text-xs">
+            {data.clientsByStatus.map((entry, index) => (
+              <div key={entry.status} className="flex items-center gap-1">
+                <div 
+                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="truncate">{entry.status}: {entry.count}</span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </>

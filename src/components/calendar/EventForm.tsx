@@ -67,9 +67,11 @@ export const EventForm = ({
       onSubmittingChange(true);
 
       const eventData = {
-        ...data,
+        title: data.title,
+        description: data.description,
         start_date: new Date(data.start_date).toISOString(),
         end_date: new Date(data.end_date).toISOString(),
+        event_type: data.event_type,
         client_id: data.client_id || null,
         attendees: data.attendees ? data.attendees.split(',').map(email => email.trim()).filter(Boolean) : [],
       };

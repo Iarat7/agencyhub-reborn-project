@@ -14,9 +14,10 @@ interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task?: Task | null;
+  initialClientId?: string;
 }
 
-export const TaskDialog = ({ open, onOpenChange, task }: TaskDialogProps) => {
+export const TaskDialog = ({ open, onOpenChange, task, initialClientId }: TaskDialogProps) => {
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
 
@@ -24,10 +25,15 @@ export const TaskDialog = ({ open, onOpenChange, task }: TaskDialogProps) => {
   const isLoading = createTask.isPending || updateTask.isPending;
 
   const handleSubmit = async (data: any) => {
+    // Se temos um initialClientId e não estamos editando, adiciona o client_id
+    const taskData = initialClientId && !isEditing 
+      ? { ...data, client_id: initialClientId }
+      : data;
+
     if (isEditing && task) {
-      await updateTask.mutateAsync({ id: task.id, data });
+      await updateTask.mutateAsync({ id: task.id, data: taskData });
     } else {
-      await createTask.mutateAsync(data);
+      await createTask.mutateAsync(taskData);
     }
     onOpenChange(false);
   };
@@ -49,6 +55,7 @@ export const TaskDialog = ({ open, onOpenChange, task }: TaskDialogProps) => {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isLoading={isLoading}
+          initialClientId={initialClientId}
         />
       </DialogContent>
     </Dialog>

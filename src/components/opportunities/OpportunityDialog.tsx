@@ -14,9 +14,10 @@ interface OpportunityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   opportunity?: Opportunity | null;
+  initialClientId?: string;
 }
 
-export const OpportunityDialog = ({ open, onOpenChange, opportunity }: OpportunityDialogProps) => {
+export const OpportunityDialog = ({ open, onOpenChange, opportunity, initialClientId }: OpportunityDialogProps) => {
   const createOpportunity = useCreateOpportunity();
   const updateOpportunity = useUpdateOpportunity();
 
@@ -24,10 +25,15 @@ export const OpportunityDialog = ({ open, onOpenChange, opportunity }: Opportuni
   const isLoading = createOpportunity.isPending || updateOpportunity.isPending;
 
   const handleSubmit = async (data: any) => {
+    // Se temos um initialClientId e não estamos editando, adiciona o client_id
+    const opportunityData = initialClientId && !isEditing 
+      ? { ...data, client_id: initialClientId }
+      : data;
+
     if (isEditing && opportunity) {
-      await updateOpportunity.mutateAsync({ id: opportunity.id, data });
+      await updateOpportunity.mutateAsync({ id: opportunity.id, data: opportunityData });
     } else {
-      await createOpportunity.mutateAsync(data);
+      await createOpportunity.mutateAsync(opportunityData);
     }
     onOpenChange(false);
   };
@@ -49,6 +55,7 @@ export const OpportunityDialog = ({ open, onOpenChange, opportunity }: Opportuni
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isLoading={isLoading}
+          initialClientId={initialClientId}
         />
       </DialogContent>
     </Dialog>

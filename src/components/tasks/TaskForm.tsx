@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,7 +76,7 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
     // Converter strings vazias para null para campos UUID opcionais
     const cleanedData = {
       ...data,
-      client_id: data.client_id && data.client_id.trim() ? data.client_id : undefined,
+      client_id: data.client_id && data.client_id.trim() && data.client_id !== 'none' ? data.client_id : undefined,
       assigned_to: data.assigned_to && data.assigned_to.trim() ? data.assigned_to : undefined,
       due_date: data.due_date && data.due_date.trim() ? data.due_date : undefined,
       description: data.description && data.description.trim() ? data.description : undefined,
@@ -118,7 +117,7 @@ export const TaskForm = ({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhum cliente</SelectItem>
+                    <SelectItem value="none">Nenhum cliente</SelectItem>
                     {clients.map((client: Client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}

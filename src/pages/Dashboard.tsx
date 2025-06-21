@@ -7,27 +7,21 @@ import { DashboardActivities } from '@/components/dashboard/DashboardActivities'
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { SmartInsights } from '@/components/dashboard/SmartInsights';
-import { PredictiveAnalytics } from '@/components/dashboard/PredictiveAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Calendar, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSmartInsights } from '@/hooks/useSmartInsights';
-import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
+import { useCompleteDashboardData } from '@/hooks/useDashboard';
 
 export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const isMobile = useIsMobile();
 
-  // Dados para insights e análise preditiva
+  // Buscar dados completos do dashboard
+  const { data: dashboardData, isLoading } = useCompleteDashboardData(selectedPeriod);
+  
+  // Dados para insights
   const { data: insights } = useSmartInsights(selectedPeriod);
-  const { data: predictiveData } = usePredictiveAnalytics(selectedPeriod);
-
-  // Mock data para atividades recentes
-  const mockRecentActivities = [
-    { action: 'Novo cliente cadastrado', client: 'Empresa ABC', time: '2 horas atrás' },
-    { action: 'Oportunidade fechada', client: 'Projeto XYZ', time: '5 horas atrás' },
-    { action: 'Tarefa concluída', client: 'Reunião de planejamento', time: '1 dia atrás' }
-  ];
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -54,18 +48,17 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
-            <OptimizedDashboardMetrics />
-            <DashboardCharts />
+            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
+            <DashboardCharts metrics={dashboardData?.metrics} />
           </TabsContent>
           
           <TabsContent value="activities">
-            <DashboardActivities recentActivities={mockRecentActivities} />
+            <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
           </TabsContent>
           
           <TabsContent value="ai" className="space-y-4">
             <AIStrategiesCard />
             <SmartInsights insights={insights} />
-            <PredictiveAnalytics metrics={predictiveData} />
           </TabsContent>
           
           <TabsContent value="alerts">
@@ -77,9 +70,9 @@ export default function Dashboard() {
           {/* Layout principal - Métricas e Gráficos */}
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
             <div className="xl:col-span-3 space-y-4 md:space-y-6">
-              <OptimizedDashboardMetrics />
-              <DashboardCharts />
-              <DashboardActivities recentActivities={mockRecentActivities} />
+              <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
+              <DashboardCharts metrics={dashboardData?.metrics} />
+              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
             </div>
             
             <div className="xl:col-span-1">
@@ -87,16 +80,15 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Seção de Inteligência Artificial - Movida para baixo */}
+          {/* Seção de Inteligência Artificial - Apenas os componentes solicitados */}
           <div className="border-t pt-6">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Brain className="h-6 w-6" />
               Inteligência Artificial
             </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <AIStrategiesCard />
               <SmartInsights insights={insights} />
-              <PredictiveAnalytics metrics={predictiveData} />
             </div>
           </div>
         </div>

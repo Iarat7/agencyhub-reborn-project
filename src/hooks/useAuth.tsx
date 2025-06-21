@@ -34,42 +34,80 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(profile);
     } catch (error) {
       console.error('❌ Error refreshing profile:', error);
+      // Em dispositivos móveis, não deixar erro de perfil bloquear a aplicação
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        console.log('📱 Mobile device detected, continuing without full profile...');
+      }
     }
   };
 
   useEffect(() => {
     console.log('🚀 Initializing auth...');
+    console.log('📱 Device info:', {
+      userAgent: navigator.userAgent,
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+      screen: { width: screen.width, height: screen.height }
+    });
+    
+    let mounted = true;
     
     // Configurar listener de mudanças de autenticação
     const unsubscribe = authService.onAuthStateChange(async (authUser) => {
+      if (!mounted) return;
+      
       console.log('🔄 Auth state changed:', authUser ? 'User logged in' : 'User logged out');
       
       if (authUser) {
         console.log('👤 User found, refreshing profile...');
-        // Buscar dados completos do perfil
-        await refreshProfile();
+        // Usar timeout para evitar bloqueios em dispositivos móveis
+        setTimeout(async () => {
+          if (mounted) {
+            await refreshProfile();
+            if (mounted) {
+              setLoading(false);
+            }
+          }
+        }, 100);
       } else {
         console.log('👤 No user, clearing state...');
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Verificar usuário atual na inicialização
     authService.getCurrentUser().then(async ({ user: authUser }) => {
+      if (!mounted) return;
+      
       console.log('🔍 Checking current user:', authUser ? 'Found' : 'Not found');
       
       if (authUser) {
         console.log('👤 Current user found, refreshing profile...');
-        await refreshProfile();
+        setTimeout(async () => {
+          if (mounted) {
+            await refreshProfile();
+            if (mounted) {
+              setLoading(false);
+            }
+          }
+        }, 100);
       } else {
         console.log('👤 No current user');
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
+    }).catch((error) => {
+      console.error('❌ Error checking current user:', error);
+      if (mounted) {
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -79,7 +117,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (result.user && !result.error) {
       console.log('✅ Sign in successful, refreshing profile...');
       // Buscar dados completos do perfil após login
-      await refreshProfile();
+      setTimeout(async () => {
+        await refreshProfile();
+      }, 100);
     } else if (result.error) {
       console.error('❌ Sign in error:', result.error);
     }
@@ -119,7 +159,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshProfile
   };
 
-  console.log('🔄 Auth state:', { user: user ? 'Present' : 'Null', loading });
+  console.log('🔄 Auth state:', { 
+    user: user ? 'Present' : 'Null', 
+    loading,
+    isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  });
 
   return (
     <AuthContext.Provider value={value}>

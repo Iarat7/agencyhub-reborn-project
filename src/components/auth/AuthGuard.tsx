@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { MobileOptimizedLoader } from '@/components/MobileOptimizedLoader';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -10,18 +11,15 @@ interface AuthGuardProps {
 export const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user, loading } = useAuth();
 
-  console.log('🛡️ AuthGuard check:', { user: user ? 'Present' : 'Null', loading });
+  console.log('🛡️ AuthGuard check:', { 
+    user: user ? 'Present' : 'Null', 
+    loading,
+    isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  });
 
   if (loading) {
     console.log('⏳ AuthGuard: Loading...');
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <MobileOptimizedLoader message="Verificando autenticação..." />;
   }
 
   if (!user) {

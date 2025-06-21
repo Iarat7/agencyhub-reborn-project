@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Brain, Plus, Target, LayoutGrid, Table } from 'lucide-react';
+import { Lightbulb, Plus, Target, LayoutGrid, Table } from 'lucide-react';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { ClientStrategiesTable } from '@/components/strategies/ClientStrategiesTable';
 import { CreateStrategyDialog } from '@/components/strategies/CreateStrategyDialog';
-import { AIStrategyDialog } from '@/components/strategies/AIStrategyDialog';
+import { ContentIdeasDialog } from '@/components/strategies/ContentIdeasDialog';
 import { StrategyFilters } from '@/components/strategies/StrategyFilters';
 import { StrategiesKanban } from '@/components/strategies/StrategiesKanban';
 import { useStrategies, useUpdateStrategyStatus } from '@/hooks/useStrategies';
@@ -15,7 +15,7 @@ import { useStrategyFilters } from '@/hooks/useStrategyFilters';
 
 export default function Estrategias() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+  const [isContentIdeasDialogOpen, setIsContentIdeasDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
   
   const { data: strategies = [], isLoading } = useStrategies();
@@ -42,9 +42,9 @@ export default function Estrategias() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsAIDialogOpen(true)}>
-            <Brain className="h-4 w-4 mr-2" />
-            Gerar com IA
+          <Button variant="outline" onClick={() => setIsContentIdeasDialogOpen(true)}>
+            <Lightbulb className="h-4 w-4 mr-2" />
+            Ideias de Conteúdo
           </Button>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -145,9 +145,9 @@ export default function Estrategias() {
         onOpenChange={setIsCreateDialogOpen} 
       />
       
-      <AIStrategyDialog 
-        open={isAIDialogOpen} 
-        onOpenChange={setIsAIDialogOpen} 
+      <ContentIdeasDialog 
+        open={isContentIdeasDialogOpen} 
+        onOpenChange={setIsContentIdeasDialogOpen} 
       />
     </div>
   );

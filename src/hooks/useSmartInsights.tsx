@@ -1,21 +1,17 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useCompleteDashboardData } from './useDashboard';
 
-export const useSmartInsights = (selectedPeriod: string | null = '6m') => {
-  const { data: dashboardData } = useCompleteDashboardData(selectedPeriod);
-
+export const useSmartInsights = (dashboardMetrics: any = null) => {
   return useQuery({
-    queryKey: ['smart-insights', selectedPeriod || 'none', dashboardData?.metrics ? 'has-metrics' : 'no-metrics'],
+    queryKey: ['smart-insights', Boolean(dashboardMetrics)],
     queryFn: async () => {
-      if (!dashboardData?.metrics) return [];
+      if (!dashboardMetrics) return [];
 
-      const metrics = dashboardData.metrics;
       const insights = [];
 
       // Insight sobre oportunidades
-      if (metrics.totalOpportunities > 0) {
-        const conversionRate = metrics.conversionRate;
+      if (dashboardMetrics.totalOpportunities > 0) {
+        const conversionRate = dashboardMetrics.conversionRate;
         if (conversionRate < 15) {
           insights.push({
             id: 'low-conversion',
@@ -40,8 +36,8 @@ export const useSmartInsights = (selectedPeriod: string | null = '6m') => {
       }
 
       // Insight sobre clientes
-      if (metrics.totalClients > 0) {
-        const clientActivityRate = (metrics.activeClients / metrics.totalClients) * 100;
+      if (dashboardMetrics.totalClients > 0) {
+        const clientActivityRate = (dashboardMetrics.activeClients / dashboardMetrics.totalClients) * 100;
         if (clientActivityRate < 60) {
           insights.push({
             id: 'client-reactivation',
@@ -55,53 +51,10 @@ export const useSmartInsights = (selectedPeriod: string | null = '6m') => {
         }
       }
 
-      // Insight sobre produtividade
-      if (metrics.completedTasks > 0 && metrics.pendingTasks > 0) {
-        const taskCompletionRate = (metrics.completedTasks / (metrics.completedTasks + metrics.pendingTasks)) * 100;
-        if (taskCompletionRate < 70) {
-          insights.push({
-            id: 'task-management',
-            type: 'recommendation' as const,
-            title: 'Melhoria na Gestão de Tarefas',
-            description: `Taxa de conclusão de tarefas em ${taskCompletionRate.toFixed(1)}%. Considere implementar metodologias ágeis ou ferramentas de produtividade.`,
-            impact: 'medium' as const,
-            confidence: 70,
-            actionable: true
-          });
-        }
-      }
-
-      // Insight sobre receita
-      if (metrics.totalRevenue > 50000) {
-        insights.push({
-          id: 'revenue-growth',
-          type: 'trend' as const,
-          title: 'Crescimento de Receita Sólido',
-          description: `Com R$ ${metrics.totalRevenue.toLocaleString('pt-BR')} em receita, você está em uma trajetória positiva. Considere diversificar produtos/serviços.`,
-          impact: 'low' as const,
-          confidence: 80,
-          actionable: false
-        });
-      }
-
-      // Insight sazonal (exemplo)
-      const currentMonth = new Date().getMonth();
-      if (currentMonth >= 10 || currentMonth <= 1) { // Nov, Dez, Jan
-        insights.push({
-          id: 'seasonal-opportunity',
-          type: 'opportunity' as const,
-          title: 'Período Sazonal de Oportunidades',
-          description: 'Estamos no período de maior movimentação comercial. Intensifique ações de marketing e vendas para maximizar resultados.',
-          impact: 'high' as const,
-          confidence: 65,
-          actionable: true
-        });
-      }
-
       return insights;
     },
-    enabled: !!dashboardData?.metrics,
-    staleTime: 10 * 60 * 1000, // 10 minutos
+    enabled: Boolean(dashboardMetrics),
+    staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };

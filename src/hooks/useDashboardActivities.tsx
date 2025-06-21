@@ -7,7 +7,6 @@ export const useDashboardActivities = () => {
     queryFn: async () => {
       console.log('📊 Fetching dashboard activities...');
       
-      // Por enquanto, retornamos atividades mockadas
       const recentActivities = [
         {
           action: 'Novo cliente cadastrado',
@@ -28,9 +27,7 @@ export const useDashboardActivities = () => {
 
       return recentActivities;
     },
-    staleTime: 30 * 60 * 1000, // 30 minutos
+    staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: false,
   });
 };

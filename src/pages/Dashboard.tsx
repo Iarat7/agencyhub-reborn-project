@@ -20,29 +20,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     console.log('📊 Dashboard component mounted');
-    console.log('📱 Is mobile:', isMobile);
-    console.log('📱 Window size:', window.innerWidth, 'x', window.innerHeight);
-    console.log('📱 Document ready state:', document.readyState);
-    
-    // Marcar como montado apenas após um pequeno delay para garantir estabilidade
     const timer = setTimeout(() => {
       setMounted(true);
       console.log('📊 Dashboard marked as mounted');
     }, 100);
 
-    return () => {
-      clearTimeout(timer);
-      console.log('📊 Dashboard component unmounted');
-    };
-  }, [isMobile]);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Buscar dados completos do dashboard apenas após montar
+  // Buscar dados completos do dashboard
   const { data: dashboardData, isLoading, error } = useCompleteDashboardData(
     mounted ? selectedPeriod : null
   );
   
-  // Dados para insights apenas após montar
-  const { data: insights } = useSmartInsights(mounted ? selectedPeriod : null);
+  // Buscar insights baseados nas métricas calculadas
+  const { data: insights } = useSmartInsights(dashboardData?.metrics);
 
   console.log('📊 Dashboard render:', { 
     dashboardData: dashboardData ? 'Present' : 'Null', 
@@ -52,12 +44,10 @@ export default function Dashboard() {
     error: error ? error.message : 'None'
   });
 
-  // Se ainda não montou, mostrar loader
   if (!mounted) {
     return <MobileOptimizedLoader message="Carregando dashboard..." />;
   }
 
-  // Se houve erro, mostrar mensagem
   if (error) {
     console.error('📊 Dashboard error:', error);
     return (
@@ -75,79 +65,60 @@ export default function Dashboard() {
     );
   }
 
-  try {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <DashboardHeader 
-          selectedPeriod={selectedPeriod}
-          onPeriodChange={setSelectedPeriod}
-        />
-        
-        {isMobile ? (
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview" className="text-xs">
-                <BarChart3 className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="ai" className="text-xs">
-                <Brain className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="alerts" className="text-xs">
-                <Bell className="w-4 h-4" />
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="overview" className="space-y-4">
-              <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
-              <DashboardCharts metrics={dashboardData?.metrics} />
-            </TabsContent>
-            
-            <TabsContent value="ai" className="space-y-4">
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <DashboardHeader 
+        selectedPeriod={selectedPeriod}
+        onPeriodChange={setSelectedPeriod}
+      />
+      
+      {isMobile ? (
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="text-xs">
+              <BarChart3 className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="text-xs">
+              <Brain className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="text-xs">
+              <Bell className="w-4 h-4" />
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview" className="space-y-4">
+            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
+            <DashboardCharts metrics={dashboardData?.metrics} />
+          </TabsContent>
+          
+          <TabsContent value="ai" className="space-y-4">
+            <AIStrategiesCard />
+            <SmartInsights insights={insights} />
+          </TabsContent>
+          
+          <TabsContent value="alerts">
+            <NotificationAlerts />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6">
+            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
+            <DashboardCharts metrics={dashboardData?.metrics} />
+          </div>
+
+          <div className="border-t pt-6">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Brain className="h-6 w-6" />
+              Inteligência Artificial
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <AIStrategiesCard />
               <SmartInsights insights={insights} />
-            </TabsContent>
-            
-            <TabsContent value="alerts">
-              <NotificationAlerts />
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="space-y-4 md:space-y-6">
-            {/* Layout principal - Métricas e Gráficos ocupando todo o espaço */}
-            <div className="space-y-4 md:space-y-6">
-              <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
-              <DashboardCharts metrics={dashboardData?.metrics} />
-            </div>
-
-            {/* Seção de Inteligência Artificial */}
-            <div className="border-t pt-6">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Brain className="h-6 w-6" />
-                Inteligência Artificial
-              </h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                <AIStrategiesCard />
-                <SmartInsights insights={insights} />
-              </div>
             </div>
           </div>
-        )}
-      </div>
-    );
-  } catch (renderError) {
-    console.error('📊 Dashboard render error:', renderError);
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-500 mb-2">Erro ao renderizar dashboard</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="text-blue-500 underline"
-          >
-            Recarregar página
-          </button>
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }

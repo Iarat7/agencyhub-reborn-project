@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -63,15 +62,12 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
     try {
       console.log('Calling send-team-invite function...');
       
-      // Garantir que sempre temos um nome válido para o convidador
-      const inviterName = user.full_name || user.email?.split('@')[0] || 'Administrador';
-      
       const { data, error } = await supabase.functions.invoke('send-team-invite', {
         body: {
           email,
           role,
-          inviterName,
-          companyName: user.company_name || 'InflowHub'
+          inviterName: user.full_name || user.email,
+          companyName: user.company_name || 'AgencyHub'
         }
       });
 

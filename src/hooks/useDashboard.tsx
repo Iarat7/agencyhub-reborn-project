@@ -1,101 +1,94 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { useCalculatedDashboardMetrics } from './useDashboardMetrics';
+import { useDashboardActivities } from './useDashboardActivities';
 import { usePeriodUtils } from './usePeriodUtils';
-import { useMetricsCalculation } from './useMetricsCalculation';
-import { supabase } from '@/integrations/supabase/client';
+import { useMemo } from 'react';
 
-export const useCompleteDashboardData = (selectedPeriod: string | null) => {
-  console.log('📊 useCompleteDashboardData called with period:', selectedPeriod);
-  
+export const useDashboardData = (selectedPeriod: string = '6m') => {
   const { calculatePeriodDates } = usePeriodUtils();
   
-  // Sempre calcular datas, mesmo se período for null
-  const { startDate, endDate } = selectedPeriod 
-    ? calculatePeriodDates(selectedPeriod)
-    : { startDate: new Date(), endDate: new Date() };
-
-  const dashboardQuery = useQuery({
-    queryKey: ['complete-dashboard-data', selectedPeriod || 'none'],
+  const periodDates = useMemo(() => {
+    return calculatePeriodDates(selectedPeriod);
+  }, [selectedPeriod, calculatePeriodDates]);
+  
+  return useQuery({
+    queryKey: ['dashboard-data', selectedPeriod],
     queryFn: async () => {
-      if (!selectedPeriod) {
-        console.log('📊 No period provided, returning empty data');
-        return {
-          clients: [],
-          opportunities: [],
-          tasks: [],
-          allOpportunities: []
-        };
+      const { startDate, endDate, periodConfig } = periodDates;
+      
+      console.log('Período selecionado:', selectedPeriod, 'Data início:', startDate, 'Data fim:', endDate);
+
+      const now = new Date();
+      
+      // Gerar dados para gráficos baseado no tipo de período
+      let chartData = [];
+      
+      if (periodConfig?.type === 'days' || periodConfig?.type === 'current_month' || periodConfig?.type === 'last_month' || periodConfig?.type === 'yesterday') {
+        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const daysToShow = Math.min(diffDays + 1, 30);
+        
+        chartData = Array.from({ length: daysToShow }, (_, i) => {
+          const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
+          return {
+            name: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+            value: 0
+          };
+        });
+      } else {
+        const months = periodConfig?.months || 6;
+        chartData = Array.from({ length: months }, (_, i) => {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          return {
+            month: date.toLocaleDateString('pt-BR', { month: 'short' }),
+            name: date.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase(),
+            value: 0
+          };
+        }).reverse();
       }
 
-      console.log('📊 Fetching dashboard data for period:', selectedPeriod);
-      
-      const startDateISO = startDate.toISOString();
-      const endDateISO = endDate.toISOString();
-
-      const [clientsResult, allClientsResult, opportunitiesResult, allOpportunitiesResult, tasksResult] = await Promise.all([
-        supabase
-          .from('clients')
-          .select('*')
-          .gte('created_at', startDateISO)
-          .lte('created_at', endDateISO),
-        
-        supabase
-          .from('clients')
-          .select('*'),
-        
-        supabase
-          .from('opportunities')
-          .select('*')
-          .gte('created_at', startDateISO)
-          .lte('created_at', endDateISO),
-        
-        supabase
-          .from('opportunities')
-          .select('*'),
-        
-        supabase
-          .from('tasks')
-          .select('*')
-          .gte('created_at', startDateISO)
-          .lte('created_at', endDateISO)
-      ]);
-
-      const rawData = {
-        clients: allClientsResult.data || [],
-        opportunities: opportunitiesResult.data || [],
-        tasks: tasksResult.data || [],
-        allOpportunities: allOpportunitiesResult.data || []
+      return {
+        period: periodDates,
+        chartData
       };
-
-      console.log('📊 Raw data fetched:', rawData);
-      return rawData;
     },
-    enabled: true, // Sempre habilitado
-    staleTime: 5 * 60 * 1000,
-    retry: 1
+    staleTime: 30 * 60 * 1000, // 30 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchInterval: false,
   });
+};
 
-  // Sempre chamar useMetricsCalculation, independente do estado
-  const rawData = dashboardQuery.data || { clients: [], opportunities: [], tasks: [], allOpportunities: [] };
-  const calculatedMetrics = useMetricsCalculation(rawData, startDate, endDate);
+// Hook composto que usa os hooks menores
+export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
+  const { calculatePeriodDates } = usePeriodUtils();
+  
+  const periodDates = useMemo(() => {
+    return calculatePeriodDates(selectedPeriod);
+  }, [selectedPeriod, calculatePeriodDates]);
+  
+  const { startDate, endDate } = periodDates;
+  
+  const metricsQuery = useCalculatedDashboardMetrics(startDate, endDate);
+  const dashboardQuery = useDashboardData(selectedPeriod);
+  
+  const activitiesQuery = useDashboardActivities(
+    startDate, 
+    endDate, 
+    metricsQuery.data?.rawData || { clients: [], allOpportunities: [], tasks: [] }
+  );
 
-  // Combinar dados apenas se tivermos dados válidos
-  const combinedData = selectedPeriod && dashboardQuery.data && calculatedMetrics ? {
-    ...dashboardQuery.data,
-    metrics: calculatedMetrics
-  } : null;
-
-  console.log('📊 Dashboard data state:', {
-    isLoading: dashboardQuery.isLoading,
-    hasData: Boolean(combinedData),
-    error: dashboardQuery.error?.message || null,
-    hasMetrics: Boolean(calculatedMetrics),
-    selectedPeriod
-  });
+  const isLoading = metricsQuery.isLoading || dashboardQuery.isLoading;
+  const error = metricsQuery.error || dashboardQuery.error;
 
   return {
-    data: combinedData,
-    isLoading: dashboardQuery.isLoading,
-    error: dashboardQuery.error
+    data: {
+      metrics: metricsQuery.data,
+      charts: dashboardQuery.data,
+      recentActivities: activitiesQuery.data || [],
+    },
+    isLoading,
+    error
   };
 };

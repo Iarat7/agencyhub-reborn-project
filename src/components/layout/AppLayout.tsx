@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import Header from '@/components/Header';
@@ -9,10 +9,6 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  useEffect(() => {
-    console.log('🏗️ AppLayout mounted');
-  }, []);
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

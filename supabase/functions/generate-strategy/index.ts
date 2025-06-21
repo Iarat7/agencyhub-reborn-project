@@ -23,98 +23,109 @@ serve(async (req) => {
     }
 
     const requestBody = await req.json();
-    console.log('Request body:', requestBody);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
     const { clientName, segment, budget, objectives, challenges, implementationTime } = requestBody;
 
-    if (!clientName || !segment || !objectives || !challenges) {
-      throw new Error('Missing required parameters');
+    // Validação mais rigorosa dos parâmetros
+    if (!clientName) {
+      throw new Error('Nome do cliente é obrigatório');
+    }
+    if (!segment) {
+      throw new Error('Segmento é obrigatório');
+    }
+    if (!objectives) {
+      throw new Error('Objetivos são obrigatórios');
+    }
+    if (!challenges) {
+      throw new Error('Desafios são obrigatórios');
     }
 
+    console.log('All parameters validated successfully');
+
     const prompt = `
-Você é um consultor estratégico sênior com mais de 15 anos de experiência em transformação digital e crescimento de negócios. 
+Você é um consultor estratégico sênior especializado em transformação digital e crescimento de negócios. 
 
-Baseado nas informações fornecidas, crie uma estratégia DETALHADA e IMPLEMENTÁVEL:
+Crie uma estratégia DETALHADA e IMPLEMENTÁVEL para:
 
-**INFORMAÇÕES DO CLIENTE:**
-- Cliente: ${clientName}
-- Segmento: ${segment}
-- Orçamento disponível: R$ ${budget?.toLocaleString('pt-BR') || 'Não informado'}
-- Objetivos principais: ${objectives}
-- Principais desafios: ${challenges}
-- Prazo de implementação: ${implementationTime}
+**CLIENTE:** ${clientName}
+**SEGMENTO:** ${segment}  
+**ORÇAMENTO:** R$ ${budget ? budget.toLocaleString('pt-BR') : 'Não informado'}
+**OBJETIVOS:** ${objectives}
+**DESAFIOS:** ${challenges}
+**PRAZO:** ${implementationTime || 'Não especificado'}
 
-**ESTRUTURA DA ESTRATÉGIA (seja específico e prático):**
+IMPORTANTE: Gere uma estratégia completamente NOVA e PERSONALIZADA baseada nestas informações específicas. NÃO repita os dados fornecidos.
+
+**ESTRUTURA DA RESPOSTA:**
+
+# ESTRATÉGIA PERSONALIZADA PARA ${clientName.toUpperCase()}
 
 ## 1. ANÁLISE SITUACIONAL
-Faça uma análise do cenário atual do cliente considerando o segmento de atuação e os desafios apresentados.
+[Análise do cenário atual considerando o segmento ${segment} e os desafios específicos]
 
-## 2. OBJETIVOS SMART
-Transforme os objetivos apresentados em metas SMART (Específicas, Mensuráveis, Atingíveis, Relevantes, Temporais).
+## 2. OBJETIVOS SMART RECOMENDADOS
+[Transforme os objetivos em metas SMART específicas com métricas quantificáveis]
 
-## 3. ESTRATÉGIAS PRINCIPAIS
-Liste 3-5 estratégias principais que abordem os objetivos e superem os desafios:
+## 3. ESTRATÉGIAS PRINCIPAIS (3-5 estratégias)
 
-### Estratégia 1: [Nome da estratégia]
-- **Descrição:** [Detalhes da estratégia]
-- **Orçamento estimado:** [Porcentagem do orçamento total]
-- **Prazo:** [Cronograma específico]
-- **KPIs:** [Métricas de sucesso]
+### Estratégia 1: [Nome específico]
+- **Descrição:** [Detalhes específicos da implementação]
+- **Orçamento sugerido:** [% do orçamento total]
+- **Cronograma:** [Timeline específico]
+- **KPIs:** [Métricas mensuráveis]
 
-### Estratégia 2: [Nome da estratégia]
-- **Descrição:** [Detalhes da estratégia]
-- **Orçamento estimado:** [Porcentagem do orçamento total]
-- **Prazo:** [Cronograma específico]
-- **KPIs:** [Métricas de sucesso]
+### Estratégia 2: [Nome específico]
+- **Descrição:** [Detalhes específicos da implementação] 
+- **Orçamento sugerido:** [% do orçamento total]
+- **Cronograma:** [Timeline específico]
+- **KPIs:** [Métricas mensuráveis]
 
 [Continue para outras estratégias...]
 
-## 4. PLANO DE AÇÃO DETALHADO
-Crie um cronograma de implementação:
+## 4. PLANO DE IMPLEMENTAÇÃO
 
-### Primeiro Mês:
-- [ ] Ação específica 1
-- [ ] Ação específica 2
-- [ ] Ação específica 3
+### Fase 1 (Primeiro Mês):
+- [ ] [Ação específica 1]
+- [ ] [Ação específica 2]
+- [ ] [Ação específica 3]
 
-### Segundo Mês:
-- [ ] Ação específica 1
-- [ ] Ação específica 2
+### Fase 2 (Segundo Mês):
+- [ ] [Ação específica 1]
+- [ ] [Ação específica 2]
 
-[Continue para outros meses...]
+[Continue cronograma...]
 
-## 5. SOLUÇÕES PARA DESAFIOS
-Para cada desafio identificado, apresente uma solução específica:
-
-**Desafio:** [Desafio específico]
-**Solução:** [Solução detalhada]
-**Recursos necessários:** [Lista de recursos]
-**Prazo:** [Tempo para implementação]
+## 5. SOLUÇÕES PARA DESAFIOS IDENTIFICADOS
+[Para cada desafio, apresente solução específica e recursos necessários]
 
 ## 6. MÉTRICAS DE SUCESSO
-Liste KPIs específicos para medir o sucesso:
 - [KPI 1]: Meta específica em X meses
-- [KPI 2]: Meta específica em X meses
+- [KPI 2]: Meta específica em X meses  
 - [KPI 3]: Meta específica em X meses
 
 ## 7. PRÓXIMOS PASSOS IMEDIATOS
-Liste as 5 primeiras ações que devem ser tomadas na primeira semana:
-1. [Ação específica]
-2. [Ação específica]
-3. [Ação específica]
-4. [Ação específica]
-5. [Ação específica]
+1. [Primeira ação para próxima semana]
+2. [Segunda ação para próxima semana]
+3. [Terceira ação para próxima semana]
+4. [Quarta ação para próxima semana]
+5. [Quinta ação para próxima semana]
 
-## 8. ESTIMATIVA DE ROI
-Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
-- ROI esperado em 6 meses: [Percentual]%
-- ROI esperado em 12 meses: [Percentual]%
+## 8. PROJEÇÃO DE ROI
+${budget ? `
+- ROI esperado em 6 meses: [X]%
+- ROI esperado em 12 meses: [X]%  
 - Payback estimado: [X] meses
+- Retorno financeiro projetado: R$ [valor]
+` : `
+- Definir orçamento para calcular ROI específico
+- Potencial de crescimento: [percentual]%
+`}
 
-**IMPORTANTE:** Seja específico, use números reais, forneça cronogramas detalhados e certifique-se de que tudo seja implementável dentro do orçamento e prazo estabelecidos.
+GERE CONTEÚDO NOVO E ESPECÍFICO - NÃO REPITA OS DADOS DE ENTRADA!
 `;
 
-    console.log('Calling OpenAI API...');
+    console.log('Sending request to OpenAI...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -127,11 +138,11 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
         messages: [
           { 
             role: 'system', 
-            content: `Você é um consultor estratégico experiente especializado em criar estratégias de negócio detalhadas, práticas e implementáveis. Suas estratégias sempre incluem cronogramas específicos, alocação de orçamento, KPIs mensuráveis e próximos passos claros. Você adapta suas recomendações ao segmento de mercado e porte da empresa.`
+            content: `Você é um consultor estratégico experiente que cria estratégias únicas e implementáveis. Sempre gere conteúdo novo e específico, nunca repita os dados de entrada. Suas estratégias são detalhadas, práticas e incluem cronogramas, orçamentos e KPIs específicos.`
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.8,
         max_tokens: 4000,
       }),
     });
@@ -148,6 +159,8 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
     console.log('OpenAI response received successfully');
 
     const generatedStrategy = data.choices[0].message.content;
+    
+    console.log('Generated strategy preview:', generatedStrategy.substring(0, 200) + '...');
 
     return new Response(JSON.stringify({ strategy: generatedStrategy }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

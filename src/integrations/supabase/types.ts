@@ -392,6 +392,7 @@ export type Database = {
       strategies: {
         Row: {
           ai_generated: boolean | null
+          ai_strategy_content: string | null
           budget: number | null
           challenges: string | null
           client_id: string | null
@@ -407,6 +408,7 @@ export type Database = {
         }
         Insert: {
           ai_generated?: boolean | null
+          ai_strategy_content?: string | null
           budget?: number | null
           challenges?: string | null
           client_id?: string | null
@@ -422,6 +424,7 @@ export type Database = {
         }
         Update: {
           ai_generated?: boolean | null
+          ai_strategy_content?: string | null
           budget?: number | null
           challenges?: string | null
           client_id?: string | null

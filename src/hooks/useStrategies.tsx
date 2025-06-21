@@ -153,3 +153,38 @@ export const useUpdateStrategyStatus = () => {
     },
   });
 };
+
+export const useDeleteStrategy = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('strategies')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting strategy:', error);
+        throw error;
+      }
+
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['strategies'] });
+      toast({
+        title: 'Estratégia excluída',
+        description: 'A estratégia foi excluída com sucesso.',
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting strategy:', error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao excluir a estratégia.',
+        variant: 'destructive',
+      });
+    },
+  });
+};

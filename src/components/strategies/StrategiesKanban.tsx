@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +22,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
-import { Strategy } from '@/hooks/useStrategies';
+import { Strategy, useDeleteStrategy } from '@/hooks/useStrategies';
 import { useClients } from '@/hooks/useClients';
 import { StrategyDetailsDialog } from './StrategyDetailsDialog';
 import { format } from 'date-fns';
@@ -39,6 +38,7 @@ export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanba
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   
   const { data: clients = [] } = useClients();
+  const deleteStrategy = useDeleteStrategy();
 
   const getClientName = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
@@ -55,6 +55,12 @@ export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanba
   const handleViewStrategy = (strategy: Strategy) => {
     setSelectedStrategy(strategy);
     setDetailsDialogOpen(true);
+  };
+
+  const handleDeleteStrategy = (strategyId: string) => {
+    if (confirm('Tem certeza que deseja excluir esta estratégia?')) {
+      deleteStrategy.mutate(strategyId);
+    }
   };
 
   const columns = [
@@ -158,7 +164,10 @@ export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanba
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
+                              <DropdownMenuItem 
+                                className="text-red-600"
+                                onClick={() => handleDeleteStrategy(strategy.id)}
+                              >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Excluir
                               </DropdownMenuItem>

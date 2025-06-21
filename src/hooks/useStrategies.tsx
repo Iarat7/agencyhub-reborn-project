@@ -98,6 +98,10 @@ export const useCreateStrategy = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['strategies'] });
+      toast({
+        title: 'Estratégia criada',
+        description: 'A estratégia foi criada com sucesso.',
+      });
     },
     onError: (error) => {
       console.error('Error creating strategy:', error);

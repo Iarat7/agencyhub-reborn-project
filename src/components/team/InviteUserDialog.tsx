@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/select';
 import { Crown, Shield, Users, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -31,6 +33,7 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
   const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,10 +47,29 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para enviar convites",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simular envio do convite
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-team-invite', {
+        body: {
+          email,
+          role,
+          inviterName: user.user_metadata?.full_name || user.email,
+          companyName: 'AgencyHub' // Você pode pegar isso do perfil da empresa
+        }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Convite enviado!",
         description: `Convite enviado para ${email} com função de ${getRoleLabel(role)}`,
@@ -55,9 +77,17 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       
       setEmail('');
       setRole('');
-      setIsLoading(false);
       onOpenChange(false);
-    }, 1000);
+    } catch (error: any) {
+      console.error('Error sending invite:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao enviar o convite. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getRoleLabel = (roleValue: string) => {

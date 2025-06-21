@@ -18,24 +18,86 @@ serve(async (req) => {
     const { clientName, segment, budget, objectives, challenges, implementationTime } = await req.json();
 
     const prompt = `
-Você é um especialista em estratégias de negócio. Gere uma estratégia completa baseada nas seguintes informações:
+Você é um consultor estratégico sênior com mais de 15 anos de experiência em transformação digital e crescimento de negócios. 
 
-Cliente: ${clientName}
-Segmento: ${segment}
-Orçamento: R$ ${budget}
-Objetivos: ${objectives}
-Principais Desafios: ${challenges}
-Tempo de Implementação: ${implementationTime}
+Baseado nas informações fornecidas, crie uma estratégia DETALHADA e IMPLEMENTÁVEL:
 
-Por favor, forneça uma estratégia detalhada que inclua:
-1. Análise do cenário atual
-2. Estratégias específicas para atingir os objetivos
-3. Plano de ação com etapas claras
-4. Soluções para os desafios identificados
-5. Métricas de sucesso
-6. Cronograma de implementação
+**INFORMAÇÕES DO CLIENTE:**
+- Cliente: ${clientName}
+- Segmento: ${segment}
+- Orçamento disponível: R$ ${budget?.toLocaleString('pt-BR') || 'Não informado'}
+- Objetivos principais: ${objectives}
+- Principais desafios: ${challenges}
+- Prazo de implementação: ${implementationTime}
 
-Seja específico e prático, considerando o orçamento e tempo disponíveis.
+**ESTRUTURA DA ESTRATÉGIA (seja específico e prático):**
+
+## 1. ANÁLISE SITUACIONAL
+Faça uma análise do cenário atual do cliente considerando o segmento de atuação e os desafios apresentados.
+
+## 2. OBJETIVOS SMART
+Transforme os objetivos apresentados em metas SMART (Específicas, Mensuráveis, Atingíveis, Relevantes, Temporais).
+
+## 3. ESTRATÉGIAS PRINCIPAIS
+Liste 3-5 estratégias principais que abordem os objetivos e superem os desafios:
+
+### Estratégia 1: [Nome da estratégia]
+- **Descrição:** [Detalhes da estratégia]
+- **Orçamento estimado:** [Porcentagem do orçamento total]
+- **Prazo:** [Cronograma específico]
+- **KPIs:** [Métricas de sucesso]
+
+### Estratégia 2: [Nome da estratégia]
+- **Descrição:** [Detalhes da estratégia]
+- **Orçamento estimado:** [Porcentagem do orçamento total]
+- **Prazo:** [Cronograma específico]
+- **KPIs:** [Métricas de sucesso]
+
+[Continue para outras estratégias...]
+
+## 4. PLANO DE AÇÃO DETALHADO
+Crie um cronograma de implementação:
+
+### Primeiro Mês:
+- [ ] Ação específica 1
+- [ ] Ação específica 2
+- [ ] Ação específica 3
+
+### Segundo Mês:
+- [ ] Ação específica 1
+- [ ] Ação específica 2
+
+[Continue para outros meses...]
+
+## 5. SOLUÇÕES PARA DESAFIOS
+Para cada desafio identificado, apresente uma solução específica:
+
+**Desafio:** [Desafio específico]
+**Solução:** [Solução detalhada]
+**Recursos necessários:** [Lista de recursos]
+**Prazo:** [Tempo para implementação]
+
+## 6. MÉTRICAS DE SUCESSO
+Liste KPIs específicos para medir o sucesso:
+- [KPI 1]: Meta específica em X meses
+- [KPI 2]: Meta específica em X meses
+- [KPI 3]: Meta específica em X meses
+
+## 7. PRÓXIMOS PASSOS IMEDIATOS
+Liste as 5 primeiras ações que devem ser tomadas na primeira semana:
+1. [Ação específica]
+2. [Ação específica]
+3. [Ação específica]
+4. [Ação específica]
+5. [Ação específica]
+
+## 8. ESTIMATIVA DE ROI
+Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
+- ROI esperado em 6 meses: [Percentual]%
+- ROI esperado em 12 meses: [Percentual]%
+- Payback estimado: [X] meses
+
+**IMPORTANTE:** Seja específico, use números reais, forneça cronogramas detalhados e certifique-se de que tudo seja implementável dentro do orçamento e prazo estabelecidos.
 `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -45,20 +107,25 @@ Seja específico e prático, considerando o orçamento e tempo disponíveis.
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { 
             role: 'system', 
-            content: 'Você é um consultor estratégico experiente que cria estratégias de negócio detalhadas e práticas.'
+            content: `Você é um consultor estratégico experiente especializado em criar estratégias de negócio detalhadas, práticas e implementáveis. Suas estratégias sempre incluem cronogramas específicos, alocação de orçamento, KPIs mensuráveis e próximos passos claros. Você adapta suas recomendações ao segmento de mercado e porte da empresa.`
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 4000,
       }),
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+    }
+
     const generatedStrategy = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ strategy: generatedStrategy }), {

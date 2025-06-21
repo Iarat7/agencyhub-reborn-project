@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { User, Bell, Shield, Database } from 'lucide-react';
 
-export const Configuracoes = () => {
+const Configuracoes = () => {
   return (
     <div className="space-y-6">
       <div>
@@ -138,3 +138,5 @@ export const Configuracoes = () => {
     </div>
   );
 };
+
+export default Configuracoes;

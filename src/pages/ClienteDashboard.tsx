@@ -9,8 +9,8 @@ import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { OpportunityDialog } from '@/components/opportunities/OpportunityDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export const ClienteDashboard = () => {
-  const { clientId } = useParams<{ clientId: string }>();
+const ClienteDashboard = () => {
+  const { id: clientId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [opportunityDialogOpen, setOpportunityDialogOpen] = useState(false);
@@ -138,3 +138,5 @@ export const ClienteDashboard = () => {
     </div>
   );
 };
+
+export default ClienteDashboard;

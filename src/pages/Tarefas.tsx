@@ -1,62 +1,54 @@
 
 import React, { useState } from 'react';
+import { Plus, Search, Filter, Calendar, Clock, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, Clock, CheckCircle, AlertCircle, Users, Search, Filter } from 'lucide-react';
-import { TaskDialog } from '@/components/tasks/TaskDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { TasksTable } from '@/components/tasks/TasksTable';
+import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
-import { useTasks, useDeleteTask } from '@/hooks/useTasks';
-import { useUsers } from '@/hooks/useUsers';
+import { useTasks } from '@/hooks/useTasks';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterTasks } from '@/utils/filterUtils';
 import { Task } from '@/services/api/types';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-export const Tarefas = () => {
+const taskFilterFields: FilterField[] = [
+  { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
+  { key: 'description', label: 'Descrição', type: 'text', placeholder: 'Descrição da tarefa' },
+  { 
+    key: 'status', 
+    label: 'Status', 
+    type: 'select',
+    options: [
+      { label: 'Pendente', value: 'pending' },
+      { label: 'Em Progresso', value: 'in_progress' },
+      { label: 'Concluída', value: 'completed' },
+      { label: 'Cancelada', value: 'cancelled' }
+    ]
+  },
+  { 
+    key: 'priority', 
+    label: 'Prioridade', 
+    type: 'select',
+    options: [
+      { label: 'Baixa', value: 'low' },
+      { label: 'Média', value: 'medium' },
+      { label: 'Alta', value: 'high' },
+      { label: 'Urgente', value: 'urgent' }
+    ]
+  },
+  { key: 'due_date', label: 'Data de Vencimento', type: 'date' }
+];
+
+const Tarefas = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const { data: tasks = [], isLoading } = useTasks();
-  const { data: users = [] } = useUsers();
-  const deleteTask = useDeleteTask();
-
-  const taskFilterFields: FilterField[] = [
-    { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
-    { 
-      key: 'status', 
-      label: 'Status', 
-      type: 'select',
-      options: [
-        { label: 'Pendente', value: 'pending' },
-        { label: 'Em Andamento', value: 'in_progress' },
-        { label: 'Em Aprovação', value: 'in_approval' },
-        { label: 'Concluída', value: 'completed' }
-      ]
-    },
-    { 
-      key: 'priority', 
-      label: 'Prioridade', 
-      type: 'select',
-      options: [
-        { label: 'Baixa', value: 'low' },
-        { label: 'Média', value: 'medium' },
-        { label: 'Alta', value: 'high' },
-        { label: 'Urgente', value: 'urgent' }
-      ]
-    },
-    {
-      key: 'assigned_to',
-      label: 'Responsável',
-      type: 'select',
-      options: users.map(user => ({
-        label: user.full_name || user.email || 'Usuário sem nome',
-        value: user.id
-      }))
-    },
-    { key: 'due_date', label: 'Data Limite', type: 'date' }
-  ];
+  const { data: tasks = [], isLoading, error } = useTasks();
 
   const {
     filters,
@@ -75,48 +67,100 @@ export const Tarefas = () => {
 
   const handleNewTask = () => {
     setEditingTask(null);
-    setIsDialogOpen(true);
+    setDialogOpen(true);
   };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
-    setIsDialogOpen(true);
+    setDialogOpen(true);
   };
 
-  const handleDeleteTask = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta tarefa?')) {
-      await deleteTask.mutateAsync(id);
-    }
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingTask(null);
   };
 
-  // Estatísticas das tarefas (baseadas nos dados filtrados)
+  // Métricas das tarefas
+  const completedTasks = searchFilteredTasks.filter(task => task.status === 'completed').length;
   const pendingTasks = searchFilteredTasks.filter(task => task.status === 'pending').length;
   const inProgressTasks = searchFilteredTasks.filter(task => task.status === 'in_progress').length;
-  const completedTasks = searchFilteredTasks.filter(task => task.status === 'completed').length;
-  const urgentTasks = searchFilteredTasks.filter(task => task.priority === 'urgent').length;
+  const overdueTasks = searchFilteredTasks.filter(task => {
+    if (!task.due_date || task.status === 'completed') return false;
+    return new Date(task.due_date) < new Date();
+  }).length;
 
-  if (isLoading) {
+  if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Tarefas</h1>
+        <div className="text-center py-8">
+          <p className="text-red-600">Erro ao carregar tarefas. Tente novamente.</p>
         </div>
-        <div className="text-center py-8">Carregando tarefas...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Tarefas</h1>
-          <p className="text-gray-600">Gerencie suas tarefas e atividades</p>
+          <h1 className="text-3xl font-bold text-slate-900">Tarefas</h1>
+          <p className="text-slate-600 mt-2">Gerencie suas atividades e compromissos</p>
         </div>
-        <Button onClick={handleNewTask}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={handleNewTask} className="bg-blue-600 hover:bg-blue-700">
+          <Plus size={16} className="mr-2" />
           Nova Tarefa
         </Button>
+      </div>
+
+      {/* Métricas das Tarefas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
+                <p className="text-sm text-slate-600">Concluídas</p>
+              </div>
+              <CheckCircle2 className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-blue-600">{inProgressTasks}</p>
+                <p className="text-sm text-slate-600">Em Progresso</p>
+              </div>
+              <Clock className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-yellow-600">{pendingTasks}</p>
+                <p className="text-sm text-slate-600">Pendentes</p>
+              </div>
+              <Calendar className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-red-600">{overdueTasks}</p>
+                <p className="text-sm text-slate-600">Atrasadas</p>
+              </div>
+              <User className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filtros Avançados */}
@@ -129,73 +173,10 @@ export const Tarefas = () => {
         onToggle={toggleFilters}
       />
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Tarefas aguardando início
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Tarefas em execução
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Tarefas finalizadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Urgentes</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{urgentTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Tarefas com alta prioridade
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabela de Tarefas */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div>
-              <CardTitle>Lista de Tarefas ({searchFilteredTasks.length})</CardTitle>
-              <CardDescription>
-                {searchFilteredTasks.length > 0
-                  ? `${searchFilteredTasks.length} tarefa${searchFilteredTasks.length !== 1 ? 's' : ''} encontrada${searchFilteredTasks.length !== 1 ? 's' : ''}`
-                  : 'Nenhuma tarefa encontrada'}
-              </CardDescription>
-            </div>
+            <CardTitle>Lista de Tarefas ({searchFilteredTasks.length})</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
@@ -216,35 +197,37 @@ export const Tarefas = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {searchFilteredTasks.length > 0 ? (
-            <TasksTable
-              tasks={searchFilteredTasks}
-              onEdit={handleEditTask}
-              onDelete={handleDeleteTask}
-            />
-          ) : (
+          {isLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">
+              <p className="text-slate-600">Carregando tarefas...</p>
+            </div>
+          ) : searchFilteredTasks.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-slate-600">
                 {searchTerm || Object.values(filters).some(v => v) 
                   ? 'Nenhuma tarefa encontrada com os filtros aplicados.' 
                   : 'Nenhuma tarefa cadastrada ainda.'}
               </p>
               {!searchTerm && !Object.values(filters).some(v => v) && (
-                <Button onClick={handleNewTask}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button onClick={handleNewTask} className="mt-4">
+                  <Plus size={16} className="mr-2" />
                   Criar primeira tarefa
                 </Button>
               )}
             </div>
+          ) : (
+            <TasksTable tasks={searchFilteredTasks} onEdit={handleEditTask} />
           )}
         </CardContent>
       </Card>
 
       <TaskDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={dialogOpen}
+        onOpenChange={handleDialogClose}
         task={editingTask}
       />
     </div>
   );
 };
+
+export default Tarefas;

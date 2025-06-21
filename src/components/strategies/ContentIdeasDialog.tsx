@@ -28,8 +28,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Loader2, Copy, Check } from 'lucide-react';
+import { Lightbulb, Loader2, Copy, Check, Save } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
+import { useCreateStrategy } from '@/hooks/useStrategies';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,9 +52,12 @@ interface ContentIdeasDialogProps {
 
 export const ContentIdeasDialog = ({ open, onOpenChange }: ContentIdeasDialogProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [generatedIdeas, setGeneratedIdeas] = useState<string>('');
   const [copiedStates, setCopiedStates] = useState<{ [key: number]: boolean }>({});
+  const [formData, setFormData] = useState<ContentIdeasFormData | null>(null);
   const { data: clients = [] } = useClients();
+  const createStrategy = useCreateStrategy();
 
   const form = useForm<ContentIdeasFormData>({
     resolver: zodResolver(contentIdeasSchema),
@@ -69,6 +73,7 @@ export const ContentIdeasDialog = ({ open, onOpenChange }: ContentIdeasDialogPro
 
   const onSubmit = async (data: ContentIdeasFormData) => {
     setIsGenerating(true);
+    setFormData(data);
     try {
       const client = clients.find(c => c.id === data.client_id);
       
@@ -120,6 +125,63 @@ export const ContentIdeasDialog = ({ open, onOpenChange }: ContentIdeasDialogPro
     }
   };
 
+  const saveAsStrategy = async () => {
+    if (!formData || !generatedIdeas) {
+      toast({
+        title: 'Erro',
+        description: 'Não há ideias para salvar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const client = clients.find(c => c.id === formData.client_id);
+      const contentTypeLabels = {
+        instagram: 'Instagram',
+        videos: 'Vídeos',
+        blog: 'Blog',
+        stories: 'Stories',
+        reels: 'Reels',
+        linkedin: 'LinkedIn',
+        email: 'E-mail',
+        mixed: 'Conteúdo Misto'
+      };
+
+      const contentTypeLabel = contentTypeLabels[formData.content_type as keyof typeof contentTypeLabels] || formData.content_type;
+      
+      const strategyData = {
+        title: `Ideias de Conteúdo - ${contentTypeLabel}/${client?.name}`,
+        objectives: formData.objectives,
+        challenges: `Criar conteúdo para ${contentTypeLabel} com tom ${formData.tone}`,
+        target_audience: formData.target_audience,
+        client_id: formData.client_id,
+        status: 'created' as const,
+        ai_generated: true,
+        ai_strategy_content: generatedIdeas,
+      };
+
+      await createStrategy.mutateAsync(strategyData);
+      
+      toast({
+        title: 'Ideias salvas com sucesso',
+        description: 'As ideias de conteúdo foram salvas como estratégia.',
+      });
+      
+      handleClose();
+    } catch (error) {
+      console.error('Erro ao salvar ideias:', error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao salvar as ideias.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const copyToClipboard = async (text: string, index: number) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -143,6 +205,7 @@ export const ContentIdeasDialog = ({ open, onOpenChange }: ContentIdeasDialogPro
   const handleClose = () => {
     form.reset();
     setGeneratedIdeas('');
+    setFormData(null);
     setCopiedStates({});
     onOpenChange(false);
   };
@@ -310,10 +373,30 @@ export const ContentIdeasDialog = ({ open, onOpenChange }: ContentIdeasDialogPro
             {generatedIdeas && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4" />
-                    Ideias Geradas
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4" />
+                      Ideias Geradas
+                    </CardTitle>
+                    <Button 
+                      onClick={saveAsStrategy} 
+                      disabled={isSaving}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-3 w-3 mr-2" />
+                          Salvar como Estratégia
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

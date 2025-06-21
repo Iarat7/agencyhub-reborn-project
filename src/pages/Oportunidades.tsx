@@ -1,45 +1,44 @@
+
 import React, { useState } from 'react';
-import { Plus, Search, Filter, DollarSign } from 'lucide-react';
+import { Plus, Search, Filter, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { OpportunityMetrics } from '@/components/opportunities/OpportunityMetrics';
 import { OpportunitiesTable } from '@/components/opportunities/OpportunitiesTable';
-import { OpportunityDialog } from '@/components/opportunities/OpportunityDialog';
 import { KanbanBoard } from '@/components/opportunities/KanbanBoard';
+import { OpportunityDialog } from '@/components/opportunities/OpportunityDialog';
 import { ViewToggle } from '@/components/opportunities/ViewToggle';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
 import { useOpportunities } from '@/hooks/useOpportunities';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterOpportunities } from '@/utils/filterUtils';
 import { Opportunity } from '@/services/api/types';
-import { OpportunityMetrics } from '@/components/opportunities/OpportunityMetrics';
 
 const opportunityFilterFields: FilterField[] = [
   { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da oportunidade' },
+  { key: 'description', label: 'Descrição', type: 'text', placeholder: 'Descrição da oportunidade' },
   { 
     key: 'stage', 
     label: 'Estágio', 
     type: 'select',
     options: [
-      { label: 'Prospecção', value: 'prospection' },
       { label: 'Qualificação', value: 'qualification' },
       { label: 'Proposta', value: 'proposal' },
       { label: 'Negociação', value: 'negotiation' },
-      { label: 'Fechado - Ganho', value: 'closed_won' },
-      { label: 'Fechado - Perdido', value: 'closed_lost' }
+      { label: 'Fechada - Ganha', value: 'closed_won' },
+      { label: 'Fechada - Perdida', value: 'closed_lost' }
     ]
   },
-  { key: 'min_value', label: 'Valor Mínimo', type: 'number', placeholder: 'Valor mínimo' },
-  { key: 'max_value', label: 'Valor Máximo', type: 'number', placeholder: 'Valor máximo' },
-  { key: 'min_probability', label: 'Probabilidade Mín.', type: 'number', placeholder: 'Probabilidade mínima (%)' },
-  { key: 'expected_close_date', label: 'Data Limite de Fechamento', type: 'date' }
+  { key: 'value', label: 'Valor Mínimo', type: 'number', placeholder: 'Valor mínimo' },
+  { key: 'expected_close_date', label: 'Data de Fechamento', type: 'date' }
 ];
 
-export const Oportunidades = () => {
+const Oportunidades = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null);
-  const [view, setView] = useState<'table' | 'kanban'>('kanban');
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
   const { data: opportunities = [], isLoading, error } = useOpportunities();
 
@@ -73,18 +72,6 @@ export const Oportunidades = () => {
     setEditingOpportunity(null);
   };
 
-  const totalValue = searchFilteredOpportunities.reduce((acc, opportunity) => {
-    return acc + (opportunity.value || 0);
-  }, 0);
-
-  const activeOpportunities = searchFilteredOpportunities.filter(
-    opp => !['closed_won', 'closed_lost'].includes(opp.stage)
-  );
-
-  const conversionRate = opportunities.length > 0 
-    ? Math.round((opportunities.filter(opp => opp.stage === 'closed_won').length / opportunities.length) * 100)
-    : 0;
-
   if (error) {
     return (
       <div className="space-y-6">
@@ -108,6 +95,9 @@ export const Oportunidades = () => {
         </Button>
       </div>
 
+      {/* Métricas das Oportunidades */}
+      <OpportunityMetrics opportunities={searchFilteredOpportunities} />
+
       {/* Filtros Avançados */}
       <AdvancedFilters
         fields={opportunityFilterFields}
@@ -118,16 +108,10 @@ export const Oportunidades = () => {
         onToggle={toggleFilters}
       />
 
-      {/* Métricas Avançadas */}
-      <OpportunityMetrics opportunities={searchFilteredOpportunities} />
-
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex items-center gap-4">
-              <CardTitle>Pipeline de Vendas ({searchFilteredOpportunities.length})</CardTitle>
-              <ViewToggle view={view} onViewChange={setView} />
-            </div>
+            <CardTitle>Pipeline de Vendas ({searchFilteredOpportunities.length})</CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
@@ -144,6 +128,7 @@ export const Oportunidades = () => {
                   Filtros
                 </Button>
               )}
+              <ViewToggle view={viewMode} onViewChange={setViewMode} />
             </div>
           </div>
         </CardHeader>
@@ -166,10 +151,10 @@ export const Oportunidades = () => {
                 </Button>
               )}
             </div>
-          ) : view === 'kanban' ? (
-            <KanbanBoard opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
-          ) : (
+          ) : viewMode === 'table' ? (
             <OpportunitiesTable opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
+          ) : (
+            <KanbanBoard opportunities={searchFilteredOpportunities} onEdit={handleEditOpportunity} />
           )}
         </CardContent>
       </Card>
@@ -182,3 +167,5 @@ export const Oportunidades = () => {
     </div>
   );
 };
+
+export default Oportunidades;

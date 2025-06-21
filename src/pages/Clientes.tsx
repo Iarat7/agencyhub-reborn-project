@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClientsTable } from '@/components/clients/ClientsTable';
 import { ClientDialog } from '@/components/clients/ClientDialog';
-import { ClientMetricsCards } from '@/components/clients/ClientMetricsCards';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
 import { useClients } from '@/hooks/useClients';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterClients } from '@/utils/filterUtils';
 import { Client } from '@/services/api/types';
+import { useNavigate } from 'react-router-dom';
 
 const clientFilterFields: FilterField[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do cliente' },
@@ -34,6 +34,7 @@ const Clientes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const navigate = useNavigate();
 
   const { data: clients = [], isLoading, error } = useClients();
 
@@ -63,10 +64,29 @@ const Clientes = () => {
     setDialogOpen(true);
   };
 
+  const handleViewClient = (client: Client) => {
+    navigate(`/clientes/${client.id}`);
+  };
+
+  const handleViewAssociations = (client: Client) => {
+    // TODO: Implementar visualização de associações
+    console.log('Ver associações do cliente:', client.id);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    // TODO: Implementar exclusão de cliente
+    console.log('Excluir cliente:', clientId);
+  };
+
   const handleDialogClose = () => {
     setDialogOpen(false);
     setEditingClient(null);
   };
+
+  // Métricas simples dos clientes
+  const totalClients = searchFilteredClients.length;
+  const activeClients = searchFilteredClients.filter(client => client.status === 'active').length;
+  const totalValue = searchFilteredClients.reduce((sum, client) => sum + (client.monthly_value || 0), 0);
 
   if (error) {
     return (
@@ -92,7 +112,28 @@ const Clientes = () => {
       </div>
 
       {/* Métricas dos Clientes */}
-      <ClientMetricsCards clients={searchFilteredClients} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold text-blue-600">{totalClients}</div>
+            <p className="text-sm text-slate-600">Total de Clientes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold text-green-600">{activeClients}</div>
+            <p className="text-sm text-slate-600">Clientes Ativos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold text-purple-600">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+            </div>
+            <p className="text-sm text-slate-600">Valor Total Mensal</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Filtros Avançados */}
       <AdvancedFilters
@@ -147,7 +188,13 @@ const Clientes = () => {
               )}
             </div>
           ) : (
-            <ClientsTable clients={searchFilteredClients} onEdit={handleEditClient} />
+            <ClientsTable 
+              clients={searchFilteredClients} 
+              onEdit={handleEditClient}
+              onDelete={handleDeleteClient}
+              onView={handleViewClient}
+              onViewAssociations={handleViewAssociations}
+            />
           )}
         </CardContent>
       </Card>

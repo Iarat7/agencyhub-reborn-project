@@ -20,18 +20,34 @@ import {
 } from 'lucide-react';
 
 const Relatorios = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [period, setPeriod] = useState('30d');
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   
-  const { data: reportData, isLoading } = useAdvancedReportsData(selectedPeriod);
+  const { data: reportData, isLoading } = useAdvancedReportsData({
+    period,
+    dateRange: period === 'custom' ? dateRange : undefined
+  });
 
-  const handlePeriodChange = (period: string) => {
-    setSelectedPeriod(period);
+  const handlePeriodChange = (newPeriod: string) => {
+    setPeriod(newPeriod);
+  };
+
+  const handleDateRangeChange = (range: { from?: Date; to?: Date }) => {
+    setDateRange(range);
+  };
+
+  const handleApplyFilters = () => {
+    // Filters are applied automatically when period or dateRange changes
+    console.log('Applying filters with period:', period, 'and range:', dateRange);
   };
 
   const handleExport = () => {
     setExportDialogOpen(true);
   };
+
+  // Mock data for export
+  const exportData = reportData ? [reportData.metrics] : [];
 
   return (
     <div className="space-y-6">
@@ -49,8 +65,11 @@ const Relatorios = () => {
       </div>
 
       <ReportsFilters 
-        selectedPeriod={selectedPeriod}
+        period={period}
         onPeriodChange={handlePeriodChange}
+        dateRange={dateRange}
+        onDateRangeChange={handleDateRangeChange}
+        onApplyFilters={handleApplyFilters}
       />
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -75,8 +94,22 @@ const Relatorios = () => {
 
         <TabsContent value="overview">
           <div className="space-y-6">
-            <ReportsMetrics data={reportData} isLoading={isLoading} />
-            <ReportsCharts data={reportData} isLoading={isLoading} />
+            {reportData && (
+              <>
+                <ReportsMetrics 
+                  metrics={reportData.metrics}
+                  advancedMetrics={{ avgDealSize: reportData.metrics.averageDealSize }}
+                />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <ReportsCharts data={reportData.chartData} />
+                </div>
+              </>
+            )}
+            {isLoading && (
+              <div className="text-center py-8">
+                <p className="text-slate-600">Carregando relatórios...</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -139,8 +172,9 @@ const Relatorios = () => {
       </Tabs>
 
       <ExportDialog 
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
+        data={exportData}
+        filename="relatorios"
+        title="Relatórios"
       />
     </div>
   );

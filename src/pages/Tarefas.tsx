@@ -4,7 +4,6 @@ import { Plus, Search, Filter, Calendar, Clock, User, CheckCircle2 } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { TasksTable } from '@/components/tasks/TasksTable';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
@@ -12,8 +11,6 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterTasks } from '@/utils/filterUtils';
 import { Task } from '@/services/api/types';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 const taskFilterFields: FilterField[] = [
   { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
@@ -73,6 +70,11 @@ const Tarefas = () => {
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setDialogOpen(true);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    // TODO: Implementar exclusão de tarefa
+    console.log('Excluir tarefa:', taskId);
   };
 
   const handleDialogClose = () => {
@@ -216,7 +218,11 @@ const Tarefas = () => {
               )}
             </div>
           ) : (
-            <TasksTable tasks={searchFilteredTasks} onEdit={handleEditTask} />
+            <TasksTable 
+              tasks={searchFilteredTasks} 
+              onEdit={handleEditTask}
+              onDelete={handleDeleteTask}
+            />
           )}
         </CardContent>
       </Card>

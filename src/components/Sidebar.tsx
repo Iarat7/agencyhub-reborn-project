@@ -11,11 +11,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { icon: Home, label: 'Dashboard', path: '/' },
-  { icon: Users, label: 'Clientes', path: '/clientes' },
-  { icon: Target, label: 'Oportunidades', path: '/oportunidades' },
-  { icon: BarChart3, label: 'Relatórios', path: '/relatorios' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes' },
+  { icon: Home, label: 'Dashboard', path: '/app/dashboard' },
+  { icon: Users, label: 'Clientes', path: '/app/clientes' },
+  { icon: Target, label: 'Oportunidades', path: '/app/oportunidades' },
+  { icon: BarChart3, label: 'Relatórios', path: '/app/relatorios' },
+  { icon: Settings, label: 'Configurações', path: '/app/configuracoes' },
 ];
 
 export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {

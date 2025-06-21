@@ -40,6 +40,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/landing" element={<Navigate to="/" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/app" element={
                   <AuthGuard>

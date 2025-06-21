@@ -13,7 +13,7 @@ export interface Strategy {
   client_id?: string;
   budget?: number;
   deadline?: string;
-  status?: 'created' | 'approved' | 'in_progress' | 'completed';
+  status?: string;
   ai_generated?: boolean;
   ai_strategy_content?: string;
   created_by?: string;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -38,6 +37,8 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Starting invite submission...', { email, role });
+    
     if (!email || !role) {
       toast({
         title: "Erro",
@@ -59,6 +60,8 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
     setIsLoading(true);
     
     try {
+      console.log('Calling send-team-invite function...');
+      
       const { data, error } = await supabase.functions.invoke('send-team-invite', {
         body: {
           email,
@@ -68,7 +71,14 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
         }
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('Invite sent successfully!');
 
       toast({
         title: "Convite enviado!",
@@ -82,7 +92,7 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       console.error('Error sending invite:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao enviar o convite. Tente novamente.",
+        description: error.message || "Ocorreu um erro ao enviar o convite. Tente novamente.",
         variant: "destructive",
       });
     } finally {

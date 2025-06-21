@@ -18,12 +18,41 @@ interface TeamInviteRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Send team invite function called");
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, role, inviterName, companyName }: TeamInviteRequest = await req.json();
+    console.log("Processing team invite request...");
+    
+    const requestBody = await req.json();
+    console.log("Request body received:", JSON.stringify(requestBody, null, 2));
+    
+    const { email, role, inviterName, companyName }: TeamInviteRequest = requestBody;
+
+    // Validação dos parâmetros
+    if (!email) {
+      throw new Error('E-mail é obrigatório');
+    }
+    if (!role) {
+      throw new Error('Função é obrigatória');
+    }
+    if (!inviterName) {
+      throw new Error('Nome do convidador é obrigatório');
+    }
+
+    console.log(`Sending invite to ${email} with role ${role} from ${inviterName}`);
+
+    // Verificar se a chave API do Resend está disponível
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY not found in environment variables");
+      throw new Error("Configuração de e-mail não encontrada");
+    }
+
+    console.log("Resend API key found, proceeding with email send...");
 
     const getRoleLabel = (roleValue: string) => {
       switch (roleValue) {
@@ -117,9 +146,13 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Team invite email sent successfully:", emailResponse);
+    console.log("Email sent successfully:", JSON.stringify(emailResponse, null, 2));
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Convite enviado com sucesso',
+      emailResponse 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -128,8 +161,13 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-team-invite function:", error);
+    console.error("Error stack:", error.stack);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

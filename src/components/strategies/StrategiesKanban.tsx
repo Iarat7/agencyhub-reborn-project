@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,14 @@ import {
   CheckCircle,
   Clock,
   PlayCircle,
-  FileText
+  FileText,
+  Eye,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Strategy } from '@/hooks/useStrategies';
 import { useClients } from '@/hooks/useClients';
+import { StrategyDetailsDialog } from './StrategyDetailsDialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -31,6 +35,9 @@ interface StrategiesKanbanProps {
 }
 
 export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanbanProps) => {
+  const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  
   const { data: clients = [] } = useClients();
 
   const getClientName = (clientId: string) => {
@@ -43,6 +50,11 @@ export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanba
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  };
+
+  const handleViewStrategy = (strategy: Strategy) => {
+    setSelectedStrategy(strategy);
+    setDetailsDialogOpen(true);
   };
 
   const columns = [
@@ -94,105 +106,125 @@ export const StrategiesKanban = ({ strategies, onStatusChange }: StrategiesKanba
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {columns.map((column) => {
-        const columnStrategies = getStrategiesByStatus(column.id);
-        const ColumnIcon = column.icon;
-        
-        return (
-          <div key={column.id} className="space-y-4">
-            <Card className={`border-2 ${column.color}`}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <ColumnIcon className="h-4 w-4" />
-                  {column.title}
-                  <Badge variant="secondary" className="ml-auto">
-                    {columnStrategies.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-            </Card>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {columns.map((column) => {
+          const columnStrategies = getStrategiesByStatus(column.id);
+          const ColumnIcon = column.icon;
+          
+          return (
+            <div key={column.id} className="space-y-4">
+              <Card className={`border-2 ${column.color}`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <ColumnIcon className="h-4 w-4" />
+                    {column.title}
+                    <Badge variant="secondary" className="ml-auto">
+                      {columnStrategies.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+              </Card>
 
-            <div className="space-y-3">
-              {columnStrategies.map((strategy) => (
-                <Card key={strategy.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <h4 className="font-medium text-sm line-clamp-2">
-                          {strategy.title}
-                        </h4>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                              <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {getStatusOptions(strategy.status || 'created').map((status) => (
-                              <DropdownMenuItem
-                                key={status}
-                                onClick={() => onStatusChange(strategy.id, status)}
-                              >
-                                Mover para {getStatusLabel(status)}
+              <div className="space-y-3">
+                {columnStrategies.map((strategy) => (
+                  <Card key={strategy.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <h4 className="font-medium text-sm line-clamp-2">
+                            {strategy.title}
+                          </h4>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewStrategy(strategy)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Visualizar
                               </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <User className="h-3 w-3" />
-                          {strategy.client_id ? getClientName(strategy.client_id) : 'Geral'}
+                              {getStatusOptions(strategy.status || 'created').map((status) => (
+                                <DropdownMenuItem
+                                  key={status}
+                                  onClick={() => onStatusChange(strategy.id, status)}
+                                >
+                                  Mover para {getStatusLabel(status)}
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuItem>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
 
-                        {strategy.budget && (
+                        <div className="space-y-2">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <DollarSign className="h-3 w-3" />
-                            {formatCurrency(strategy.budget)}
+                            <User className="h-3 w-3" />
+                            {strategy.client_id ? getClientName(strategy.client_id) : 'Geral'}
                           </div>
-                        )}
 
-                        {strategy.deadline && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(strategy.deadline), 'dd/MM/yyyy', { locale: ptBR })}
-                          </div>
-                        )}
-                      </div>
+                          {strategy.budget && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <DollarSign className="h-3 w-3" />
+                              {formatCurrency(strategy.budget)}
+                            </div>
+                          )}
 
-                      <div className="flex items-center justify-between">
-                        {strategy.ai_generated && (
-                          <Badge variant="outline" className="text-xs">
-                            <Brain className="h-3 w-3 mr-1" />
-                            IA
-                          </Badge>
-                        )}
-                        
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {format(new Date(strategy.created_at!), 'dd/MM', { locale: ptBR })}
-                        </span>
+                          {strategy.deadline && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(strategy.deadline), 'dd/MM/yyyy', { locale: ptBR })}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          {strategy.ai_generated && (
+                            <Badge variant="outline" className="text-xs">
+                              <Brain className="h-3 w-3 mr-1" />
+                              IA
+                            </Badge>
+                          )}
+                          
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {format(new Date(strategy.created_at!), 'dd/MM', { locale: ptBR })}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {columnStrategies.length === 0 && (
-                <Card className="border-dashed">
-                  <CardContent className="p-8 text-center">
-                    <ColumnIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma estratégia {column.title.toLowerCase()}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {columnStrategies.length === 0 && (
+                  <Card className="border-dashed">
+                    <CardContent className="p-8 text-center">
+                      <ColumnIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Nenhuma estratégia {column.title.toLowerCase()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+
+      <StrategyDetailsDialog
+        strategy={selectedStrategy}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+      />
+    </>
   );
 };

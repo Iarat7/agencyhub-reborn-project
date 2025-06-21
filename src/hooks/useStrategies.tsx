@@ -45,6 +45,31 @@ export const useStrategies = () => {
   });
 };
 
+export const useStrategy = (strategyId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['strategy', strategyId, user?.id],
+    queryFn: async () => {
+      if (!user?.id || !strategyId) return null;
+
+      const { data, error } = await supabase
+        .from('strategies')
+        .select('*')
+        .eq('id', strategyId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching strategy:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!user?.id && !!strategyId,
+  });
+};
+
 export const useCreateStrategy = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();

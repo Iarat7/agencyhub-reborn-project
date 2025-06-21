@@ -137,7 +137,7 @@ export default function Equipe() {
             </Card>
           </div>
 
-          <TeamMembersTable users={users as User[]} isLoading={isLoading} />
+          <TeamMembersTable users={users} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="roles">
@@ -145,7 +145,7 @@ export default function Equipe() {
         </TabsContent>
 
         <TabsContent value="performance">
-          <TeamPerformanceCard users={users as User[]} />
+          <TeamPerformanceCard users={users} />
         </TabsContent>
       </Tabs>
 

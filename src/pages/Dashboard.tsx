@@ -60,15 +60,9 @@ export default function Dashboard() {
       ) : (
         <div className="space-y-4 md:space-y-6">
           {/* Layout principal - Métricas e Gráficos ocupando todo o espaço */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
-            <div className="xl:col-span-3 space-y-4 md:space-y-6">
-              <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
-              <DashboardCharts metrics={dashboardData?.metrics} />
-            </div>
-            
-            <div className="xl:col-span-1">
-              <NotificationAlerts />
-            </div>
+          <div className="space-y-4 md:space-y-6">
+            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
+            <DashboardCharts metrics={dashboardData?.metrics} />
           </div>
 
           {/* Seção de Inteligência Artificial */}

@@ -22,7 +22,7 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
   const { startDate, endDate } = calculatePeriodDates(selectedPeriod);
 
   const dashboardQuery = useQuery({
-    queryKey: ['complete-dashboard-data', selectedPeriod],
+    queryKey: ['complete-dashboard-data', selectedPeriod || 'none'],
     queryFn: async () => {
       console.log('📊 Fetching dashboard data for period:', selectedPeriod);
       

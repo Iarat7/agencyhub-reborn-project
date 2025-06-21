@@ -8,7 +8,6 @@ export const useDashboardActivities = () => {
       console.log('📊 Fetching dashboard activities...');
       
       // Por enquanto, retornamos atividades mockadas
-      // Em uma implementação real, você buscaria do banco de dados
       const recentActivities = [
         {
           action: 'Novo cliente cadastrado',

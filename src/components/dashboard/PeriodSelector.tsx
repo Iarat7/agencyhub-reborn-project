@@ -31,12 +31,16 @@ export const periodOptions: PeriodOption[] = [
 ];
 
 export const PeriodSelector = ({ value, onChange }: PeriodSelectorProps) => {
+  const selectedOption = periodOptions.find(option => option.value === value);
+  
   return (
     <div className="flex items-center gap-2">
       <CalendarIcon className="h-4 w-4 text-slate-600" />
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-48">
-          <SelectValue placeholder="Selecionar período" />
+          <SelectValue placeholder="Selecionar período">
+            {selectedOption?.label || 'Selecionar período'}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {periodOptions.map((option) => (

@@ -3,18 +3,17 @@ import React, { useState } from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
-import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { SmartInsights } from '@/components/dashboard/SmartInsights';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Calendar, Brain, Bell } from 'lucide-react';
+import { BarChart3, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSmartInsights } from '@/hooks/useSmartInsights';
 import { useCompleteDashboardData } from '@/hooks/useDashboard';
 
 export default function Dashboard() {
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [selectedPeriod, setSelectedPeriod] = useState('30');
   const isMobile = useIsMobile();
 
   // Buscar dados completos do dashboard
@@ -32,12 +31,9 @@ export default function Dashboard() {
       
       {isMobile ? (
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview" className="text-xs">
               <BarChart3 className="w-4 h-4" />
-            </TabsTrigger>
-            <TabsTrigger value="activities" className="text-xs">
-              <Calendar className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger value="ai" className="text-xs">
               <Brain className="w-4 h-4" />
@@ -52,10 +48,6 @@ export default function Dashboard() {
             <DashboardCharts metrics={dashboardData?.metrics} />
           </TabsContent>
           
-          <TabsContent value="activities">
-            <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
-          </TabsContent>
-          
           <TabsContent value="ai" className="space-y-4">
             <AIStrategiesCard />
             <SmartInsights insights={insights} />
@@ -67,12 +59,11 @@ export default function Dashboard() {
         </Tabs>
       ) : (
         <div className="space-y-4 md:space-y-6">
-          {/* Layout principal - Métricas e Gráficos */}
+          {/* Layout principal - Métricas e Gráficos ocupando todo o espaço */}
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
             <div className="xl:col-span-3 space-y-4 md:space-y-6">
               <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
               <DashboardCharts metrics={dashboardData?.metrics} />
-              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
             </div>
             
             <div className="xl:col-span-1">
@@ -80,7 +71,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Seção de Inteligência Artificial - Apenas os componentes solicitados */}
+          {/* Seção de Inteligência Artificial */}
           <div className="border-t pt-6">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Brain className="h-6 w-6" />

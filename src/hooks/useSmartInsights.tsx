@@ -6,7 +6,7 @@ export const useSmartInsights = (selectedPeriod: string | null = '6m') => {
   const { data: dashboardData } = useCompleteDashboardData(selectedPeriod);
 
   return useQuery({
-    queryKey: ['smart-insights', selectedPeriod, dashboardData],
+    queryKey: ['smart-insights', selectedPeriod, dashboardData?.metrics],
     queryFn: async () => {
       if (!dashboardData?.metrics) return [];
 

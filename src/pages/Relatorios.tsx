@@ -97,11 +97,39 @@ const Relatorios = () => {
             {reportData && (
               <>
                 <ReportsMetrics 
-                  metrics={reportData.metrics}
+                  metrics={{
+                    totalClients: reportData.metrics.totalClients,
+                    activeClients: reportData.metrics.newClients,
+                    totalOpportunities: reportData.metrics.totalOpportunities,
+                    wonOpportunities: reportData.metrics.wonOpportunities,
+                    totalRevenue: reportData.metrics.totalRevenue,
+                    pendingTasks: reportData.metrics.pendingTasks,
+                    completedTasks: reportData.metrics.completedTasks
+                  }}
                   advancedMetrics={{ avgDealSize: reportData.metrics.averageDealSize }}
                 />
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <ReportsCharts data={reportData.chartData} />
+                  <ReportsCharts data={{
+                    opportunitiesByStage: [
+                      { stage: 'Prospecção', count: reportData.rawData.opportunities.filter(o => o.stage === 'prospection').length },
+                      { stage: 'Qualificação', count: reportData.rawData.opportunities.filter(o => o.stage === 'qualification').length },
+                      { stage: 'Proposta', count: reportData.rawData.opportunities.filter(o => o.stage === 'proposal').length },
+                      { stage: 'Negociação', count: reportData.rawData.opportunities.filter(o => o.stage === 'negotiation').length },
+                      { stage: 'Ganhou', count: reportData.rawData.opportunities.filter(o => o.stage === 'closed_won').length },
+                      { stage: 'Perdeu', count: reportData.rawData.opportunities.filter(o => o.stage === 'closed_lost').length },
+                    ],
+                    tasksByStatus: [
+                      { status: 'Pendente', count: reportData.rawData.tasks.filter(t => t.status === 'pending').length },
+                      { status: 'Em Progresso', count: reportData.rawData.tasks.filter(t => t.status === 'in_progress').length },
+                      { status: 'Em Aprovação', count: reportData.rawData.tasks.filter(t => t.status === 'in_approval').length },
+                      { status: 'Concluída', count: reportData.rawData.tasks.filter(t => t.status === 'completed').length },
+                    ],
+                    clientsByStatus: [
+                      { status: 'Ativo', count: reportData.rawData.clients.filter(c => c.status === 'active').length },
+                      { status: 'Inativo', count: reportData.rawData.clients.filter(c => c.status === 'inactive').length },
+                      { status: 'Prospect', count: reportData.rawData.clients.filter(c => c.status === 'prospect').length },
+                    ]
+                  }} />
                 </div>
               </>
             )}

@@ -10,11 +10,11 @@ import Index from "./pages/Index";
 
 // Lazy loading das páginas
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Clientes = lazy(() => import("./pages/Clientes"));
-const Oportunidades = lazy(() => import("./pages/Oportunidades"));
-const Tarefas = lazy(() => import("./pages/Tarefas"));
+const Clientes = lazy(() => import("./pages/Clientes").then(module => ({ default: module.default || module.Clientes })));
+const Oportunidades = lazy(() => import("./pages/Oportunidades").then(module => ({ default: module.default || module.Oportunidades })));
+const Tarefas = lazy(() => import("./pages/Tarefas").then(module => ({ default: module.default || module.Tarefas })));
 const Agenda = lazy(() => import("./pages/Agenda"));
-const Relatorios = lazy(() => import("./pages/Relatorios"));
+const Relatorios = lazy(() => import("./pages/Relatorios").then(module => ({ default: module.default || module.Relatorios })));
 const Financeiro = lazy(() => import("./pages/Financeiro"));
 const Contratos = lazy(() => import("./pages/Contratos"));
 const Estrategias = lazy(() => import("./pages/Estrategias"));
@@ -22,7 +22,7 @@ const Equipe = lazy(() => import("./pages/Equipe"));
 const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes").then(module => ({ default: module.Configuracoes })));
 const ClienteDashboard = lazy(() => import("./pages/ClienteDashboard").then(module => ({ default: module.ClienteDashboard })));
-const Auth = lazy(() => import("./pages/Auth"));
+const Auth = lazy(() => import("./pages/Auth").then(module => ({ default: module.default || module.Auth })));
 const Landing = lazy(() => import("./pages/Landing").then(module => ({ default: module.Landing })));
 
 const queryClient = new QueryClient();

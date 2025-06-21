@@ -2,143 +2,104 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Shield, Users, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Crown, 
+  Shield, 
+  Users, 
+  Settings,
+  UserPlus
+} from 'lucide-react';
 
 export const TeamRolesCard = () => {
   const roles = [
     {
-      id: 'admin',
       name: 'Administrador',
-      icon: <Crown className="h-5 w-5" />,
+      icon: Crown,
       color: 'destructive' as const,
-      description: 'Acesso total ao sistema',
       permissions: [
+        'Acesso total ao sistema',
         'Gerenciar usuários e permissões',
-        'Configurar sistema',
-        'Acessar relatórios financeiros',
-        'Gerenciar integrações',
-        'Deletar dados',
-        'Exportar dados',
-      ]
+        'Configurações avançadas',
+        'Relatórios administrativos'
+      ],
+      count: 2
     },
     {
-      id: 'manager',
       name: 'Gerente',
-      icon: <Shield className="h-5 w-5" />,
+      icon: Shield,
       color: 'default' as const,
-      description: 'Gerenciamento de equipe e projetos',
       permissions: [
-        'Gerenciar projetos',
+        'Gerenciar equipe',
         'Visualizar relatórios',
-        'Gerenciar tarefas da equipe',
-        'Acessar dashboard completo',
-        'Criar contratos',
-        'Gerenciar clientes',
-      ]
+        'Aprovar transações',
+        'Configurar processos'
+      ],
+      count: 5
     },
     {
-      id: 'user',
       name: 'Usuário',
-      icon: <Users className="h-5 w-5" />,
+      icon: Users,
       color: 'secondary' as const,
-      description: 'Acesso básico para executar tarefas',
       permissions: [
-        'Visualizar tarefas próprias',
-        'Atualizar status de tarefas',
-        'Acessar calendário',
-        'Visualizar clientes',
+        'Gerenciar clientes',
         'Criar oportunidades',
-        'Visualizar dashboard básico',
-      ]
+        'Executar tarefas',
+        'Visualizar dados próprios'
+      ],
+      count: 12
     }
-  ];
-
-  const restrictedPermissions = [
-    'Deletar dados do sistema',
-    'Alterar configurações globais',
-    'Gerenciar faturamento',
-    'Acessar logs do sistema',
   ];
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Funções e Permissões</h2>
+          <p className="text-muted-foreground">
+            Configure as permissões de acesso para cada função
+          </p>
+        </div>
+        <Button>
+          <Settings className="h-4 w-4 mr-2" />
+          Configurar Permissões
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {roles.map((role) => (
-          <Card key={role.id} className="relative">
+          <Card key={role.name} className="relative">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {role.icon}
-                {role.name}
-                <Badge variant={role.color} className="ml-auto">
-                  {role.id.toUpperCase()}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <role.icon className="h-5 w-5" />
+                  <CardTitle className="text-lg">{role.name}</CardTitle>
+                </div>
+                <Badge variant={role.color}>
+                  {role.count} usuários
                 </Badge>
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {role.description}
-              </p>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
                 <h4 className="font-medium text-sm">Permissões:</h4>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {role.permissions.map((permission, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-green-500" />
+                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0" />
                       {permission}
                     </li>
                   ))}
                 </ul>
-                
-                {role.id !== 'admin' && (
-                  <div className="mt-4 pt-4 border-t">
-                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
-                      Sem acesso a:
-                    </h4>
-                    <ul className="space-y-1">
-                      {restrictedPermissions.slice(0, role.id === 'user' ? 4 : 2).map((permission, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <X className="h-4 w-4 text-red-500" />
-                          {permission}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
+              <Button variant="outline" size="sm" className="w-full">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Adicionar Usuário
+              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Configurações de Permissões</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium">Políticas de Segurança</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Autenticação obrigatória para todos os usuários</li>
-                  <li>• Sessões expiram após 24 horas de inatividade</li>
-                  <li>• Logs de auditoria para ações administrativas</li>
-                  <li>• Validação de permissões em tempo real</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Hierarquia de Acesso</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Administrador: Acesso total</li>
-                  <li>• Gerente: Acesso de supervisão</li>
-                  <li>• Usuário: Acesso operacional</li>
-                  <li>• Convidado: Somente leitura (se habilitado)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

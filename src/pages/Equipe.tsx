@@ -16,7 +16,6 @@ import { InviteUserDialog } from '@/components/team/InviteUserDialog';
 import { TeamRolesCard } from '@/components/team/TeamRolesCard';
 import { TeamPerformanceCard } from '@/components/team/TeamPerformanceCard';
 import { useUsers } from '@/hooks/useUsers';
-import { User } from '@/services/api/types';
 
 export default function Equipe() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);

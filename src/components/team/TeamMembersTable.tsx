@@ -30,16 +30,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-interface User {
-  id: string;
-  full_name: string;
-  phone?: string;
-  company_name?: string;
-  role: string;
-  avatar_url?: string;
-  created_at: string;
-}
+import { User } from '@/services/api/types';
 
 interface TeamMembersTableProps {
   users: User[];
@@ -134,14 +125,14 @@ export const TeamMembersTable = ({ users, isLoading }: TeamMembersTableProps) =>
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{user.full_name}</p>
+                          <p className="font-medium">{user.full_name || 'Nome não informado'}</p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getRoleColor(user.role)} className="gap-1">
-                        {getRoleIcon(user.role)}
-                        {getRoleLabel(user.role)}
+                      <Badge variant={getRoleColor(user.role || 'user')} className="gap-1">
+                        {getRoleIcon(user.role || 'user')}
+                        {getRoleLabel(user.role || 'user')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -159,7 +150,7 @@ export const TeamMembersTable = ({ users, isLoading }: TeamMembersTableProps) =>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        {user.created_at ? format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
                       </span>
                     </TableCell>
                     <TableCell>

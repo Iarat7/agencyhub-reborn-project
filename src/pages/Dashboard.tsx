@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
@@ -16,11 +16,22 @@ export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('30');
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    console.log('📊 Dashboard component mounted');
+    console.log('📱 Is mobile:', isMobile);
+  }, [isMobile]);
+
   // Buscar dados completos do dashboard
   const { data: dashboardData, isLoading } = useCompleteDashboardData(selectedPeriod);
   
   // Dados para insights
   const { data: insights } = useSmartInsights(selectedPeriod);
+
+  console.log('📊 Dashboard render:', { 
+    dashboardData: dashboardData ? 'Present' : 'Null', 
+    isLoading, 
+    isMobile 
+  });
 
   return (
     <div className="space-y-4 md:space-y-6">

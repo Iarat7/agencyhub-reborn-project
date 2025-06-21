@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +70,15 @@ export const AIStrategyDialog = ({ open, onOpenChange }: AIStrategyDialogProps) 
     try {
       const client = clients.find(c => c.id === data.client_id);
       
+      console.log('Invoking generate-strategy function with data:', {
+        clientName: client?.name,
+        segment: data.segment,
+        budget: data.budget,
+        objectives: data.objectives,
+        challenges: data.challenges,
+        implementationTime: data.implementation_time,
+      });
+
       const { data: response, error } = await supabase.functions.invoke('generate-strategy', {
         body: {
           clientName: client?.name,
@@ -82,7 +90,17 @@ export const AIStrategyDialog = ({ open, onOpenChange }: AIStrategyDialogProps) 
         },
       });
 
-      if (error) throw error;
+      console.log('Function response:', response);
+      console.log('Function error:', error);
+
+      if (error) {
+        console.error('Error invoking function:', error);
+        throw error;
+      }
+
+      if (!response?.strategy) {
+        throw new Error('Nenhuma estratégia foi retornada pela IA');
+      }
 
       const strategyData = {
         title: `Estratégia IA - ${client?.name}`,
@@ -97,6 +115,8 @@ export const AIStrategyDialog = ({ open, onOpenChange }: AIStrategyDialogProps) 
         ai_strategy_content: response.strategy,
       };
 
+      console.log('Creating strategy with data:', strategyData);
+
       await createStrategy.mutateAsync(strategyData);
       
       toast({
@@ -110,7 +130,7 @@ export const AIStrategyDialog = ({ open, onOpenChange }: AIStrategyDialogProps) 
       console.error('Error generating strategy:', error);
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao gerar a estratégia.',
+        description: error instanceof Error ? error.message : 'Ocorreu um erro ao gerar a estratégia.',
         variant: 'destructive',
       });
     } finally {

@@ -15,7 +15,21 @@ serve(async (req) => {
   }
 
   try {
-    const { clientName, segment, budget, objectives, challenges, implementationTime } = await req.json();
+    console.log('Generate strategy function called');
+    
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not found');
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const requestBody = await req.json();
+    console.log('Request body:', requestBody);
+    
+    const { clientName, segment, budget, objectives, challenges, implementationTime } = requestBody;
+
+    if (!clientName || !segment || !objectives || !challenges) {
+      throw new Error('Missing required parameters');
+    }
 
     const prompt = `
 Você é um consultor estratégico sênior com mais de 15 anos de experiência em transformação digital e crescimento de negócios. 
@@ -100,6 +114,8 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
 **IMPORTANTE:** Seja específico, use números reais, forneça cronogramas detalhados e certifique-se de que tudo seja implementável dentro do orçamento e prazo estabelecidos.
 `;
 
+    console.log('Calling OpenAI API...');
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -107,7 +123,7 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
@@ -120,11 +136,16 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
       }),
     });
 
-    const data = await response.json();
+    console.log('OpenAI response status:', response.status);
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
+
+    const data = await response.json();
+    console.log('OpenAI response received successfully');
 
     const generatedStrategy = data.choices[0].message.content;
 
@@ -133,7 +154,9 @@ Baseado no orçamento de R$ ${budget?.toLocaleString('pt-BR')}, projete:
     });
   } catch (error) {
     console.error('Error in generate-strategy function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

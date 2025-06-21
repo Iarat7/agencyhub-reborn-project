@@ -80,6 +80,8 @@ export const useCreateStrategy = () => {
         throw new Error('User not authenticated');
       }
 
+      console.log('Creating strategy with data:', strategy);
+
       const { data, error } = await supabase
         .from('strategies')
         .insert({
@@ -94,9 +96,10 @@ export const useCreateStrategy = () => {
         throw error;
       }
 
+      console.log('Strategy created successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['strategies'] });
       toast({
         title: 'Estratégia criada',

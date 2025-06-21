@@ -25,9 +25,8 @@ export const ProfileEditDialog = ({ open, onOpenChange }: ProfileEditDialogProps
   
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
-    company: user?.company || '',
+    company_name: user?.company_name || '',
     phone: user?.phone || '',
-    bio: user?.bio || '',
     avatar_url: user?.avatar_url || ''
   });
 
@@ -123,11 +122,11 @@ export const ProfileEditDialog = ({ open, onOpenChange }: ProfileEditDialogProps
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="company">Empresa</Label>
+              <Label htmlFor="company_name">Empresa</Label>
               <Input
-                id="company"
-                value={formData.company}
-                onChange={(e) => handleInputChange('company', e.target.value)}
+                id="company_name"
+                value={formData.company_name}
+                onChange={(e) => handleInputChange('company_name', e.target.value)}
                 placeholder="Nome da empresa"
               />
             </div>
@@ -141,17 +140,6 @@ export const ProfileEditDialog = ({ open, onOpenChange }: ProfileEditDialogProps
                 placeholder="(11) 99999-9999"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bio">Biografia</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => handleInputChange('bio', e.target.value)}
-              placeholder="Conte um pouco sobre você..."
-              rows={3}
-            />
           </div>
 
           <div className="flex justify-end gap-2">

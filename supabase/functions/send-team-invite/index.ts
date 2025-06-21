@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const emailResponse = await resend.emails.send({
-      from: "AgencyHub <onboarding@resend.dev>",
+      from: "InflowHub <onboarding@resend.dev>",
       to: [email],
       subject: `Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
       html: `
@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             
             <p style="font-size: 16px; margin-bottom: 24px;">
-              <strong>${inviterName}</strong> convidou você para fazer parte da equipe${companyName ? ` da <strong>${companyName}</strong>` : ''} no <strong>AgencyHub</strong>.
+              <strong>${inviterName}</strong> convidou você para fazer parte da equipe${companyName ? ` da <strong>${companyName}</strong>` : ''} no <strong>InflowHub</strong>.
             </p>
             
             <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #667eea;">
@@ -99,11 +99,11 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <p style="font-size: 16px; margin-bottom: 32px;">
-              O AgencyHub é uma plataforma completa para gestão de agências, onde você poderá gerenciar clientes, oportunidades, tarefas, contratos e muito mais!
+              O InflowHub é uma plataforma completa para gestão empresarial, onde você poderá gerenciar clientes, oportunidades, tarefas, contratos e muito mais!
             </p>
             
             <div style="text-align: center; margin: 32px 0;">
-              <a href="${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token_hash=invite&type=invite&redirect_to=${encodeURIComponent('https://preview--agencyhub-reborn-project.lovable.app/auth')}" 
+              <a href="${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token_hash=invite&type=invite&redirect_to=${encodeURIComponent(window?.location?.origin || 'https://your-domain.com')}/auth" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: all 0.3s ease;">
                 ✨ Aceitar Convite e Criar Conta
               </a>
@@ -118,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
             
             <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">
-              <strong>O que você pode fazer no AgencyHub:</strong>
+              <strong>O que você pode fazer no InflowHub:</strong>
             </p>
             
             <ul style="font-size: 14px; color: #64748b; margin-left: 20px;">
@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; padding: 20px; font-size: 12px; color: #64748b;">
             <p style="margin: 0;">
-              AgencyHub - Gestão Inteligente para Agências
+              InflowHub - Gestão Inteligente para Empresas
             </p>
           </div>
           

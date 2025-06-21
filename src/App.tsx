@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
 
 // Lazy loading das páginas - ajustando para named exports
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -24,7 +25,6 @@ const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const ClienteDashboard = lazy(() => import("./pages/ClienteDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Landing = lazy(() => import("./pages/Landing"));
 
 const queryClient = new QueryClient();
 
@@ -38,14 +38,14 @@ function App() {
           <BrowserRouter>
             <Suspense fallback={<div className="flex items-center justify-center h-screen">Carregando...</div>}>
               <Routes>
-                <Route path="/landing" element={<Landing />} />
+                <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={
+                <Route path="/app" element={
                   <AuthGuard>
                     <Index />
                   </AuthGuard>
                 }>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route index element={<Navigate to="/app/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="clientes" element={<Clientes />} />
                   <Route path="clientes/:id" element={<ClienteDashboard />} />

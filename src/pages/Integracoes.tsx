@@ -1,145 +1,29 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { GoogleIntegrationCard } from '@/components/integrations/GoogleIntegrationCard';
 import { 
   Zap, 
-  Mail, 
-  MessageSquare, 
-  Calendar, 
-  CreditCard,
-  Database,
-  Settings,
-  CheckCircle,
-  AlertCircle,
-  Plus,
-  Link2,
-  Chrome,
-  Facebook,
+  Globe, 
+  BarChart3,
   Instagram,
-  TrendingUp
+  Facebook,
+  MessageSquare,
+  Info
 } from 'lucide-react';
-import { IntegrationCard } from '@/components/integrations/IntegrationCard';
-import { WebhookManager } from '@/components/integrations/WebhookManager';
-import { APIKeysManager } from '@/components/integrations/APIKeysManager';
-
-interface Integration {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  category: string;
-  status: 'connected' | 'available' | 'coming-soon';
-  color: string;
-  features: string[];
-}
 
 export default function Integracoes() {
-  const [activeIntegrations, setActiveIntegrations] = useState<string[]>([]);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
 
-  const availableIntegrations: Integration[] = [
-    {
-      id: 'google-ads',
-      name: 'Google Ads',
-      description: 'Conecte contas do Google Ads para importar campanhas e métricas',
-      icon: <Chrome className="h-8 w-8" />,
-      category: 'advertising',
-      status: 'available',
-      color: 'blue',
-      features: ['Métricas de campanhas', 'Performance de anúncios', 'Custos e conversões']
-    },
-    {
-      id: 'google-analytics',
-      name: 'Google Analytics',
-      description: 'Integre com Google Analytics para insights detalhados',
-      icon: <TrendingUp className="h-8 w-8" />,
-      category: 'analytics',
-      status: 'available',
-      color: 'orange',
-      features: ['Tráfego do site', 'Conversões', 'Comportamento do usuário']
-    },
-    {
-      id: 'facebook-ads',
-      name: 'Facebook Ads',
-      description: 'Conecte suas contas do Facebook Ads para métricas completas',
-      icon: <Facebook className="h-8 w-8" />,
-      category: 'advertising',
-      status: 'available',
-      color: 'blue',
-      features: ['Campanhas Facebook', 'ROI e métricas', 'Audiências']
-    },
-    {
-      id: 'instagram-insights',
-      name: 'Instagram Insights',
-      description: 'Analise o desempenho das páginas do Instagram dos clientes',
-      icon: <Instagram className="h-8 w-8" />,
-      category: 'social-media',
-      status: 'available',
-      color: 'pink',
-      features: ['Métricas de posts', 'Crescimento de seguidores', 'Engagement']
-    },
-    {
-      id: 'zapier',
-      name: 'Zapier',
-      description: 'Automatize fluxos de trabalho conectando com mais de 5000 apps',
-      icon: <Zap className="h-8 w-8" />,
-      category: 'automation',
-      status: 'available',
-      color: 'orange',
-      features: ['Automação de tarefas', 'Triggers personalizados', 'Conecta 5000+ apps']
-    },
-    {
-      id: 'email',
-      name: 'Email Marketing',
-      description: 'Integração com provedores de email como Mailchimp, SendGrid',
-      icon: <Mail className="h-8 w-8" />,
-      category: 'marketing',
-      status: 'available',
-      color: 'blue',
-      features: ['Campanhas automáticas', 'Segmentação', 'Analytics']
-    },
-    {
-      id: 'whatsapp',
-      name: 'WhatsApp Business',
-      description: 'Envie mensagens e notificações via WhatsApp',
-      icon: <MessageSquare className="h-8 w-8" />,
-      category: 'communication',
-      status: 'available',
-      color: 'green',
-      features: ['Mensagens automáticas', 'Templates', 'Chat bot']
-    },
-    {
-      id: 'google-calendar',
-      name: 'Google Calendar',
-      description: 'Sincronize eventos e reuniões com Google Calendar',
-      icon: <Calendar className="h-8 w-8" />,
-      category: 'productivity',
-      status: 'available',
-      color: 'red',
-      features: ['Sync bidirecional', 'Lembretes', 'Convites automáticos']
-    }
-  ];
+  const handleConnect = (integration: string) => {
+    setConnectedIntegrations(prev => [...prev, integration]);
+  };
 
-  const categories = [
-    { id: 'all', name: 'Todas', icon: <Settings className="h-4 w-4" /> },
-    { id: 'advertising', name: 'Publicidade', icon: <TrendingUp className="h-4 w-4" /> },
-    { id: 'social-media', name: 'Redes Sociais', icon: <Instagram className="h-4 w-4" /> },
-    { id: 'analytics', name: 'Analytics', icon: <Database className="h-4 w-4" /> },
-    { id: 'automation', name: 'Automação', icon: <Zap className="h-4 w-4" /> },
-    { id: 'marketing', name: 'Marketing', icon: <Mail className="h-4 w-4" /> },
-    { id: 'communication', name: 'Comunicação', icon: <MessageSquare className="h-4 w-4" /> },
-    { id: 'productivity', name: 'Produtividade', icon: <Calendar className="h-4 w-4" /> },
-  ];
-
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  const filteredIntegrations = selectedCategory === 'all' 
-    ? availableIntegrations 
-    : availableIntegrations.filter(integration => integration.category === selectedCategory);
-
-  const connectedCount = availableIntegrations.filter(i => i.status === 'connected').length;
-  const availableCount = availableIntegrations.filter(i => i.status === 'available').length;
+  const handleDisconnect = (integration: string) => {
+    setConnectedIntegrations(prev => prev.filter(item => item !== integration));
+  };
 
   return (
     <div className="space-y-6">
@@ -147,117 +31,139 @@ export default function Integracoes() {
         <div>
           <h1 className="text-3xl font-bold">Integrações</h1>
           <p className="text-muted-foreground">
-            Conecte seu CRM com Google Ads, Facebook, Instagram e outras ferramentas
+            Conecte suas ferramentas favoritas ao InflowHub
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Solicitar Integração
-        </Button>
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-green-600">{connectedCount}</p>
-                <p className="text-sm text-muted-foreground">Conectadas</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          As integrações estão em desenvolvimento. Em breve você poderá conectar suas contas do Google Ads, Facebook e Instagram para importar dados automaticamente.
+        </AlertDescription>
+      </Alert>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-blue-600">{availableCount}</p>
-                <p className="text-sm text-muted-foreground">Disponíveis</p>
-              </div>
-              <Link2 className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{availableIntegrations.length}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
-              </div>
-              <Settings className="h-8 w-8 text-gray-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-orange-600">0</p>
-                <p className="text-sm text-muted-foreground">Em Breve</p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="integrations" className="space-y-6">
+      <Tabs defaultValue="marketing" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="integrations">Integrações</TabsTrigger>
-          <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-          <TabsTrigger value="api-keys">Chaves API</TabsTrigger>
+          <TabsTrigger value="marketing" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Marketing Digital
+          </TabsTrigger>
+          <TabsTrigger value="social" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Redes Sociais
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="integrations" className="space-y-6">
-          {/* Filtros por categoria */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="gap-2"
-              >
-                {category.icon}
-                {category.name}
-              </Button>
-            ))}
-          </div>
+        <TabsContent value="marketing" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <GoogleIntegrationCard
+              title="Google Ads"
+              description="Conecte suas campanhas do Google Ads para importar métricas e performance."
+              isConnected={connectedIntegrations.includes('google-ads')}
+              onConnect={() => handleConnect('google-ads')}
+              onDisconnect={() => handleDisconnect('google-ads')}
+              icon={<Zap className="h-5 w-5 text-blue-600" />}
+            />
 
-          {/* Lista de integrações */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredIntegrations.map((integration) => (
-              <IntegrationCard
-                key={integration.id}
-                integration={integration}
-                isActive={activeIntegrations.includes(integration.id)}
-                onToggle={(id, active) => {
-                  if (active) {
-                    setActiveIntegrations([...activeIntegrations, id]);
-                  } else {
-                    setActiveIntegrations(activeIntegrations.filter(i => i !== id));
-                  }
-                }}
-              />
-            ))}
+            <GoogleIntegrationCard
+              title="Facebook Ads"
+              description="Integre suas campanhas do Facebook para análise completa de performance."
+              isConnected={connectedIntegrations.includes('facebook-ads')}
+              onConnect={() => handleConnect('facebook-ads')}
+              onDisconnect={() => handleDisconnect('facebook-ads')}
+              icon={<Facebook className="h-5 w-5 text-blue-700" />}
+            />
           </div>
         </TabsContent>
 
-        <TabsContent value="webhooks">
-          <WebhookManager />
+        <TabsContent value="social" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <GoogleIntegrationCard
+              title="Instagram Business"
+              description="Conecte sua conta comercial do Instagram para insights e métricas."
+              isConnected={connectedIntegrations.includes('instagram')}
+              onConnect={() => handleConnect('instagram')}
+              onDisconnect={() => handleDisconnect('instagram')}
+              icon={<Instagram className="h-5 w-5 text-pink-600" />}
+            />
+
+            <GoogleIntegrationCard
+              title="Facebook Pages"
+              description="Integre suas páginas do Facebook para métricas de engajamento."
+              isConnected={connectedIntegrations.includes('facebook-pages')}
+              onConnect={() => handleConnect('facebook-pages')}
+              onDisconnect={() => handleDisconnect('facebook-pages')}
+              icon={<Facebook className="h-5 w-5 text-blue-600" />}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="api-keys">
-          <APIKeysManager />
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <GoogleIntegrationCard
+              title="Google Analytics"
+              description="Conecte o Google Analytics para dados completos de tráfego web."
+              isConnected={connectedIntegrations.includes('google-analytics')}
+              onConnect={() => handleConnect('google-analytics')}
+              onDisconnect={() => handleDisconnect('google-analytics')}
+              icon={<BarChart3 className="h-5 w-5 text-orange-600" />}
+            />
+
+            <GoogleIntegrationCard
+              title="Google Search Console"
+              description="Integre o Search Console para dados de SEO e performance de busca."
+              isConnected={connectedIntegrations.includes('search-console')}
+              onConnect={() => handleConnect('search-console')}
+              onDisconnect={() => handleDisconnect('search-console')}
+              icon={<Globe className="h-5 w-5 text-green-600" />}
+            />
+          </div>
         </TabsContent>
       </Tabs>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Como funcionam as integrações?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 text-sm">
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-600 font-semibold text-xs">1</span>
+              </div>
+              <div>
+                <p className="font-medium">Conecte suas contas</p>
+                <p className="text-muted-foreground">Autentique suas contas do Google, Facebook e Instagram de forma segura.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-600 font-semibold text-xs">2</span>
+              </div>
+              <div>
+                <p className="font-medium">Vincule aos clientes</p>
+                <p className="text-muted-foreground">Associe as contas conectadas aos seus clientes no sistema.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-600 font-semibold text-xs">3</span>
+              </div>
+              <div>
+                <p className="font-medium">Acesse os dados</p>
+                <p className="text-muted-foreground">Visualize métricas e insights diretamente no dashboard de cada cliente.</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};

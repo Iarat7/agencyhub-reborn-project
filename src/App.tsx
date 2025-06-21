@@ -39,6 +39,7 @@ function App() {
             <Suspense fallback={<div className="flex items-center justify-center h-screen">Carregando...</div>}>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/landing" element={<Navigate to="/" replace />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/app" element={
                   <AuthGuard>

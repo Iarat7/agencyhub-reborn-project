@@ -20,21 +20,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     console.log('📊 Dashboard component mounted');
-    const timer = setTimeout(() => {
-      setMounted(true);
-      console.log('📊 Dashboard marked as mounted');
-    }, 100);
-
-    return () => clearTimeout(timer);
+    setMounted(true);
   }, []);
 
-  // Buscar dados completos do dashboard
+  // Buscar dados completos do dashboard - sempre chamar o hook
   const { data: dashboardData, isLoading, error } = useCompleteDashboardData(
     mounted ? selectedPeriod : null
   );
   
-  // Buscar insights baseados nas métricas calculadas
-  const { data: insights } = useSmartInsights(dashboardData?.metrics);
+  // Buscar insights baseados nas métricas calculadas - sempre chamar o hook
+  const { data: insights } = useSmartInsights(dashboardData?.metrics || null);
 
   console.log('📊 Dashboard render:', { 
     dashboardData: dashboardData ? 'Present' : 'Null', 

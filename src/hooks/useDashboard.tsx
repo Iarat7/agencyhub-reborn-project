@@ -9,27 +9,29 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
   
   const { calculatePeriodDates } = usePeriodUtils();
   
-  // Se não tiver período, retornar estado inicial
-  if (!selectedPeriod) {
-    console.log('📊 No period provided, skipping dashboard data fetch');
-    return {
-      data: null,
-      isLoading: false,
-      error: null
-    };
-  }
-
-  const { startDate, endDate } = calculatePeriodDates(selectedPeriod);
+  // Sempre calcular datas, mesmo se período for null
+  const { startDate, endDate } = selectedPeriod 
+    ? calculatePeriodDates(selectedPeriod)
+    : { startDate: new Date(), endDate: new Date() };
 
   const dashboardQuery = useQuery({
-    queryKey: ['complete-dashboard-data', selectedPeriod],
+    queryKey: ['complete-dashboard-data', selectedPeriod || 'none'],
     queryFn: async () => {
+      if (!selectedPeriod) {
+        console.log('📊 No period provided, returning empty data');
+        return {
+          clients: [],
+          opportunities: [],
+          tasks: [],
+          allOpportunities: []
+        };
+      }
+
       console.log('📊 Fetching dashboard data for period:', selectedPeriod);
       
       const startDateISO = startDate.toISOString();
       const endDateISO = endDate.toISOString();
 
-      // Buscar dados com filtro de data
       const [clientsResult, allClientsResult, opportunitiesResult, allOpportunitiesResult, tasksResult] = await Promise.all([
         supabase
           .from('clients')
@@ -68,20 +70,17 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
       console.log('📊 Raw data fetched:', rawData);
       return rawData;
     },
-    enabled: Boolean(selectedPeriod),
+    enabled: true, // Sempre habilitado
     staleTime: 5 * 60 * 1000,
     retry: 1
   });
 
-  // Calcular métricas usando hook separado
-  const calculatedMetrics = useMetricsCalculation(
-    dashboardQuery.data || { clients: [], opportunities: [], tasks: [], allOpportunities: [] },
-    startDate,
-    endDate
-  );
+  // Sempre chamar useMetricsCalculation, independente do estado
+  const rawData = dashboardQuery.data || { clients: [], opportunities: [], tasks: [], allOpportunities: [] };
+  const calculatedMetrics = useMetricsCalculation(rawData, startDate, endDate);
 
-  // Combinar dados apenas se ambos existirem
-  const combinedData = dashboardQuery.data && calculatedMetrics ? {
+  // Combinar dados apenas se tivermos dados válidos
+  const combinedData = selectedPeriod && dashboardQuery.data && calculatedMetrics ? {
     ...dashboardQuery.data,
     metrics: calculatedMetrics
   } : null;
@@ -90,7 +89,8 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
     isLoading: dashboardQuery.isLoading,
     hasData: Boolean(combinedData),
     error: dashboardQuery.error?.message || null,
-    hasMetrics: Boolean(calculatedMetrics)
+    hasMetrics: Boolean(calculatedMetrics),
+    selectedPeriod
   });
 
   return {

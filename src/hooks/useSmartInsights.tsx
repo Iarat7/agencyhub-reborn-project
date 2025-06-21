@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCompleteDashboardData } from './useDashboard';
 
-export const useSmartInsights = (selectedPeriod: string = '6m') => {
+export const useSmartInsights = (selectedPeriod: string | null = '6m') => {
   const { data: dashboardData } = useCompleteDashboardData(selectedPeriod);
 
   return useQuery({

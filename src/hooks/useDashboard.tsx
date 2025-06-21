@@ -1,10 +1,13 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useDashboardMetrics } from './useDashboardMetrics';
-import { useDashboardActivities } from './useDashboardActivities';
+import { usePeriodUtils } from './usePeriodUtils';
+import { useMetricsCalculation } from './useMetricsCalculation';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCompleteDashboardData = (selectedPeriod: string | null) => {
   console.log('📊 useCompleteDashboardData called with period:', selectedPeriod);
+  
+  const { getDateRange } = usePeriodUtils();
   
   // Se não tiver período, não fazer a query
   if (!selectedPeriod) {
@@ -16,47 +19,60 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
     };
   }
 
-  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics(selectedPeriod);
-  const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useDashboardActivities();
+  const { startDate, endDate } = getDateRange(selectedPeriod);
 
-  const combinedQuery = useQuery({
+  const dashboardQuery = useQuery({
     queryKey: ['complete-dashboard-data', selectedPeriod],
     queryFn: async () => {
-      console.log('📊 Combining dashboard data...');
+      console.log('📊 Fetching dashboard data for period:', selectedPeriod);
       
       try {
-        // Verificar se temos dados de métricas
-        if (!metrics && !metricsLoading && !metricsError) {
-          console.log('📊 No metrics data available');
-        }
+        const startDateISO = startDate.toISOString();
+        const endDateISO = endDate.toISOString();
 
-        const combinedData = {
-          metrics: metrics || {
-            totalClients: 0,
-            activeClients: 0,
-            totalOpportunities: 0,
-            wonOpportunities: 0,
-            totalRevenue: 0,
-            completedTasks: 0,
-            pendingTasks: 0,
-            inProgressTasks: 0,
-            inApprovalTasks: 0,
-            conversionRate: 0,
-            opportunitiesByStage: [],
-            tasksByStatus: [],
-            clientsByStatus: []
-          },
-          activities: activities || []
+        // Buscar dados com filtro de data para métricas específicas do período
+        const { data: clients } = await supabase
+          .from('clients')
+          .select('*')
+          .gte('created_at', startDateISO)
+          .lte('created_at', endDateISO);
+
+        // Buscar TODOS os clientes para cálculo de clientes ativos
+        const { data: allClients } = await supabase
+          .from('clients')
+          .select('*');
+
+        const { data: opportunities } = await supabase
+          .from('opportunities')
+          .select('*')
+          .gte('created_at', startDateISO)
+          .lte('created_at', endDateISO);
+
+        const { data: allOpportunities } = await supabase
+          .from('opportunities')
+          .select('*');
+
+        const { data: tasks } = await supabase
+          .from('tasks')
+          .select('*')
+          .gte('created_at', startDateISO)
+          .lte('created_at', endDateISO);
+
+        const rawData = {
+          clients: allClients || [],
+          opportunities: opportunities || [],
+          tasks: tasks || [],
+          allOpportunities: allOpportunities || []
         };
 
-        console.log('📊 Combined dashboard data:', combinedData);
-        return combinedData;
+        console.log('📊 Raw data fetched:', rawData);
+        return rawData;
       } catch (error) {
-        console.error('📊 Error combining dashboard data:', error);
+        console.error('📊 Error fetching dashboard data:', error);
         throw error;
       }
     },
-    enabled: !!selectedPeriod && !metricsLoading && !activitiesLoading,
+    enabled: !!selectedPeriod,
     staleTime: 5 * 60 * 1000, // 5 minutos
     retry: (failureCount, error) => {
       console.log('📊 Dashboard query retry attempt:', failureCount, error);
@@ -67,20 +83,29 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
     }
   });
 
-  const isLoading = metricsLoading || activitiesLoading || combinedQuery.isLoading;
-  const error = metricsError || activitiesError || combinedQuery.error;
+  // Calcular métricas a partir dos dados brutos
+  const calculatedMetrics = useMetricsCalculation(
+    dashboardQuery.data || { clients: [], opportunities: [], tasks: [], allOpportunities: [] },
+    startDate,
+    endDate
+  );
+
+  // Combinar dados brutos com métricas calculadas
+  const combinedData = dashboardQuery.data && calculatedMetrics ? {
+    ...dashboardQuery.data,
+    metrics: calculatedMetrics
+  } : null;
 
   console.log('📊 Dashboard data state:', {
-    isLoading,
-    hasData: !!combinedQuery.data,
-    error: error?.message || null,
-    metricsLoading,
-    activitiesLoading
+    isLoading: dashboardQuery.isLoading,
+    hasData: !!combinedData,
+    error: dashboardQuery.error?.message || null,
+    hasMetrics: !!calculatedMetrics
   });
 
   return {
-    data: combinedQuery.data,
-    isLoading,
-    error
+    data: combinedData,
+    isLoading: dashboardQuery.isLoading,
+    error: dashboardQuery.error
   };
 };

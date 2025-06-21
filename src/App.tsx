@@ -7,10 +7,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AuthProvider } from "@/hooks/useAuth";
-import Index from "./pages/Index";
+import { AppLayout } from '@/components/layout/AppLayout';
 import Landing from "./pages/Landing";
 
-// Lazy loading das páginas - ajustando para named exports
+// Lazy loading das páginas
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Clientes = lazy(() => import("./pages/Clientes"));
 const Oportunidades = lazy(() => import("./pages/Oportunidades"));
@@ -40,28 +40,112 @@ function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/landing" element={<Navigate to="/" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/app" element={
+                
+                {/* Rotas protegidas com layout */}
+                <Route path="/dashboard" element={
                   <AuthGuard>
-                    <Index />
+                    <AppLayout>
+                      <Dashboard />
+                    </AppLayout>
                   </AuthGuard>
-                }>
-                  <Route index element={<Navigate to="/app/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="clientes" element={<Clientes />} />
-                  <Route path="clientes/:id" element={<ClienteDashboard />} />
-                  <Route path="oportunidades" element={<Oportunidades />} />
-                  <Route path="tarefas" element={<Tarefas />} />
-                  <Route path="agenda" element={<Agenda />} />
-                  <Route path="relatorios" element={<Relatorios />} />
-                  <Route path="financeiro" element={<Financeiro />} />
-                  <Route path="contratos" element={<Contratos />} />
-                  <Route path="estrategias" element={<Estrategias />} />
-                  <Route path="equipe" element={<Equipe />} />
-                  <Route path="integracoes" element={<Integracoes />} />
-                  <Route path="configuracoes" element={<Configuracoes />} />
-                </Route>
+                } />
+                
+                <Route path="/clientes" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Clientes />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/clientes/:id" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <ClienteDashboard />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/oportunidades" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Oportunidades />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/tarefas" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Tarefas />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/agenda" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Agenda />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/relatorios" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Relatorios />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/financeiro" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Financeiro />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/contratos" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Contratos />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/estrategias" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Estrategias />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/equipe" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Equipe />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/integracoes" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Integracoes />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
+                
+                <Route path="/configuracoes" element={
+                  <AuthGuard>
+                    <AppLayout>
+                      <Configuracoes />
+                    </AppLayout>
+                  </AuthGuard>
+                } />
               </Routes>
             </Suspense>
           </BrowserRouter>

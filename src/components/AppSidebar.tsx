@@ -1,44 +1,141 @@
 
-import { useAuth } from '@/hooks/useAuth';
+import * as React from "react"
+import {
+  AudioWaveform,
+  BookOpen,
+  Bot,
+  Command,
+  Frame,
+  GalleryVerticalEnd,
+  Map,
+  PieChart,
+  Settings2,
+  SquareTerminal,
+  Users,
+  Target,
+  CheckSquare,
+  Calendar,
+  BarChart3,
+  DollarSign,
+  FileText,
+  Brain,
+  Settings,
+  Link
+} from "lucide-react"
+
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarFooter,
-} from '@/components/ui/sidebar';
-import { MainNavigation } from '@/components/navigation/MainNavigation';
+  SidebarHeader,
+  SidebarRail,
+} from "@/components/ui/sidebar"
 
-export function AppSidebar() {
-  const { user } = useAuth();
+// This is sample data.
+const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  teams: [
+    {
+      name: "CRM Inteligente",
+      logo: GalleryVerticalEnd,
+      plan: "Enterprise",
+    },
+    {
+      name: "Vendas Corp",
+      logo: AudioWaveform,
+      plan: "Startup",
+    },
+    {
+      name: "Marketing Plus",
+      logo: Command,
+      plan: "Free",
+    },
+  ],
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: BarChart3,
+      isActive: true,
+    },
+    {
+      title: "Clientes",
+      url: "/clientes",
+      icon: Users,
+    },
+    {
+      title: "Oportunidades",
+      url: "/oportunidades",
+      icon: Target,
+    },
+    {
+      title: "Tarefas",
+      url: "/tarefas",
+      icon: CheckSquare,
+    },
+    {
+      title: "Agenda",
+      url: "/agenda",
+      icon: Calendar,
+    },
+    {
+      title: "Relatórios",
+      url: "/relatorios",
+      icon: PieChart,
+    },
+    {
+      title: "Financeiro",
+      url: "/financeiro",
+      icon: DollarSign,
+    },
+    {
+      title: "Contratos",
+      url: "/contratos",
+      icon: FileText,
+    },
+    {
+      title: "Estratégias",
+      url: "/estrategias",
+      icon: Brain,
+    },
+    {
+      title: "Equipe",
+      url: "/equipe",
+      icon: Users,
+    },
+    {
+      title: "Integrações",
+      url: "/integracoes",
+      icon: Link,
+    },
+    {
+      title: "Configurações",
+      url: "/configuracoes",
+      icon: Settings,
+    },
+  ],
+}
 
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-6">
-        <h1 className="text-xl font-bold text-sidebar-primary">AgencyHub</h1>
-        {user && (
-          <p className="text-sm text-sidebar-foreground/70">
-            Olá, {user.full_name || 'Usuário'}
-          </p>
-        )}
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
-      
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <MainNavigation />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavMain items={data.navMain} />
       </SidebarContent>
-      
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <p className="text-xs text-sidebar-foreground/50">
-          AgencyHub v1.0
-        </p>
+      <SidebarFooter>
+        <NavUser user={data.user} />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
-  );
+  )
 }

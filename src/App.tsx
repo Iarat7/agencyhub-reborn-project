@@ -1,158 +1,67 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/hooks/useAuth';
-import { AuthGuard } from '@/components/auth/AuthGuard';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { Landing } from '@/pages/Landing';
-import { Auth } from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
-import { Clientes } from '@/pages/Clientes';
-import { ClienteDashboard } from '@/pages/ClienteDashboard';
-import { Tarefas } from '@/pages/Tarefas';
-import { Oportunidades } from '@/pages/Oportunidades';
-import Contratos from '@/pages/Contratos';
-import Financeiro from '@/pages/Financeiro';
-import Agenda from '@/pages/Agenda';
-import Estrategias from '@/pages/Estrategias';
-import { Relatorios } from '@/pages/Relatorios';
-import { Configuracoes } from '@/pages/Configuracoes';
-import NotFound from '@/pages/NotFound';
-import './App.css';
+import { Suspense, lazy } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import Index from "./pages/Index";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Lazy loading das páginas
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Clientes = lazy(() => import("./pages/Clientes"));
+const Oportunidades = lazy(() => import("./pages/Oportunidades"));
+const Tarefas = lazy(() => import("./pages/Tarefas"));
+const Agenda = lazy(() => import("./pages/Agenda"));
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const Financeiro = lazy(() => import("./pages/Financeiro"));
+const Contratos = lazy(() => import("./pages/Contratos"));
+const Estrategias = lazy(() => import("./pages/Estrategias"));
+const Equipe = lazy(() => import("./pages/Equipe"));
+const Integracoes = lazy(() => import("./pages/Integracoes"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const ClienteDashboard = lazy(() => import("./pages/ClienteDashboard"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Landing = lazy(() => import("./pages/Landing"));
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/dashboard"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Dashboard />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/clientes"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Clientes />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/clientes/:id"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <ClienteDashboard />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/tarefas"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Tarefas />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/oportunidades"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Oportunidades />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/contratos"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Contratos />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/financeiro"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Financeiro />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/agenda"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Agenda />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/estrategias"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Estrategias />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/relatorios"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Relatorios />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/configuracoes"
-              element={
-                <AuthGuard>
-                  <AppLayout>
-                    <Configuracoes />
-                  </AppLayout>
-                </AuthGuard>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+      <TooltipProvider>
         <Toaster />
-      </AuthProvider>
+        <Sonner />
+        <BrowserRouter>
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Carregando...</div>}>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/landing" element={<Landing />} />
+              <Route path="/" element={
+                <AuthGuard>
+                  <Index />
+                </AuthGuard>
+              }>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="clientes" element={<Clientes />} />
+                <Route path="clientes/:id" element={<ClienteDashboard />} />
+                <Route path="oportunidades" element={<Oportunidades />} />
+                <Route path="tarefas" element={<Tarefas />} />
+                <Route path="agenda" element={<Agenda />} />
+                <Route path="relatorios" element={<Relatorios />} />
+                <Route path="financeiro" element={<Financeiro />} />
+                <Route path="contratos" element={<Contratos />} />
+                <Route path="estrategias" element={<Estrategias />} />
+                <Route path="equipe" element={<Equipe />} />
+                <Route path="integracoes" element={<Integracoes />} />
+                <Route path="configuracoes" element={<Configuracoes />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

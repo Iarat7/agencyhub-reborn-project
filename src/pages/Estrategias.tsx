@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, Plus, Target, LayoutGrid, Table } from 'lucide-react';
+import { Lightbulb, Plus, Target, LayoutGrid, Table, Brain } from 'lucide-react';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { ClientStrategiesTable } from '@/components/strategies/ClientStrategiesTable';
 import { CreateStrategyDialog } from '@/components/strategies/CreateStrategyDialog';

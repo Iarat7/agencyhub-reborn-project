@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useCompleteDashboardData = (selectedPeriod: string | null) => {
   console.log('📊 useCompleteDashboardData called with period:', selectedPeriod);
   
-  const { getDateRange } = usePeriodUtils();
+  const { calculatePeriodDates } = usePeriodUtils();
   
   // Se não tiver período, não fazer a query
   if (!selectedPeriod) {
@@ -19,7 +19,7 @@ export const useCompleteDashboardData = (selectedPeriod: string | null) => {
     };
   }
 
-  const { startDate, endDate } = getDateRange(selectedPeriod);
+  const { startDate, endDate } = calculatePeriodDates(selectedPeriod);
 
   const dashboardQuery = useQuery({
     queryKey: ['complete-dashboard-data', selectedPeriod],

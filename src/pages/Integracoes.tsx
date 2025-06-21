@@ -14,7 +14,11 @@ import {
   CheckCircle,
   AlertCircle,
   Plus,
-  Link2
+  Link2,
+  Chrome,
+  Facebook,
+  Instagram,
+  TrendingUp
 } from 'lucide-react';
 import { IntegrationCard } from '@/components/integrations/IntegrationCard';
 import { WebhookManager } from '@/components/integrations/WebhookManager';
@@ -32,11 +36,49 @@ interface Integration {
 }
 
 export default function Integracoes() {
-  const [activeIntegrations, setActiveIntegrations] = useState<string[]>([
-    'email', 'whatsapp'
-  ]);
+  const [activeIntegrations, setActiveIntegrations] = useState<string[]>([]);
 
   const availableIntegrations: Integration[] = [
+    {
+      id: 'google-ads',
+      name: 'Google Ads',
+      description: 'Conecte contas do Google Ads para importar campanhas e métricas',
+      icon: <Chrome className="h-8 w-8" />,
+      category: 'advertising',
+      status: 'available',
+      color: 'blue',
+      features: ['Métricas de campanhas', 'Performance de anúncios', 'Custos e conversões']
+    },
+    {
+      id: 'google-analytics',
+      name: 'Google Analytics',
+      description: 'Integre com Google Analytics para insights detalhados',
+      icon: <TrendingUp className="h-8 w-8" />,
+      category: 'analytics',
+      status: 'available',
+      color: 'orange',
+      features: ['Tráfego do site', 'Conversões', 'Comportamento do usuário']
+    },
+    {
+      id: 'facebook-ads',
+      name: 'Facebook Ads',
+      description: 'Conecte suas contas do Facebook Ads para métricas completas',
+      icon: <Facebook className="h-8 w-8" />,
+      category: 'advertising',
+      status: 'available',
+      color: 'blue',
+      features: ['Campanhas Facebook', 'ROI e métricas', 'Audiências']
+    },
+    {
+      id: 'instagram-insights',
+      name: 'Instagram Insights',
+      description: 'Analise o desempenho das páginas do Instagram dos clientes',
+      icon: <Instagram className="h-8 w-8" />,
+      category: 'social-media',
+      status: 'available',
+      color: 'pink',
+      features: ['Métricas de posts', 'Crescimento de seguidores', 'Engagement']
+    },
     {
       id: 'zapier',
       name: 'Zapier',
@@ -53,7 +95,7 @@ export default function Integracoes() {
       description: 'Integração com provedores de email como Mailchimp, SendGrid',
       icon: <Mail className="h-8 w-8" />,
       category: 'marketing',
-      status: 'connected',
+      status: 'available',
       color: 'blue',
       features: ['Campanhas automáticas', 'Segmentação', 'Analytics']
     },
@@ -63,7 +105,7 @@ export default function Integracoes() {
       description: 'Envie mensagens e notificações via WhatsApp',
       icon: <MessageSquare className="h-8 w-8" />,
       category: 'communication',
-      status: 'connected',
+      status: 'available',
       color: 'green',
       features: ['Mensagens automáticas', 'Templates', 'Chat bot']
     },
@@ -76,37 +118,18 @@ export default function Integracoes() {
       status: 'available',
       color: 'red',
       features: ['Sync bidirecional', 'Lembretes', 'Convites automáticos']
-    },
-    {
-      id: 'stripe',
-      name: 'Stripe',
-      description: 'Processar pagamentos e gerenciar assinaturas',
-      icon: <CreditCard className="h-8 w-8" />,
-      category: 'payment',
-      status: 'available',
-      color: 'purple',
-      features: ['Pagamentos online', 'Assinaturas', 'Webhooks']
-    },
-    {
-      id: 'hubspot',
-      name: 'HubSpot',
-      description: 'Sincronize contatos e oportunidades com HubSpot CRM',
-      icon: <Database className="h-8 w-8" />,
-      category: 'crm',
-      status: 'available',
-      color: 'orange',
-      features: ['Sync de contatos', 'Pipeline sync', 'Analytics']
     }
   ];
 
   const categories = [
     { id: 'all', name: 'Todas', icon: <Settings className="h-4 w-4" /> },
+    { id: 'advertising', name: 'Publicidade', icon: <TrendingUp className="h-4 w-4" /> },
+    { id: 'social-media', name: 'Redes Sociais', icon: <Instagram className="h-4 w-4" /> },
+    { id: 'analytics', name: 'Analytics', icon: <Database className="h-4 w-4" /> },
     { id: 'automation', name: 'Automação', icon: <Zap className="h-4 w-4" /> },
     { id: 'marketing', name: 'Marketing', icon: <Mail className="h-4 w-4" /> },
     { id: 'communication', name: 'Comunicação', icon: <MessageSquare className="h-4 w-4" /> },
     { id: 'productivity', name: 'Produtividade', icon: <Calendar className="h-4 w-4" /> },
-    { id: 'payment', name: 'Pagamentos', icon: <CreditCard className="h-4 w-4" /> },
-    { id: 'crm', name: 'CRM', icon: <Database className="h-4 w-4" /> },
   ];
 
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -124,7 +147,7 @@ export default function Integracoes() {
         <div>
           <h1 className="text-3xl font-bold">Integrações</h1>
           <p className="text-muted-foreground">
-            Conecte seu CRM com outras ferramentas e automatize processos
+            Conecte seu CRM com Google Ads, Facebook, Instagram e outras ferramentas
           </p>
         </div>
         <Button>
@@ -175,7 +198,7 @@ export default function Integracoes() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-orange-600">2</p>
+                <p className="text-2xl font-bold text-orange-600">0</p>
                 <p className="text-sm text-muted-foreground">Em Breve</p>
               </div>
               <AlertCircle className="h-8 w-8 text-orange-500" />

@@ -1,7 +1,7 @@
 
 {
-  "name": "AgencyHub - Sistema de Gerenciamento",
-  "short_name": "AgencyHub",
+  "name": "InflowHub - Sistema de Gerenciamento",
+  "short_name": "InflowHub",
   "description": "Sistema completo de CRM e gerenciamento para agências",
   "start_url": "/",
   "display": "standalone",

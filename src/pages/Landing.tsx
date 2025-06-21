@@ -69,7 +69,7 @@ const Landing = () => {
             <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-900">AgencyHub</span>
+            <span className="text-xl font-bold text-slate-900">InflowHub</span>
           </div>
           <div className="space-x-4">
             <Button variant="outline" onClick={() => navigate('/auth')}>
@@ -87,7 +87,7 @@ const Landing = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-slate-900 mb-6">
             Transforme sua gestão empresarial com 
-            <span className="text-blue-600"> AgencyHub</span>
+            <span className="text-blue-600"> InflowHub</span>
           </h1>
           <p className="text-xl text-slate-600 mb-8 leading-relaxed">
             A plataforma completa para gerenciar clientes, vendas, tarefas e muito mais. 
@@ -112,7 +112,7 @@ const Landing = () => {
             Recursos Poderosos
           </h2>
           <p className="text-lg text-slate-600">
-            Descubra como o AgencyHub pode revolucionar sua empresa
+            Descubra como o InflowHub pode revolucionar sua empresa
           </p>
         </div>
         
@@ -141,7 +141,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold text-slate-900 mb-6">
-                Por que escolher o AgencyHub?
+                Por que escolher o InflowHub?
               </h2>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -159,7 +159,7 @@ const Landing = () => {
                   Aumente sua produtividade em até 40%
                 </h3>
                 <p className="text-slate-600 mb-6">
-                  Empresas que usam o AgencyHub relatam um aumento significativo 
+                  Empresas que usam o InflowHub relatam um aumento significativo 
                   na eficiência e organização dos processos.
                 </p>
                 <Button size="lg" onClick={() => navigate('/auth')}>
@@ -179,7 +179,7 @@ const Landing = () => {
               Pronto para transformar sua empresa?
             </h2>
             <p className="text-xl opacity-90 mb-8">
-              Junte-se a milhares de empresas que já confiam no AgencyHub
+              Junte-se a milhares de empresas que já confiam no InflowHub
             </p>
             <Button size="lg" variant="secondary" onClick={() => navigate('/auth')} className="text-lg px-8 py-3">
               Começar Gratuitamente
@@ -195,10 +195,10 @@ const Landing = () => {
             <div className="h-6 w-6 bg-blue-600 rounded flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold">AgencyHub</span>
+            <span className="font-bold">InflowHub</span>
           </div>
           <p className="text-slate-400">
-            © 2024 AgencyHub. Todos os direitos reservados.
+            © 2024 InflowHub. Todos os direitos reservados.
           </p>
         </div>
       </footer>

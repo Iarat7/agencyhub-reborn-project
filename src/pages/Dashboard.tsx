@@ -6,13 +6,21 @@ import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
+import { SmartInsights } from '@/components/dashboard/SmartInsights';
+import { PredictiveAnalytics } from '@/components/dashboard/PredictiveAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Calendar, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSmartInsights } from '@/hooks/useSmartInsights';
+import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
 
 export default function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const isMobile = useIsMobile();
+
+  // Dados para insights e análise preditiva
+  const { data: insights } = useSmartInsights(selectedPeriod);
+  const { data: predictiveData } = usePredictiveAnalytics(selectedPeriod);
 
   // Mock data para atividades recentes
   const mockRecentActivities = [
@@ -54,8 +62,10 @@ export default function Dashboard() {
             <DashboardActivities recentActivities={mockRecentActivities} />
           </TabsContent>
           
-          <TabsContent value="ai">
+          <TabsContent value="ai" className="space-y-4">
             <AIStrategiesCard />
+            <SmartInsights insights={insights} />
+            <PredictiveAnalytics metrics={predictiveData} />
           </TabsContent>
           
           <TabsContent value="alerts">
@@ -63,18 +73,31 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
-          <div className="xl:col-span-3 space-y-4 md:space-y-6">
-            <OptimizedDashboardMetrics />
+        <div className="space-y-4 md:space-y-6">
+          {/* Layout principal - Métricas e Gráficos */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="xl:col-span-3 space-y-4 md:space-y-6">
+              <OptimizedDashboardMetrics />
+              <DashboardCharts />
+              <DashboardActivities recentActivities={mockRecentActivities} />
+            </div>
             
-            <DashboardCharts />
-            
-            <DashboardActivities recentActivities={mockRecentActivities} />
+            <div className="xl:col-span-1">
+              <NotificationAlerts />
+            </div>
           </div>
-          
-          <div className="xl:col-span-1 space-y-4 md:space-y-6">
-            <AIStrategiesCard />
-            <NotificationAlerts />
+
+          {/* Seção de Inteligência Artificial - Movida para baixo */}
+          <div className="border-t pt-6">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Brain className="h-6 w-6" />
+              Inteligência Artificial
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+              <AIStrategiesCard />
+              <SmartInsights insights={insights} />
+              <PredictiveAnalytics metrics={predictiveData} />
+            </div>
           </div>
         </div>
       )}

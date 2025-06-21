@@ -63,8 +63,8 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
         body: {
           email,
           role,
-          inviterName: user.user_metadata?.full_name || user.email,
-          companyName: 'AgencyHub' // Você pode pegar isso do perfil da empresa
+          inviterName: user.full_name || user.email,
+          companyName: user.company_name || 'AgencyHub'
         }
       });
 

@@ -37,7 +37,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold text-blue-400">AgencyHub</h1>
+          <h1 className="text-xl font-bold text-blue-400">InflowHub</h1>
           <Button
             variant="ghost"
             size="sm"

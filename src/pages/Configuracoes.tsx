@@ -1,14 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { User, Bell, Shield, Database } from 'lucide-react';
+import { ProfileEditDialog } from '@/components/profile/ProfileEditDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { User, Bell, Shield, Database, Edit } from 'lucide-react';
 
 const Configuracoes = () => {
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const { user } = useAuth();
+
   return (
     <div className="space-y-6">
       <div>
@@ -28,17 +33,27 @@ const Configuracoes = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome Completo</Label>
-              <Input id="nome" defaultValue="Administrador do Sistema" />
+              <Input id="nome" value={user?.full_name || ''} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="admin@agencyhub.com" />
+              <Input id="email" type="email" value={user?.email || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="empresa">Empresa</Label>
+              <Input id="empresa" value={user?.company_name || ''} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" defaultValue="(11) 99999-9999" />
+              <Input id="telefone" value={user?.phone || ''} disabled />
             </div>
-            <Button className="w-full">Salvar Alterações</Button>
+            <Button 
+              className="w-full" 
+              onClick={() => setProfileDialogOpen(true)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Editar Perfil
+            </Button>
           </CardContent>
         </Card>
 
@@ -113,7 +128,7 @@ const Configuracoes = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Versão do Sistema</Label>
-              <Input value="AgencyHub v1.0.0" disabled />
+              <Input value="InflowHub v1.0.0" disabled />
             </div>
             <div className="space-y-2">
               <Label>Último Backup</Label>
@@ -135,6 +150,11 @@ const Configuracoes = () => {
           </CardContent>
         </Card>
       </div>
+
+      <ProfileEditDialog 
+        open={profileDialogOpen} 
+        onOpenChange={setProfileDialogOpen} 
+      />
     </div>
   );
 };

@@ -80,7 +80,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">AgencyHub</h1>
+          <h1 className="text-3xl font-bold text-slate-900">InflowHub</h1>
           <p className="text-slate-600 mt-2">Sistema de Gestão Empresarial</p>
         </div>
 

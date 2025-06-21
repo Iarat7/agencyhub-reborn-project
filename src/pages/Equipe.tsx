@@ -3,31 +3,20 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
-  Plus, 
-  Settings, 
-  Mail, 
-  Phone, 
-  Calendar,
-  MoreHorizontal,
   Shield,
   UserPlus,
-  Crown
+  Crown,
+  Calendar
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { TeamMembersTable } from '@/components/team/TeamMembersTable';
 import { InviteUserDialog } from '@/components/team/InviteUserDialog';
 import { TeamRolesCard } from '@/components/team/TeamRolesCard';
 import { TeamPerformanceCard } from '@/components/team/TeamPerformanceCard';
 import { useUsers } from '@/hooks/useUsers';
+import { User } from '@/services/api/types';
 
 export default function Equipe() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -148,7 +137,7 @@ export default function Equipe() {
             </Card>
           </div>
 
-          <TeamMembersTable users={users} isLoading={isLoading} />
+          <TeamMembersTable users={users as User[]} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="roles">
@@ -156,7 +145,7 @@ export default function Equipe() {
         </TabsContent>
 
         <TabsContent value="performance">
-          <TeamPerformanceCard users={users} />
+          <TeamPerformanceCard users={users as User[]} />
         </TabsContent>
       </Tabs>
 

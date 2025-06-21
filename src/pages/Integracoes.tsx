@@ -2,10 +2,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, 
@@ -15,7 +11,6 @@ import {
   CreditCard,
   Database,
   Settings,
-  ExternalLink,
   CheckCircle,
   AlertCircle,
   Plus,
@@ -25,12 +20,23 @@ import { IntegrationCard } from '@/components/integrations/IntegrationCard';
 import { WebhookManager } from '@/components/integrations/WebhookManager';
 import { APIKeysManager } from '@/components/integrations/APIKeysManager';
 
+interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  category: string;
+  status: 'connected' | 'available' | 'coming-soon';
+  color: string;
+  features: string[];
+}
+
 export default function Integracoes() {
   const [activeIntegrations, setActiveIntegrations] = useState<string[]>([
     'email', 'whatsapp'
   ]);
 
-  const availableIntegrations = [
+  const availableIntegrations: Integration[] = [
     {
       id: 'zapier',
       name: 'Zapier',

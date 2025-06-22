@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,7 +106,9 @@ const Clientes = () => {
   // Métricas simples dos clientes
   const totalClients = searchFilteredClients.length;
   const activeClients = searchFilteredClients.filter(client => client.status === 'active').length;
-  const totalValue = searchFilteredClients.reduce((sum, client) => sum + (client.monthly_value || 0), 0);
+  const totalValue = searchFilteredClients
+    .filter(client => client.status === 'active')
+    .reduce((sum, client) => sum + (client.monthly_value || 0), 0);
 
   if (error) {
     return (

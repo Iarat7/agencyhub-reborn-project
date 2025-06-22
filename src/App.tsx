@@ -3,7 +3,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
-import { Layout } from '@/components/Layout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { PWAProvider } from '@/contexts/PWAContext';
@@ -49,7 +49,7 @@ function App() {
                 path="/*"
                 element={
                   <AuthGuard>
-                    <Layout>
+                    <AppLayout>
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/clientes" element={<Clientes />} />
@@ -67,7 +67,7 @@ function App() {
                         <Route path="/integracoes" element={<Integracoes />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </Layout>
+                    </AppLayout>
                   </AuthGuard>
                 }
               />

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { WeekView } from '@/components/calendar/WeekView';
@@ -12,7 +13,6 @@ import { QuickCreateDialog } from '@/components/calendar/QuickCreateDialog';
 import { CalendarNavigation } from '@/components/calendar/CalendarNavigation';
 import { CalendarViewToggle, CalendarViewType } from '@/components/calendar/CalendarViewToggle';
 import { CalendarFilters, CalendarFilters as CalendarFiltersType } from '@/components/calendar/CalendarFilters';
-import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Zap, Settings, Smartphone } from 'lucide-react';
@@ -81,8 +81,14 @@ const Agenda = () => {
   });
 
   const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setCurrentDate(date);
+    // Se a data vier com horário específico (das views de semana/dia), use ela
+    // Senão, use a data com horário atual
+    const eventDate = date.getHours() === 0 && date.getMinutes() === 0 
+      ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), new Date().getHours())
+      : date;
+      
+    setSelectedDate(eventDate);
+    setCurrentDate(eventDate);
     setEditingEvent(undefined);
     setIsEventDialogOpen(true);
   };
@@ -136,7 +142,7 @@ const Agenda = () => {
         return (
           <WeekView
             currentDate={currentDate}
-            onDateClick={handleQuickCreate}
+            onDateClick={handleDateSelect}
             {...baseProps}
           />
         );
@@ -144,6 +150,7 @@ const Agenda = () => {
         return (
           <DayView
             currentDate={currentDate}
+            onDateClick={handleDateSelect}
             {...baseProps}
           />
         );
@@ -197,14 +204,10 @@ const Agenda = () => {
 
       {isMobile ? (
         <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="calendar" className="text-xs">
               <Smartphone className="w-4 h-4 mr-1" />
               Agenda
-            </TabsTrigger>
-            <TabsTrigger value="strategies" className="text-xs">
-              <Zap className="w-4 h-4 mr-1" />
-              IA
             </TabsTrigger>
             <TabsTrigger value="integrations" className="text-xs">
               <Settings className="w-4 h-4 mr-1" />
@@ -218,10 +221,6 @@ const Agenda = () => {
               onFiltersChange={setFilters} 
             />
             {renderCalendarView()}
-          </TabsContent>
-          
-          <TabsContent value="strategies">
-            <AIStrategiesCard />
           </TabsContent>
           
           <TabsContent value="integrations">
@@ -254,7 +253,6 @@ const Agenda = () => {
           </div>
 
           <div className="xl:col-span-1 space-y-6">
-            <AIStrategiesCard />
             <CalendarIntegrations />
           </div>
         </div>

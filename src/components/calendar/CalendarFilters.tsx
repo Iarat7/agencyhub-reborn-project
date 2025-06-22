@@ -31,50 +31,56 @@ export const CalendarFilters = ({ filters, onFiltersChange }: CalendarFiltersPro
 
   const addEventTypeFilter = (eventType: string) => {
     if (!filters.eventTypes.includes(eventType)) {
-      onFiltersChange({
+      const newFilters = {
         ...filters,
         eventTypes: [...filters.eventTypes, eventType],
-      });
+      };
+      onFiltersChange(newFilters);
     }
   };
 
   const removeEventTypeFilter = (eventType: string) => {
-    onFiltersChange({
+    const newFilters = {
       ...filters,
       eventTypes: filters.eventTypes.filter(t => t !== eventType),
-    });
+    };
+    onFiltersChange(newFilters);
   };
 
   const addClientFilter = (clientId: string) => {
     if (!filters.clients.includes(clientId)) {
-      onFiltersChange({
+      const newFilters = {
         ...filters,
         clients: [...filters.clients, clientId],
-      });
+      };
+      onFiltersChange(newFilters);
     }
   };
 
   const removeClientFilter = (clientId: string) => {
-    onFiltersChange({
+    const newFilters = {
       ...filters,
       clients: filters.clients.filter(c => c !== clientId),
-    });
+    };
+    onFiltersChange(newFilters);
   };
 
   const addAssigneeFilter = (assigneeId: string) => {
     if (!filters.assignees.includes(assigneeId)) {
-      onFiltersChange({
+      const newFilters = {
         ...filters,
         assignees: [...filters.assignees, assigneeId],
-      });
+      };
+      onFiltersChange(newFilters);
     }
   };
 
   const removeAssigneeFilter = (assigneeId: string) => {
-    onFiltersChange({
+    const newFilters = {
       ...filters,
       assignees: filters.assignees.filter(a => a !== assigneeId),
-    });
+    };
+    onFiltersChange(newFilters);
   };
 
   const clearFilters = () => {
@@ -104,12 +110,14 @@ export const CalendarFilters = ({ filters, onFiltersChange }: CalendarFiltersPro
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="text-xs font-medium mb-1 block">Tipo de Evento</label>
-          <Select onValueChange={addEventTypeFilter}>
+          <Select onValueChange={addEventTypeFilter} value="">
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Selecionar tipo" />
             </SelectTrigger>
             <SelectContent>
-              {eventTypes.map((type) => (
+              {eventTypes
+                .filter(type => !filters.eventTypes.includes(type.value))
+                .map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -120,12 +128,14 @@ export const CalendarFilters = ({ filters, onFiltersChange }: CalendarFiltersPro
 
         <div>
           <label className="text-xs font-medium mb-1 block">Cliente</label>
-          <Select onValueChange={addClientFilter}>
+          <Select onValueChange={addClientFilter} value="">
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Selecionar cliente" />
             </SelectTrigger>
             <SelectContent>
-              {clients.map((client) => (
+              {clients
+                .filter(client => !filters.clients.includes(client.id))
+                .map((client) => (
                 <SelectItem key={client.id} value={client.id}>
                   {client.name}
                 </SelectItem>
@@ -136,12 +146,14 @@ export const CalendarFilters = ({ filters, onFiltersChange }: CalendarFiltersPro
 
         <div>
           <label className="text-xs font-medium mb-1 block">Responsável</label>
-          <Select onValueChange={addAssigneeFilter}>
+          <Select onValueChange={addAssigneeFilter} value="">
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Selecionar responsável" />
             </SelectTrigger>
             <SelectContent>
-              {users.map((user) => (
+              {users
+                .filter(user => !filters.assignees.includes(user.id))
+                .map((user) => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.full_name || user.email || 'Usuário'}
                 </SelectItem>

@@ -43,7 +43,19 @@ export const WeekView = ({
 
   const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
-  const handleDayClick = (date: Date, e: React.MouseEvent) => {
+  const handleCellClick = (date: Date, hour: number, e: React.MouseEvent) => {
+    if (dragAndDrop?.isDragging) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Criar novo evento com a data e hora especificadas
+    const eventDate = new Date(date);
+    eventDate.setHours(hour, 0, 0, 0);
+    onDateClick(eventDate);
+  };
+
+  const handleDayHeaderClick = (date: Date, e: React.MouseEvent) => {
     if (dragAndDrop?.isDragging) {
       e.preventDefault();
       return;
@@ -62,20 +74,20 @@ export const WeekView = ({
         {weekDays.map((day) => (
           <div 
             key={day.toISOString()} 
-            className={`text-center ${
+            className={`text-center cursor-pointer hover:bg-accent rounded p-1 ${
               dragAndDrop?.dragOverDate && isSameDay(day, dragAndDrop.dragOverDate) 
                 ? 'bg-blue-100 rounded' 
                 : ''
             }`}
+            onClick={(e) => handleDayHeaderClick(day, e)}
           >
             <div className="text-xs font-medium text-muted-foreground">
               {format(day, 'EEE', { locale: ptBR })}
             </div>
             <div 
-              className={`text-sm md:text-lg font-semibold cursor-pointer hover:bg-accent rounded p-1 ${
-                isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground' : ''
+              className={`text-sm md:text-lg font-semibold ${
+                isSameDay(day, new Date()) ? 'bg-primary text-primary-foreground rounded' : ''
               }`}
-              onClick={(e) => handleDayClick(day, e)}
             >
               {format(day, 'd')}
             </div>
@@ -109,7 +121,7 @@ export const WeekView = ({
                     className={`min-h-8 md:min-h-12 border border-border/50 p-0.5 md:p-1 cursor-pointer hover:bg-accent/50 ${
                       isDropZone ? 'bg-blue-100 border-blue-300' : ''
                     }`}
-                    onClick={(e) => handleDayClick(day, e)}
+                    onClick={(e) => handleCellClick(day, hour, e)}
                     onDragOver={(e) => dragAndDrop?.handleDragOver(e, day)}
                     onDragLeave={dragAndDrop?.handleDragLeave}
                     onDrop={(e) => dragAndDrop?.handleDrop(e, day)}

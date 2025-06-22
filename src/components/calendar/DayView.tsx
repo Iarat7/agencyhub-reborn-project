@@ -4,7 +4,8 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar } from 'lucide-react';
+import { Calendar, Clock, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Event } from '@/services/api/types';
 import type { Task } from '@/services/api/types';
 
@@ -14,6 +15,7 @@ interface DayViewProps {
   tasks: Task[];
   onEventClick: (event: Event) => void;
   onTaskClick: (task: Task) => void;
+  onDateClick: (date: Date) => void;
   dragAndDrop?: any;
 }
 
@@ -23,6 +25,7 @@ export const DayView = ({
   tasks, 
   onEventClick, 
   onTaskClick,
+  onDateClick,
   dragAndDrop
 }: DayViewProps) => {
   const dayEvents = events.filter(event => 
@@ -42,14 +45,36 @@ export const DayView = ({
     });
   };
 
+  const handleTimeSlotClick = (hour: number, e: React.MouseEvent) => {
+    if (dragAndDrop?.isDragging) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Criar novo evento com a data e hora especificadas
+    const eventDate = new Date(currentDate);
+    eventDate.setHours(hour, 0, 0, 0);
+    onDateClick(eventDate);
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {format(currentDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              {format(currentDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            </CardTitle>
+            <Button 
+              size="sm"
+              onClick={() => onDateClick(currentDate)}
+              className="text-xs"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Novo Evento
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -66,11 +91,12 @@ export const DayView = ({
                   return (
                     <div 
                       key={hour} 
-                      className={`flex gap-3 ${
+                      className={`flex gap-3 cursor-pointer hover:bg-accent/50 rounded p-2 -m-2 ${
                         dragAndDrop?.dragOverDate && isSameDay(currentDate, dragAndDrop.dragOverDate) 
-                          ? 'bg-blue-50 rounded p-2' 
+                          ? 'bg-blue-50' 
                           : ''
                       }`}
+                      onClick={(e) => handleTimeSlotClick(hour, e)}
                       onDragOver={(e) => dragAndDrop?.handleDragOver(e, currentDate)}
                       onDragLeave={dragAndDrop?.handleDragLeave}
                       onDrop={(e) => dragAndDrop?.handleDrop(e, currentDate)}
@@ -79,6 +105,11 @@ export const DayView = ({
                         {hour.toString().padStart(2, '0')}:00
                       </div>
                       <div className="flex-1 min-h-8 border-l border-border pl-3">
+                        {hourEvents.length === 0 && (
+                          <div className="text-xs text-muted-foreground opacity-0 hover:opacity-100 transition-opacity">
+                            Clique para criar evento
+                          </div>
+                        )}
                         {hourEvents.map((event) => (
                           <div
                             key={event.id}
@@ -86,7 +117,10 @@ export const DayView = ({
                             draggable={!!dragAndDrop}
                             onDragStart={() => dragAndDrop?.handleDragStart('event', event.id, event)}
                             onDragEnd={dragAndDrop?.handleDragEnd}
-                            onClick={() => onEventClick(event)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEventClick(event);
+                            }}
                           >
                             <div className="font-medium text-sm">{event.title}</div>
                             <div className="text-xs text-muted-foreground">

@@ -109,14 +109,18 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Cliente</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={clientsLoading}>
+                <Select 
+                  onValueChange={(value) => field.onChange(value === 'no-client' ? '' : value)} 
+                  value={field.value || 'no-client'} 
+                  disabled={clientsLoading}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={clientsLoading ? "Carregando clientes..." : "Selecione um cliente"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhum cliente selecionado</SelectItem>
+                    <SelectItem value="no-client">Nenhum cliente selecionado</SelectItem>
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name} {client.company && `(${client.company})`}

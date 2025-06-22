@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { Task } from '@/services/api/types';
 import { useUsers } from '@/hooks/useUsers';
+import { useClients } from '@/hooks/useClients';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -52,11 +53,18 @@ const priorityColors = {
 
 export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
   const { data: users = [] } = useUsers();
+  const { data: clients = [] } = useClients();
 
   const getUserName = (userId?: string) => {
     if (!userId) return '-';
     const user = users.find(u => u.id === userId);
     return user?.full_name || user?.email || 'Usuário não encontrado';
+  };
+
+  const getClientName = (clientId?: string) => {
+    if (!clientId) return '-';
+    const client = clients.find(c => c.id === clientId);
+    return client?.name || client?.company || 'Cliente não encontrado';
   };
 
   return (
@@ -94,7 +102,7 @@ export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
                   ? format(new Date(task.due_date), 'dd/MM/yyyy', { locale: ptBR })
                   : '-'}
               </TableCell>
-              <TableCell>{task.client_id || '-'}</TableCell>
+              <TableCell>{getClientName(task.client_id)}</TableCell>
               <TableCell>
                 {task.created_at
                   ? format(new Date(task.created_at), 'dd/MM/yyyy', { locale: ptBR })

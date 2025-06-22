@@ -81,8 +81,7 @@ const Clientes = () => {
   };
 
   const handleViewAssociations = (client: Client) => {
-    // TODO: Implementar visualização de associações
-    console.log('Ver associações do cliente:', client.id);
+    navigate(`/clientes/${client.id}/associacoes`);
   };
 
   const handleDeleteClient = (clientId: string) => {

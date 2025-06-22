@@ -28,7 +28,11 @@ const opportunitySchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
   client_id: z.string().optional(),
   value: z.string().optional(),
-  probability: z.string().optional(),
+  probability: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const num = parseInt(val);
+    return num >= 0 && num <= 100;
+  }, 'Probabilidade deve estar entre 0 e 100'),
   stage: z.string(),
   expected_close_date: z.string().optional(),
   description: z.string().optional(),
@@ -54,7 +58,7 @@ const stageOptions = [
 ];
 
 export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, initialClientId }: OpportunityFormProps) => {
-  const { data: clients = [] } = useClients();
+  const { data: clients = [], isLoading: clientsLoading } = useClients();
 
   const form = useForm<OpportunityFormData>({
     resolver: zodResolver(opportunitySchema),
@@ -76,6 +80,8 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
       probability: data.probability ? parseInt(data.probability) : null,
       client_id: data.client_id || null,
     };
+    
+    console.log('Enviando dados da oportunidade:', submitData);
     onSubmit(submitData);
   };
 
@@ -103,16 +109,17 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Cliente</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={clientsLoading}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione um cliente" />
+                      <SelectValue placeholder={clientsLoading ? "Carregando clientes..." : "Selecione um cliente"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="">Nenhum cliente selecionado</SelectItem>
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
-                        {client.name}
+                        {client.name} {client.company && `(${client.company})`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -132,6 +139,7 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
                   <Input
                     type="number"
                     step="0.01"
+                    min="0"
                     placeholder="0,00"
                     {...field}
                   />
@@ -167,7 +175,7 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estágio</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o estágio" />

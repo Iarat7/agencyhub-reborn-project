@@ -7,7 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 export const useOpportunities = () => {
   return useQuery({
     queryKey: ['opportunities'],
-    queryFn: () => opportunitiesService.list<Opportunity>(),
+    queryFn: async () => {
+      console.log('Buscando oportunidades...');
+      const result = await opportunitiesService.list<Opportunity>();
+      console.log('Oportunidades encontradas:', result);
+      return result;
+    },
   });
 };
 
@@ -24,7 +29,12 @@ export const useCreateOpportunity = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: Partial<Opportunity>) => opportunitiesService.create<Opportunity>(data),
+    mutationFn: async (data: Partial<Opportunity>) => {
+      console.log('Criando oportunidade:', data);
+      const result = await opportunitiesService.create<Opportunity>(data);
+      console.log('Oportunidade criada:', result);
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
       toast({
@@ -32,7 +42,8 @@ export const useCreateOpportunity = () => {
         description: 'Oportunidade criada com sucesso!',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Erro ao criar oportunidade:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao criar oportunidade. Tente novamente.',
@@ -47,8 +58,12 @@ export const useUpdateOpportunity = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Opportunity> }) =>
-      opportunitiesService.update<Opportunity>(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Opportunity> }) => {
+      console.log('Atualizando oportunidade:', id, data);
+      const result = await opportunitiesService.update<Opportunity>(id, data);
+      console.log('Oportunidade atualizada:', result);
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
       toast({
@@ -56,7 +71,8 @@ export const useUpdateOpportunity = () => {
         description: 'Oportunidade atualizada com sucesso!',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Erro ao atualizar oportunidade:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao atualizar oportunidade. Tente novamente.',
@@ -71,7 +87,12 @@ export const useDeleteOpportunity = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (id: string) => opportunitiesService.delete(id),
+    mutationFn: async (id: string) => {
+      console.log('Excluindo oportunidade:', id);
+      const result = await opportunitiesService.delete(id);
+      console.log('Oportunidade excluída:', result);
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
       toast({
@@ -79,7 +100,8 @@ export const useDeleteOpportunity = () => {
         description: 'Oportunidade excluída com sucesso!',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Erro ao excluir oportunidade:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao excluir oportunidade. Tente novamente.',

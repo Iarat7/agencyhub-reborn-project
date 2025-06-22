@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,7 @@ const opportunityFilterFields: FilterField[] = [
     label: 'Estágio', 
     type: 'select',
     options: [
+      { label: 'Prospecção', value: 'prospection' },
       { label: 'Qualificação', value: 'qualification' },
       { label: 'Proposta', value: 'proposal' },
       { label: 'Negociação', value: 'negotiation' },
@@ -72,11 +73,18 @@ const Oportunidades = () => {
     setEditingOpportunity(null);
   };
 
+  console.log('Oportunidades carregadas:', opportunities);
+  console.log('Oportunidades filtradas:', searchFilteredOpportunities);
+
   if (error) {
+    console.error('Erro ao carregar oportunidades:', error);
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
           <p className="text-red-600">Erro ao carregar oportunidades. Tente novamente.</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Recarregar página
+          </Button>
         </div>
       </div>
     );

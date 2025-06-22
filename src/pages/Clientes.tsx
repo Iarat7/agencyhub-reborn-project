@@ -4,10 +4,20 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ClientsTable } from '@/components/clients/ClientsTable';
 import { ClientDialog } from '@/components/clients/ClientDialog';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
-import { useClients } from '@/hooks/useClients';
+import { useClients, useDeleteClient } from '@/hooks/useClients';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterClients } from '@/utils/filterUtils';
 import { Client } from '@/services/api/types';
@@ -34,9 +44,12 @@ const Clientes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { data: clients = [], isLoading, error } = useClients();
+  const deleteClientMutation = useDeleteClient();
 
   const {
     filters,
@@ -74,8 +87,16 @@ const Clientes = () => {
   };
 
   const handleDeleteClient = (clientId: string) => {
-    // TODO: Implementar exclusão de cliente
-    console.log('Excluir cliente:', clientId);
+    setClientToDelete(clientId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteClient = () => {
+    if (clientToDelete) {
+      deleteClientMutation.mutate(clientToDelete);
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
+    }
   };
 
   const handleDialogClose = () => {
@@ -204,6 +225,28 @@ const Clientes = () => {
         onOpenChange={handleDialogClose}
         client={editingClient}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+              Todos os dados relacionados (oportunidades, tarefas, etc.) também serão removidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteClient}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteClientMutation.isPending}
+            >
+              {deleteClientMutation.isPending ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

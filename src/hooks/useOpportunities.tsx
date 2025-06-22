@@ -9,9 +9,15 @@ export const useOpportunities = () => {
     queryKey: ['opportunities'],
     queryFn: async () => {
       console.log('Buscando oportunidades...');
-      const result = await opportunitiesService.list<Opportunity>();
-      console.log('Oportunidades encontradas:', result);
-      return result;
+      try {
+        const result = await opportunitiesService.list<Opportunity>();
+        console.log('Oportunidades encontradas:', result);
+        console.log('Total de oportunidades:', result?.length || 0);
+        return result || [];
+      } catch (error) {
+        console.error('Erro ao buscar oportunidades:', error);
+        throw error;
+      }
     },
   });
 };
@@ -31,11 +37,17 @@ export const useCreateOpportunity = () => {
   return useMutation({
     mutationFn: async (data: Partial<Opportunity>) => {
       console.log('Criando oportunidade:', data);
-      const result = await opportunitiesService.create<Opportunity>(data);
-      console.log('Oportunidade criada:', result);
-      return result;
+      try {
+        const result = await opportunitiesService.create<Opportunity>(data);
+        console.log('Oportunidade criada com sucesso:', result);
+        return result;
+      } catch (error) {
+        console.error('Erro detalhado ao criar oportunidade:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Invalidando cache e mostrando toast de sucesso');
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
       toast({
         title: 'Oportunidade criada',
@@ -60,9 +72,14 @@ export const useUpdateOpportunity = () => {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Opportunity> }) => {
       console.log('Atualizando oportunidade:', id, data);
-      const result = await opportunitiesService.update<Opportunity>(id, data);
-      console.log('Oportunidade atualizada:', result);
-      return result;
+      try {
+        const result = await opportunitiesService.update<Opportunity>(id, data);
+        console.log('Oportunidade atualizada com sucesso:', result);
+        return result;
+      } catch (error) {
+        console.error('Erro detalhado ao atualizar oportunidade:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
@@ -89,9 +106,14 @@ export const useDeleteOpportunity = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       console.log('Excluindo oportunidade:', id);
-      const result = await opportunitiesService.delete(id);
-      console.log('Oportunidade excluída:', result);
-      return result;
+      try {
+        const result = await opportunitiesService.delete(id);
+        console.log('Oportunidade excluída com sucesso:', result);
+        return result;
+      } catch (error) {
+        console.error('Erro detalhado ao excluir oportunidade:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });

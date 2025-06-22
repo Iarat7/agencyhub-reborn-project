@@ -79,6 +79,7 @@ export const OpportunityForm = ({ opportunity, onSubmit, onCancel, isLoading, in
       value: data.value ? parseFloat(data.value) : null,
       probability: data.probability ? parseInt(data.probability) : null,
       client_id: data.client_id || null,
+      expected_close_date: data.expected_close_date || null, // Enviar null em vez de string vazia
     };
     
     console.log('Enviando dados da oportunidade:', submitData);

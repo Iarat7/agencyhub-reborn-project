@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useEvents } from '@/hooks/useEvents';
 import { useClients } from '@/hooks/useClients';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { formatDateForRecife, formatDateToLocal, getCurrentRecifeTime } from '@/utils/timezone';
 import type { Event } from '@/services/api/types';
 
 const eventSchema = z.object({
@@ -45,17 +44,17 @@ export const EventForm = ({
   const { data: clients = [] } = useClients();
   const { toast } = useToast();
 
-  const defaultDate = selectedDate || new Date();
-  const defaultStartTime = format(defaultDate, "yyyy-MM-dd'T'HH:mm");
-  const defaultEndTime = format(new Date(defaultDate.getTime() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm");
+  const defaultDate = selectedDate || getCurrentRecifeTime();
+  const defaultStartTime = formatDateToLocal(defaultDate);
+  const defaultEndTime = formatDateToLocal(new Date(defaultDate.getTime() + 60 * 60 * 1000));
 
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       title: event?.title || '',
       description: event?.description || '',
-      start_date: event?.start_date ? format(new Date(event.start_date), "yyyy-MM-dd'T'HH:mm") : defaultStartTime,
-      end_date: event?.end_date ? format(new Date(event.end_date), "yyyy-MM-dd'T'HH:mm") : defaultEndTime,
+      start_date: event?.start_date ? formatDateToLocal(event.start_date) : defaultStartTime,
+      end_date: event?.end_date ? formatDateToLocal(event.end_date) : defaultEndTime,
       event_type: event?.event_type || 'meeting',
       client_id: event?.client_id || 'no-client',
       attendees: event?.attendees?.join(', ') || '',
@@ -69,8 +68,8 @@ export const EventForm = ({
       const eventData = {
         title: data.title,
         description: data.description,
-        start_date: new Date(data.start_date).toISOString(),
-        end_date: new Date(data.end_date).toISOString(),
+        start_date: formatDateForRecife(new Date(data.start_date)),
+        end_date: formatDateForRecife(new Date(data.end_date)),
         event_type: data.event_type,
         client_id: data.client_id === 'no-client' ? null : data.client_id,
         attendees: data.attendees ? data.attendees.split(',').map(email => email.trim()).filter(Boolean) : [],

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -17,6 +16,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatDateForRecife, getCurrentRecifeTime } from '@/utils/timezone';
 
 interface QuickCreateDialogProps {
   open: boolean;
@@ -52,7 +52,7 @@ export const QuickCreateDialog = ({
         description: taskDescription || undefined,
         priority: taskPriority as any,
         status: 'pending',
-        due_date: format(selectedDate, 'yyyy-MM-dd'),
+        due_date: formatDateForRecife(selectedDate),
       });
 
       toast({
@@ -75,14 +75,19 @@ export const QuickCreateDialog = ({
     if (!eventTitle.trim()) return;
 
     try {
-      const startDateTime = `${format(selectedDate, 'yyyy-MM-dd')}T${startTime}:00`;
-      const endDateTime = `${format(selectedDate, 'yyyy-MM-dd')}T${endTime}:00`;
+      const startDateTime = new Date(selectedDate);
+      const [hours, minutes] = startTime.split(':');
+      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      const endDateTime = new Date(selectedDate);
+      const [endHours, endMinutes] = endTime.split(':');
+      endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
 
       await createEvent.mutateAsync({
         title: eventTitle,
         description: eventDescription || undefined,
-        start_date: startDateTime,
-        end_date: endDateTime,
+        start_date: formatDateForRecife(startDateTime),
+        end_date: formatDateForRecife(endDateTime),
         event_type: eventType as any,
       });
 

@@ -16,12 +16,13 @@ import { CalendarFilters, CalendarFilters as CalendarFiltersType } from '@/compo
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Zap, Settings, Smartphone } from 'lucide-react';
-import { useEvents } from '@/hooks/useEvents';
+import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { useTasks } from '@/hooks/useTasks';
 import { useCalendarNotifications } from '@/hooks/useCalendarNotifications';
 import { useCalendarRealtime } from '@/hooks/useCalendarRealtime';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { formatDateForRecife, getCurrentRecifeTime } from '@/utils/timezone';
 import type { Event } from '@/services/api/types';
 import type { Task } from '@/services/api/types';
 
@@ -37,14 +38,14 @@ const Agenda = () => {
   const [editingEvent, setEditingEvent] = useState<Event | undefined>();
   const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [view, setView] = useState<CalendarViewType>('month');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(getCurrentRecifeTime());
   const [filters, setFilters] = useState<CalendarFiltersType>({
     eventTypes: [],
     clients: [],
     assignees: [],
   });
 
-  const { data: allEvents = [] } = useEvents();
+  const { data: allEvents = [] } = useCalendarEvents();
   const { data: allTasks = [] } = useTasks();
   const isMobile = useIsMobile();
 
@@ -82,9 +83,10 @@ const Agenda = () => {
 
   const handleDateSelect = (date: Date) => {
     // Se a data vier com horário específico (das views de semana/dia), use ela
-    // Senão, use a data com horário atual
+    // Senão, use a data com horário atual de Recife
+    const recifeNow = getCurrentRecifeTime();
     const eventDate = date.getHours() === 0 && date.getMinutes() === 0 
-      ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), new Date().getHours())
+      ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), recifeNow.getHours())
       : date;
       
     setSelectedDate(eventDate);
@@ -179,7 +181,7 @@ const Agenda = () => {
             <Button 
               variant="outline"
               onClick={() => {
-                setSelectedDate(new Date());
+                setSelectedDate(getCurrentRecifeTime());
                 setIsQuickCreateOpen(true);
               }}
               className="flex-1 sm:flex-none"
@@ -288,7 +290,7 @@ const Agenda = () => {
       <QuickCreateDialog
         open={isQuickCreateOpen}
         onOpenChange={setIsQuickCreateOpen}
-        selectedDate={selectedDate || new Date()}
+        selectedDate={selectedDate || getCurrentRecifeTime()}
       />
     </div>
   );

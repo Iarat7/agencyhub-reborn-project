@@ -21,6 +21,7 @@ import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterClients } from '@/utils/filterUtils';
 import { Client } from '@/services/api/types';
 import { useNavigate } from 'react-router-dom';
+import { ClientPaymentForm } from '@/components/clients/ClientPaymentForm';
 
 const clientFilterFields: FilterField[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do cliente' },

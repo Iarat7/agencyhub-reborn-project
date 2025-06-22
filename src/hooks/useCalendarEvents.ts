@@ -5,6 +5,7 @@ import { useEvents } from './useEvents';
 import { useContracts } from './useContracts';
 import { useOpportunities } from './useOpportunities';
 import { useFinancialEntries } from './useFinancialEntries';
+import { useClients } from './useClients';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Event } from '@/services/api/types';
@@ -17,12 +18,13 @@ interface CalendarEvent extends Omit<Event, 'id'> {
 
 export const useCalendarEvents = () => {
   const { data: events = [] } = useEvents();
-  const { data: contracts = [] } = useContracts();
+  const { contracts = [] } = useContracts();
   const { data: opportunities = [] } = useOpportunities();
-  const { data: financialEntries = [] } = useFinancialEntries();
+  const { entries: financialEntries = [] } = useFinancialEntries();
+  const { data: clients = [] } = useClients();
 
   return useQuery({
-    queryKey: ['calendar-events', events, contracts, opportunities, financialEntries],
+    queryKey: ['calendar-events', events, contracts, opportunities, financialEntries, clients],
     queryFn: () => {
       const calendarEvents: CalendarEvent[] = [];
 
@@ -36,11 +38,13 @@ export const useCalendarEvents = () => {
 
       // Eventos de contratos
       contracts.forEach(contract => {
+        const client = clients.find(c => c.id === contract.client_id);
+        
         if (contract.start_date) {
           calendarEvents.push({
             id: `contract-start-${contract.id}`,
             title: `Início do Contrato: ${contract.title}`,
-            description: `Contrato com ${contract.client?.name} inicia hoje`,
+            description: `Contrato com ${client?.name || 'Cliente não identificado'} inicia hoje`,
             start_date: contract.start_date,
             end_date: contract.start_date,
             event_type: 'reminder',
@@ -57,7 +61,7 @@ export const useCalendarEvents = () => {
           calendarEvents.push({
             id: `contract-end-${contract.id}`,
             title: `Fim do Contrato: ${contract.title}`,
-            description: `Contrato com ${contract.client?.name} termina hoje`,
+            description: `Contrato com ${client?.name || 'Cliente não identificado'} termina hoje`,
             start_date: contract.end_date,
             end_date: contract.end_date,
             event_type: 'deadline',
@@ -73,11 +77,13 @@ export const useCalendarEvents = () => {
 
       // Eventos de oportunidades
       opportunities.forEach(opportunity => {
+        const client = clients.find(c => c.id === opportunity.client_id);
+        
         if (opportunity.expected_close_date) {
           calendarEvents.push({
             id: `opportunity-close-${opportunity.id}`,
             title: `Fechamento Previsto: ${opportunity.title}`,
-            description: `Oportunidade com ${opportunity.client?.name} - Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(opportunity.value || 0)}`,
+            description: `Oportunidade com ${client?.name || 'Cliente não identificado'} - Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(opportunity.value || 0)}`,
             start_date: opportunity.expected_close_date,
             end_date: opportunity.expected_close_date,
             event_type: 'deadline',
@@ -95,10 +101,12 @@ export const useCalendarEvents = () => {
       financialEntries
         .filter(entry => entry.type === 'income' && entry.due_date)
         .forEach(entry => {
+          const client = clients.find(c => c.id === entry.client_id);
+          
           calendarEvents.push({
             id: `payment-${entry.id}`,
             title: `Recebimento: ${entry.description}`,
-            description: `Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(entry.amount)}`,
+            description: `Cliente: ${client?.name || 'Não identificado'} - Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(entry.amount)}`,
             start_date: entry.due_date!,
             end_date: entry.due_date!,
             event_type: 'reminder',

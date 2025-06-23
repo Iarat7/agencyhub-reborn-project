@@ -76,8 +76,8 @@ export const ClientForm = ({ client, onSubmit, onCancel, isLoading }: ClientForm
       company: data.company || null,
       segment: data.segment || null,
       observations: data.observations || null,
-      contract_start_date: data.contract_start_date ? data.contract_start_date.toISOString() : null,
-      contract_end_date: data.contract_end_date ? data.contract_end_date.toISOString() : null,
+      contract_start_date: data.contract_start_date || null,
+      contract_end_date: data.contract_end_date || null,
     };
     onSubmit(submitData);
   };

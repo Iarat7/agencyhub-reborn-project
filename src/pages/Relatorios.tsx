@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -146,7 +145,7 @@ const Relatorios = () => {
                 data={{
                   opportunities: reportData.rawData.opportunities,
                   clients: reportData.rawData.clients,
-                  contracts: reportData.rawData.contracts || []
+                  contracts: []
                 }}
               />
             ) : (

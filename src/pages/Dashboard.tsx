@@ -5,7 +5,7 @@ import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashb
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
-import { NotificationPanel } from '@/components/notifications/NotificationPanel';
+import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -51,7 +51,7 @@ export default function Dashboard() {
           <TabsContent value="alerts">
             <NotificationAlerts />
             <div className="mt-4">
-              <NotificationPanel onClose={() => {}} />
+              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
             </div>
           </TabsContent>
         </Tabs>
@@ -63,21 +63,15 @@ export default function Dashboard() {
             <DashboardCharts metrics={dashboardData?.metrics} />
           </div>
 
-          {/* Seção de Inteligência Artificial e Notificações */}
+          {/* Seção de Inteligência Artificial e Atividades Recentes */}
           <div className="border-t pt-6">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Brain className="h-6 w-6" />
-              Inteligência Artificial e Notificações
+              Inteligência Artificial e Atividades
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <AIStrategiesCard />
-              <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Painel de Notificações
-                </h3>
-                <NotificationPanel onClose={() => {}} />
-              </div>
+              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
             </div>
           </div>
         </div>

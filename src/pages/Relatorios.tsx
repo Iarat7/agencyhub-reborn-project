@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ReportsMetrics } from '@/components/reports/ReportsMetrics';
 import { ReportsCharts } from '@/components/reports/ReportsCharts';
 import { ReportsFilters } from '@/components/reports/ReportsFilters';
+import { SalesReport } from '@/components/reports/SalesReport';
 import { ExportDialog } from '@/components/reports/ExportDialog';
 import { useAdvancedReportsData } from '@/hooks/useAdvancedReportsData';
 import { 
@@ -14,7 +15,6 @@ import {
   DollarSign, 
   Users, 
   Download,
-  Calendar,
   Target,
   Activity
 } from 'lucide-react';
@@ -38,7 +38,6 @@ const Relatorios = () => {
   };
 
   const handleApplyFilters = () => {
-    // Filters are applied automatically when period or dateRange changes
     console.log('Applying filters with period:', period, 'and range:', dateRange);
   };
 
@@ -46,7 +45,6 @@ const Relatorios = () => {
     setExportDialogOpen(true);
   };
 
-  // Mock data for export
   const exportData = reportData ? [reportData.metrics] : [];
 
   return (
@@ -142,21 +140,20 @@ const Relatorios = () => {
         </TabsContent>
 
         <TabsContent value="sales">
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp size={20} />
-                  Análise de Vendas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-slate-500">
-                  <TrendingUp size={48} className="mx-auto mb-4 opacity-20" />
-                  <p>Relatório de vendas será implementado em breve</p>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            {reportData ? (
+              <SalesReport 
+                data={{
+                  opportunities: reportData.rawData.opportunities,
+                  clients: reportData.rawData.clients,
+                  contracts: reportData.rawData.contracts || []
+                }}
+              />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-slate-600">Carregando dados de vendas...</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 

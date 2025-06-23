@@ -5,11 +5,10 @@ import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashb
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
 import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
-import { SmartInsights } from '@/components/dashboard/SmartInsights';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Brain, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSmartInsights } from '@/hooks/useSmartInsights';
 import { useCompleteDashboardData } from '@/hooks/useDashboard';
 
 export default function Dashboard() {
@@ -18,9 +17,6 @@ export default function Dashboard() {
 
   // Buscar dados completos do dashboard
   const { data: dashboardData, isLoading } = useCompleteDashboardData(selectedPeriod);
-  
-  // Dados para insights
-  const { data: insights } = useSmartInsights(selectedPeriod);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -50,11 +46,13 @@ export default function Dashboard() {
           
           <TabsContent value="ai" className="space-y-4">
             <AIStrategiesCard />
-            <SmartInsights insights={insights} />
           </TabsContent>
           
           <TabsContent value="alerts">
             <NotificationAlerts />
+            <div className="mt-4">
+              <NotificationPanel onClose={() => {}} />
+            </div>
           </TabsContent>
         </Tabs>
       ) : (
@@ -65,15 +63,21 @@ export default function Dashboard() {
             <DashboardCharts metrics={dashboardData?.metrics} />
           </div>
 
-          {/* Seção de Inteligência Artificial */}
+          {/* Seção de Inteligência Artificial e Notificações */}
           <div className="border-t pt-6">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Brain className="h-6 w-6" />
-              Inteligência Artificial
+              Inteligência Artificial e Notificações
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <AIStrategiesCard />
-              <SmartInsights insights={insights} />
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Painel de Notificações
+                </h3>
+                <NotificationPanel onClose={() => {}} />
+              </div>
             </div>
           </div>
         </div>

@@ -63,8 +63,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
+    // URL de convite corrigida
+    const inviteUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?type=invite&redirect_to=${encodeURIComponent('https://wojnyntwnwtiizijbgkx.supabase.co')}/auth/signup?email=${encodeURIComponent(email)}&role=${role}`;
+
     const emailResponse = await resend.emails.send({
-      from: "InflowHub <onboarding@resend.dev>",
+      from: "InflowHub <noreply@resend.dev>",
       to: [email],
       subject: `Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
       html: `
@@ -103,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             
             <div style="text-align: center; margin: 32px 0;">
-              <a href="${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token_hash=invite&type=invite&redirect_to=${encodeURIComponent(window?.location?.origin || 'https://your-domain.com')}/auth" 
+              <a href="${inviteUrl}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: all 0.3s ease;">
                 ✨ Aceitar Convite e Criar Conta
               </a>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -17,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Crown, Shield, Users, Mail } from 'lucide-react';
+import { Crown, Shield, Users, Mail, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,8 +42,8 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
     
     if (!email || !role) {
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos",
+        title: "Erro de validação",
+        description: "Por favor, preencha todos os campos obrigatórios",
         variant: "destructive",
       });
       return;
@@ -50,8 +51,19 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
 
     if (!user) {
       toast({
-        title: "Erro",
+        title: "Erro de autenticação",
         description: "Você precisa estar logado para enviar convites",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um endereço de email válido",
         variant: "destructive",
       });
       return;
@@ -64,10 +76,10 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       
       const { data, error } = await supabase.functions.invoke('send-team-invite', {
         body: {
-          email,
+          email: email.toLowerCase().trim(),
           role,
-          inviterName: user.full_name || user.email,
-          companyName: user.company_name || 'AgencyHub'
+          inviterName: user.full_name || user.email || 'Membro da equipe',
+          companyName: user.company_name || 'InflowHub'
         }
       });
 
@@ -75,14 +87,14 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw error;
+        throw new Error(error.message || 'Erro ao enviar convite');
       }
 
       console.log('Invite sent successfully!');
 
       toast({
-        title: "Convite enviado!",
-        description: `Convite enviado para ${email} com função de ${getRoleLabel(role)}`,
+        title: "✅ Convite enviado!",
+        description: `Convite enviado para ${email} com função de ${getRoleLabel(role)}. Verifique se o email está correto.`,
       });
       
       setEmail('');
@@ -90,9 +102,20 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error sending invite:', error);
+      
+      let errorMessage = "Ocorreu um erro ao enviar o convite. Tente novamente.";
+      
+      if (error.message?.includes('RESEND_API_KEY')) {
+        errorMessage = "Configuração de email não encontrada. Entre em contato com o administrador.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Email inválido. Verifique o endereço e tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Erro",
-        description: error.message || "Ocorreu um erro ao enviar o convite. Tente novamente.",
+        title: "Erro ao enviar convite",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -118,9 +141,18 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
     }
   };
 
+  const getRoleDescription = (roleValue: string) => {
+    switch (roleValue) {
+      case 'admin': return 'Acesso total ao sistema, pode gerenciar usuários e configurações';
+      case 'manager': return 'Pode gerenciar equipe, ver relatórios e aprovar transações';
+      case 'user': return 'Acesso básico para gerenciar clientes, oportunidades e tarefas';
+      default: return '';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -130,10 +162,11 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
             Envie um convite por e-mail para adicionar um novo membro à equipe
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">E-mail</Label>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail *</Label>
               <Input
                 id="email"
                 type="email"
@@ -141,11 +174,13 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="role">Função</Label>
-              <Select value={role} onValueChange={setRole}>
+            
+            <div className="space-y-2">
+              <Label htmlFor="role">Função *</Label>
+              <Select value={role} onValueChange={setRole} disabled={isLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma função" />
                 </SelectTrigger>
@@ -153,31 +188,67 @@ export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) 
                   <SelectItem value="user">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Usuário
+                      <div>
+                        <div className="font-medium">Usuário</div>
+                        <div className="text-xs text-muted-foreground">Acesso básico ao sistema</div>
+                      </div>
                     </div>
                   </SelectItem>
                   <SelectItem value="manager">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
-                      Gerente
+                      <div>
+                        <div className="font-medium">Gerente</div>
+                        <div className="text-xs text-muted-foreground">Pode gerenciar equipe e relatórios</div>
+                      </div>
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
                     <div className="flex items-center gap-2">
                       <Crown className="h-4 w-4" />
-                      Administrador
+                      <div>
+                        <div className="font-medium">Administrador</div>
+                        <div className="text-xs text-muted-foreground">Acesso total ao sistema</div>
+                      </div>
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
+              
+              {role && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
+                    <div className="text-sm text-blue-700">
+                      <strong>{getRoleLabel(role)}:</strong> {getRoleDescription(role)}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Enviando...' : 'Enviar Convite'}
+            <Button type="submit" disabled={isLoading || !email || !role}>
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Enviar Convite
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

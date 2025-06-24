@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,14 +26,30 @@ import { useAuth } from '@/hooks/useAuth';
 interface InviteUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultRole?: string;
 }
 
-export const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
+export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUserDialogProps) => {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Set default role when dialog opens
+  useEffect(() => {
+    if (open && defaultRole) {
+      setRole(defaultRole);
+    }
+  }, [open, defaultRole]);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setEmail('');
+      setRole('');
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -13,12 +13,16 @@ import {
   Lock
 } from 'lucide-react';
 import { RolePermissionsManager } from './RolePermissionsManager';
+import { InviteUserDialog } from './InviteUserDialog';
 
 export const TeamRolesCard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('');
 
   const roles = [
     {
+      id: 'admin',
       name: 'Administrador',
       icon: Crown,
       color: 'destructive' as const,
@@ -31,6 +35,7 @@ export const TeamRolesCard = () => {
       count: 2
     },
     {
+      id: 'manager',
       name: 'Gerente',
       icon: Shield,
       color: 'default' as const,
@@ -43,6 +48,7 @@ export const TeamRolesCard = () => {
       count: 5
     },
     {
+      id: 'user',
       name: 'Usuário',
       icon: Users,
       color: 'secondary' as const,
@@ -55,6 +61,16 @@ export const TeamRolesCard = () => {
       count: 12
     }
   ];
+
+  const handleAddUser = (roleId: string) => {
+    setSelectedRole(roleId);
+    setInviteDialogOpen(true);
+  };
+
+  const handleInviteDialogClose = () => {
+    setInviteDialogOpen(false);
+    setSelectedRole('');
+  };
 
   return (
     <div className="space-y-6">
@@ -82,7 +98,7 @@ export const TeamRolesCard = () => {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {roles.map((role) => (
-              <Card key={role.name} className="relative">
+              <Card key={role.id} className="relative">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -106,7 +122,12 @@ export const TeamRolesCard = () => {
                       ))}
                     </ul>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleAddUser(role.id)}
+                  >
                     <UserPlus className="h-4 w-4 mr-2" />
                     Adicionar Usuário
                   </Button>
@@ -127,6 +148,12 @@ export const TeamRolesCard = () => {
           <RolePermissionsManager />
         </TabsContent>
       </Tabs>
+
+      <InviteUserDialog 
+        open={inviteDialogOpen} 
+        onOpenChange={handleInviteDialogClose}
+        defaultRole={selectedRole}
+      />
     </div>
   );
 };

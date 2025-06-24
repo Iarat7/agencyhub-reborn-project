@@ -63,13 +63,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
-    // URL de convite corrigida
-    const inviteUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?type=invite&redirect_to=${encodeURIComponent('https://wojnyntwnwtiizijbgkx.supabase.co')}/auth/signup?email=${encodeURIComponent(email)}&role=${role}`;
+    // URL de convite para o sistema
+    const baseUrl = 'https://00a493c4-9eee-4344-96d7-51298ea6a659.lovableproject.com';
+    const inviteUrl = `${baseUrl}/auth?mode=signup&email=${encodeURIComponent(email)}&role=${role}&invited=true`;
+
+    console.log("Invite URL generated:", inviteUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "InflowHub <noreply@resend.dev>",
+      from: "InflowHub <onboarding@resend.dev>", // Usando domínio verificado do Resend
       to: [email],
-      subject: `Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
+      subject: `🎉 Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -78,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Convite para a equipe</title>
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
           
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; border-radius: 12px 12px 0 0;">
             <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">
@@ -87,51 +90,59 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="background: white; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <p style="font-size: 18px; margin-bottom: 20px;">
+            <p style="font-size: 18px; margin-bottom: 20px; color: #333;">
               Olá! 👋
             </p>
             
-            <p style="font-size: 16px; margin-bottom: 24px;">
+            <p style="font-size: 16px; margin-bottom: 24px; color: #555;">
               <strong>${inviterName}</strong> convidou você para fazer parte da equipe${companyName ? ` da <strong>${companyName}</strong>` : ''} no <strong>InflowHub</strong>.
             </p>
             
             <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #667eea;">
-              <p style="margin: 0; font-size: 16px;">
-                <strong>Sua função:</strong> ${getRoleLabel(role)}
+              <p style="margin: 0; font-size: 16px; color: #333;">
+                <strong>🎯 Sua função:</strong> ${getRoleLabel(role)}
               </p>
             </div>
             
-            <p style="font-size: 16px; margin-bottom: 32px;">
+            <p style="font-size: 16px; margin-bottom: 32px; color: #555;">
               O InflowHub é uma plataforma completa para gestão empresarial, onde você poderá gerenciar clientes, oportunidades, tarefas, contratos e muito mais!
             </p>
             
             <div style="text-align: center; margin: 32px 0;">
               <a href="${inviteUrl}" 
-                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: all 0.3s ease;">
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
                 ✨ Aceitar Convite e Criar Conta
               </a>
             </div>
             
-            <div style="background: #fef3cd; padding: 16px; border-radius: 8px; margin: 24px 0;">
+            <div style="background: #fff3cd; padding: 16px; border-radius: 8px; margin: 24px 0; border: 1px solid #ffeaa7;">
               <p style="margin: 0; font-size: 14px; color: #856404;">
-                <strong>⏰ Importante:</strong> Este convite é válido por 48 horas. Se você não conseguir acessar o link, entre em contato com ${inviterName}.
+                <strong>⏰ Importante:</strong> Este convite é válido por 7 dias. Se você não conseguir acessar o link, entre em contato com ${inviterName}.
               </p>
             </div>
             
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
             
             <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">
-              <strong>O que você pode fazer no InflowHub:</strong>
+              <strong>💼 O que você pode fazer no InflowHub:</strong>
             </p>
             
-            <ul style="font-size: 14px; color: #64748b; margin-left: 20px;">
-              <li>Gerenciar clientes e relacionamentos</li>
-              <li>Acompanhar oportunidades de negócio</li>
-              <li>Organizar tarefas e projetos</li>
-              <li>Controlar contratos e financeiro</li>
-              <li>Gerar relatórios e insights</li>
-              <li>Criar estratégias com IA</li>
+            <ul style="font-size: 14px; color: #64748b; margin-left: 20px; padding-left: 0;">
+              <li style="margin-bottom: 8px;">📊 Gerenciar clientes e relacionamentos</li>
+              <li style="margin-bottom: 8px;">🎯 Acompanhar oportunidades de negócio</li>
+              <li style="margin-bottom: 8px;">✅ Organizar tarefas e projetos</li>
+              <li style="margin-bottom: 8px;">📋 Controlar contratos e financeiro</li>
+              <li style="margin-bottom: 8px;">📈 Gerar relatórios e insights</li>
+              <li style="margin-bottom: 8px;">🤖 Criar estratégias com IA</li>
             </ul>
+            
+            <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; margin: 24px 0; border: 1px solid #bae6fd;">
+              <p style="margin: 0; font-size: 14px; color: #0369a1;">
+                <strong>🔗 Link alternativo:</strong><br/>
+                Se o botão não funcionar, copie e cole este link no seu navegador:<br/>
+                <code style="word-break: break-all; background: #e0f2fe; padding: 4px 8px; border-radius: 4px;">${inviteUrl}</code>
+              </p>
+            </div>
             
             <p style="font-size: 14px; color: #64748b; margin-top: 32px; text-align: center;">
               Se você não solicitou este convite, pode ignorar este email com segurança.
@@ -140,7 +151,8 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="text-align: center; padding: 20px; font-size: 12px; color: #64748b;">
             <p style="margin: 0;">
-              InflowHub - Gestão Inteligente para Empresas
+              InflowHub - Gestão Inteligente para Empresas<br/>
+              <a href="${baseUrl}" style="color: #667eea; text-decoration: none;">Acesse nossa plataforma</a>
             </p>
           </div>
           
@@ -151,10 +163,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", JSON.stringify(emailResponse, null, 2));
 
+    // Verificar se houve erro no envio
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      throw new Error(`Erro ao enviar email: ${emailResponse.error.message || 'Erro desconhecido'}`);
+    }
+
+    console.log("Email sent successfully with ID:", emailResponse.data?.id);
+
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Convite enviado com sucesso',
-      emailResponse 
+      emailId: emailResponse.data?.id,
+      inviteUrl: inviteUrl
     }), {
       status: 200,
       headers: {
@@ -169,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack 
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       }),
       {
         status: 500,

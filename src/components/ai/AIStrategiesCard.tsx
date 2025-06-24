@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
-import { useAIStrategies } from '@/hooks/useAIStrategies';
+import { useAIStrategies } from '@/hooks/ai-strategies/useAIStrategies';
 
 export const AIStrategiesCard = () => {
   const { strategies, isLoading, refetch } = useAIStrategies();

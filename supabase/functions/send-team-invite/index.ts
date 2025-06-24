@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Invite URL generated:", inviteUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "InflowHub <onboarding@resend.dev>", // Usando domínio verificado do Resend
+      from: "InflowHub <noreply@bushdigital.com.br>", // Usando seu domínio verificado
       to: [email],
       subject: `🎉 Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
       html: `

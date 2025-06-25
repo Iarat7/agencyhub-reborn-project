@@ -6,6 +6,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { MobileOptimizations } from '@/components/mobile/MobileOptimizations';
 import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
@@ -38,6 +39,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <OrganizationProvider>
+          <MobileOptimizations />
           <BrowserRouter>
             <div className="App">
               <Routes>

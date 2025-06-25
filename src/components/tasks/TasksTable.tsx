@@ -20,7 +20,7 @@ import { ptBR } from 'date-fns/locale';
 interface TasksTableProps {
   tasks: Task[];
   onEdit: (task: Task) => void;
-  onDelete: (id: string) => void;
+  onDelete: (task: Task) => void;
 }
 
 const statusLabels = {
@@ -68,18 +68,18 @@ export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Prioridade</TableHead>
-            <TableHead>Responsável</TableHead>
-            <TableHead>Vencimento</TableHead>
-            <TableHead>Cliente</TableHead>
-            <TableHead>Criado em</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+            <TableHead className="min-w-[200px]">Título</TableHead>
+            <TableHead className="min-w-[120px]">Status</TableHead>
+            <TableHead className="min-w-[120px]">Prioridade</TableHead>
+            <TableHead className="min-w-[150px]">Responsável</TableHead>
+            <TableHead className="min-w-[120px]">Vencimento</TableHead>
+            <TableHead className="min-w-[150px]">Cliente</TableHead>
+            <TableHead className="min-w-[120px]">Criado em</TableHead>
+            <TableHead className="text-right min-w-[120px]">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -120,7 +120,8 @@ export const TasksTable = ({ tasks, onEdit, onDelete }: TasksTableProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onDelete(task.id)}
+                    onClick={() => onDelete(task)}
+                    className="hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

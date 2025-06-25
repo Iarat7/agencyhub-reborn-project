@@ -1,81 +1,46 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { SubscriptionStatus } from '@/components/subscription/SubscriptionStatus';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { OptimizedDashboardMetrics } from '@/components/dashboard/OptimizedDashboardMetrics';
+import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
-import { NotificationAlerts } from '@/components/dashboard/NotificationAlerts';
-import { AIStrategiesCard } from '@/components/ai/AIStrategiesCard';
 import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Brain, Bell } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useCompleteDashboardData } from '@/hooks/useDashboard';
+import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
+import { useSmartInsights } from '@/hooks/useSmartInsights';
 
-export default function Dashboard() {
-  const [selectedPeriod, setSelectedPeriod] = useState('30');
-  const isMobile = useIsMobile();
+const Dashboard = () => {
+  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
+  const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics();
+  const { data: insights, isLoading: insightsLoading } = useSmartInsights();
 
-  // Buscar dados completos do dashboard
-  const { data: dashboardData, isLoading } = useCompleteDashboardData(selectedPeriod);
+  const isLoading = metricsLoading || predictiveLoading || insightsLoading;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <DashboardHeader 
-        selectedPeriod={selectedPeriod}
-        onPeriodChange={setSelectedPeriod}
-      />
+    <div className="space-y-6 p-4 sm:p-6">
+      <DashboardHeader />
       
-      {isMobile ? (
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview" className="text-xs">
-              <BarChart3 className="w-4 h-4" />
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs">
-              <Brain className="w-4 h-4" />
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="text-xs">
-              <Bell className="w-4 h-4" />
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview" className="space-y-4">
-            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
-            <DashboardCharts metrics={dashboardData?.metrics} />
-          </TabsContent>
-          
-          <TabsContent value="ai" className="space-y-4">
-            <AIStrategiesCard />
-          </TabsContent>
-          
-          <TabsContent value="alerts">
-            <NotificationAlerts />
-            <div className="mt-4">
-              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
-            </div>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <div className="space-y-4 md:space-y-6">
-          {/* Layout principal - Métricas e Gráficos ocupando todo o espaço */}
-          <div className="space-y-4 md:space-y-6">
-            <OptimizedDashboardMetrics metrics={dashboardData?.metrics} />
-            <DashboardCharts metrics={dashboardData?.metrics} />
-          </div>
-
-          {/* Seção de Inteligência Artificial e Atividades Recentes */}
-          <div className="border-t pt-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Brain className="h-6 w-6" />
-              Inteligência Artificial e Atividades
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              <AIStrategiesCard />
-              <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
-            </div>
-          </div>
+      <SubscriptionStatus />
+      
+      {isLoading ? (
+        <div className="text-center py-8">
+          <p className="text-slate-600">Carregando dashboard...</p>
         </div>
+      ) : (
+        <>
+          <DashboardMetrics metrics={metrics} />
+          <DashboardCharts metrics={metrics} />
+          <DashboardWidgets 
+            metrics={metrics}
+            predictiveData={predictiveData}
+            insights={insights}
+          />
+          <DashboardActivities />
+        </>
       )}
     </div>
   );
-}
+};
+
+export default Dashboard;

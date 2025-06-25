@@ -79,7 +79,8 @@ export const useDeleteTask = () => {
         description: 'Tarefa excluída com sucesso!',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Erro ao excluir tarefa:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao excluir tarefa. Tente novamente.',

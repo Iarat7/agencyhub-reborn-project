@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Search, Filter, Calendar, Clock, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,10 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TasksTable } from '@/components/tasks/TasksTable';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { AdvancedFilters, FilterField } from '@/components/filters/AdvancedFilters';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks, useDeleteTask } from '@/hooks/useTasks';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { filterTasks } from '@/utils/filterUtils';
 import { Task } from '@/services/api/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const taskFilterFields: FilterField[] = [
   { key: 'title', label: 'Título', type: 'text', placeholder: 'Título da tarefa' },
@@ -44,8 +53,11 @@ const Tarefas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const { data: tasks = [], isLoading, error } = useTasks();
+  const deleteTask = useDeleteTask();
 
   const {
     filters,
@@ -72,9 +84,21 @@ const Tarefas = () => {
     setDialogOpen(true);
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    // TODO: Implementar exclusão de tarefa
-    console.log('Excluir tarefa:', taskId);
+  const handleDeleteTask = (task: Task) => {
+    setTaskToDelete(task);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    
+    try {
+      await deleteTask.mutateAsync(taskToDelete.id);
+      setDeleteDialogOpen(false);
+      setTaskToDelete(null);
+    } catch (error) {
+      console.error('Erro ao excluir tarefa:', error);
+    }
   };
 
   const handleDialogClose = () => {
@@ -232,6 +256,33 @@ const Tarefas = () => {
         onOpenChange={handleDialogClose}
         task={editingTask}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a tarefa "{taskToDelete?.title}"? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeleteDialogOpen(false);
+              setTaskToDelete(null);
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteTask}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteTask.isPending}
+            >
+              {deleteTask.isPending ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

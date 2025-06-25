@@ -129,13 +129,16 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         return { success: false, message: 'Erro ao processar convite' };
       }
 
-      if (data?.success) {
+      // Type assertion for the data returned from the RPC call
+      const result = data as { success: boolean; message: string };
+
+      if (result?.success) {
         // Atualizar organizações após aceitar convite
         await fetchOrganizations();
-        return { success: true, message: data.message };
+        return { success: true, message: result.message };
       }
 
-      return { success: false, message: data?.message || 'Erro desconhecido' };
+      return { success: false, message: result?.message || 'Erro desconhecido' };
     } catch (error) {
       console.error('Error processing invite:', error);
       return { success: false, message: 'Erro ao processar convite' };

@@ -263,4 +263,12 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
                 <>
                   <Mail className="h-4 w-4 mr-2" />
                   Enviar Convite
-                
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};

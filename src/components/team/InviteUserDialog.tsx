@@ -22,6 +22,7 @@ import { Crown, Shield, Users, Mail, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentOrganization } = useOrganization();
 
   // Set default role when dialog opens
   useEffect(() => {
@@ -54,7 +56,7 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Starting invite submission...', { email, role });
+    console.log('Starting invite submission...', { email, role, organizationId: currentOrganization?.id });
     
     if (!email || !role) {
       toast({
@@ -65,10 +67,10 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
       return;
     }
 
-    if (!user) {
+    if (!user || !currentOrganization) {
       toast({
-        title: "Erro de autenticação",
-        description: "Você precisa estar logado para enviar convites",
+        title: "Erro de contexto",
+        description: "Usuário ou organização não encontrados",
         variant: "destructive",
       });
       return;
@@ -94,8 +96,9 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
         body: {
           email: email.toLowerCase().trim(),
           role,
+          organizationId: currentOrganization.id,
           inviterName: user.full_name || user.email || 'Membro da equipe',
-          companyName: user.company_name || 'InflowHub'
+          organizationName: currentOrganization.name
         }
       });
 
@@ -110,7 +113,7 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
 
       toast({
         title: "✅ Convite enviado!",
-        description: `Convite enviado para ${email} com função de ${getRoleLabel(role)}. Verifique se o email está correto.`,
+        description: `Convite enviado para ${email} com função de ${getRoleLabel(role)}. O convite é válido por 7 dias.`,
       });
       
       setEmail('');
@@ -121,7 +124,9 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
       
       let errorMessage = "Ocorreu um erro ao enviar o convite. Tente novamente.";
       
-      if (error.message?.includes('RESEND_API_KEY')) {
+      if (error.message?.includes('Já existe um convite pendente')) {
+        errorMessage = "Já existe um convite pendente para este email nesta organização.";
+      } else if (error.message?.includes('RESEND_API_KEY')) {
         errorMessage = "Configuração de email não encontrada. Entre em contato com o administrador.";
       } else if (error.message?.includes('Invalid email')) {
         errorMessage = "Email inválido. Verifique o endereço e tente novamente.";
@@ -148,15 +153,6 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
     }
   };
 
-  const getRoleIcon = (roleValue: string) => {
-    switch (roleValue) {
-      case 'admin': return <Crown className="h-4 w-4" />;
-      case 'manager': return <Shield className="h-4 w-4" />;
-      case 'user': return <Users className="h-4 w-4" />;
-      default: return <Users className="h-4 w-4" />;
-    }
-  };
-
   const getRoleDescription = (roleValue: string) => {
     switch (roleValue) {
       case 'admin': return 'Acesso total ao sistema, pode gerenciar usuários e configurações';
@@ -165,6 +161,10 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
       default: return '';
     }
   };
+
+  if (!currentOrganization) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -175,7 +175,7 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
             Convidar Novo Membro
           </DialogTitle>
           <DialogDescription>
-            Envie um convite por e-mail para adicionar um novo membro à equipe
+            Envie um convite por e-mail para adicionar um novo membro à organização "{currentOrganization.name}"
           </DialogDescription>
         </DialogHeader>
         
@@ -263,12 +263,4 @@ export const InviteUserDialog = ({ open, onOpenChange, defaultRole }: InviteUser
                 <>
                   <Mail className="h-4 w-4 mr-2" />
                   Enviar Convite
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
+                

@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -13,8 +14,9 @@ const corsHeaders = {
 interface TeamInviteRequest {
   email: string;
   role: string;
+  organizationId: string;
   inviterName: string;
-  companyName?: string;
+  organizationName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -30,20 +32,55 @@ const handler = async (req: Request): Promise<Response> => {
     const requestBody = await req.json();
     console.log("Request body received:", JSON.stringify(requestBody, null, 2));
     
-    const { email, role, inviterName, companyName }: TeamInviteRequest = requestBody;
+    const { email, role, organizationId, inviterName, organizationName }: TeamInviteRequest = requestBody;
 
     // Validação dos parâmetros
-    if (!email) {
-      throw new Error('E-mail é obrigatório');
-    }
-    if (!role) {
-      throw new Error('Função é obrigatória');
-    }
-    if (!inviterName) {
-      throw new Error('Nome do convidador é obrigatório');
+    if (!email || !role || !organizationId || !inviterName) {
+      throw new Error('Parâmetros obrigatórios faltando');
     }
 
-    console.log(`Sending invite to ${email} with role ${role} from ${inviterName}`);
+    console.log(`Sending invite to ${email} for organization ${organizationId} with role ${role}`);
+
+    // Inicializar cliente Supabase
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verificar se já existe convite pendente
+    const { data: existingInvite } = await supabase
+      .from('organization_invites')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .eq('email', email.toLowerCase().trim())
+      .eq('status', 'pending')
+      .single();
+
+    if (existingInvite) {
+      throw new Error('Já existe um convite pendente para este email nesta organização');
+    }
+
+    // Gerar token único para o convite
+    const inviteToken = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
+
+    // Criar convite no banco
+    const { error: inviteError } = await supabase
+      .from('organization_invites')
+      .insert({
+        organization_id: organizationId,
+        email: email.toLowerCase().trim(),
+        role: role,
+        token: inviteToken,
+        invited_by: req.headers.get('user-id'), // Assumindo que o user ID vem no header
+        expires_at: expiresAt.toISOString(),
+        status: 'pending'
+      });
+
+    if (inviteError) {
+      console.error('Error creating invite:', inviteError);
+      throw new Error('Erro ao criar convite no banco de dados');
+    }
 
     // Verificar se a chave API do Resend está disponível
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -65,14 +102,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // URL de convite para o sistema
     const baseUrl = 'https://00a493c4-9eee-4344-96d7-51298ea6a659.lovableproject.com';
-    const inviteUrl = `${baseUrl}/auth?mode=signup&email=${encodeURIComponent(email)}&role=${role}&invited=true`;
+    const inviteUrl = `${baseUrl}/auth?invite_token=${inviteToken}&email=${encodeURIComponent(email)}`;
 
     console.log("Invite URL generated:", inviteUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "InflowHub <noreply@bushdigital.com.br>", // Usando seu domínio verificado
+      from: "InflowHub <noreply@bushdigital.com.br>",
       to: [email],
-      subject: `🎉 Convite para integrar a equipe${companyName ? ` da ${companyName}` : ''}`,
+      subject: `🎉 Convite para integrar a equipe${organizationName ? ` da ${organizationName}` : ''}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -95,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             
             <p style="font-size: 16px; margin-bottom: 24px; color: #555;">
-              <strong>${inviterName}</strong> convidou você para fazer parte da equipe${companyName ? ` da <strong>${companyName}</strong>` : ''} no <strong>InflowHub</strong>.
+              <strong>${inviterName}</strong> convidou você para fazer parte da equipe${organizationName ? ` da <strong>${organizationName}</strong>` : ''} no <strong>InflowHub</strong>.
             </p>
             
             <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #667eea;">
@@ -111,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="text-align: center; margin: 32px 0;">
               <a href="${inviteUrl}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
-                ✨ Aceitar Convite e Criar Conta
+                ✨ Aceitar Convite
               </a>
             </div>
             
@@ -163,7 +200,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", JSON.stringify(emailResponse, null, 2));
 
-    // Verificar se houve erro no envio
     if (emailResponse.error) {
       console.error("Resend API error:", emailResponse.error);
       throw new Error(`Erro ao enviar email: ${emailResponse.error.message || 'Erro desconhecido'}`);
@@ -175,7 +211,8 @@ const handler = async (req: Request): Promise<Response> => {
       success: true, 
       message: 'Convite enviado com sucesso',
       emailId: emailResponse.data?.id,
-      inviteUrl: inviteUrl
+      inviteUrl: inviteUrl,
+      inviteToken: inviteToken
     }), {
       status: 200,
       headers: {

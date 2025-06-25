@@ -1,15 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,10 +19,55 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [activeTab, setActiveTab] = useState('signin');
   
-  const { signIn, signUp } = useAuth();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
+  const { processInvite } = useOrganization();
   const { toast } = useToast();
+
+  // Verificar se há parâmetros de convite
+  const inviteToken = searchParams.get('invite_token');
+  const isInvite = !!inviteToken;
+
+  useEffect(() => {
+    // Se há convite, pré-definir email e forçar cadastro
+    if (isInvite) {
+      const inviteEmail = searchParams.get('email');
+      if (inviteEmail) {
+        setEmail(inviteEmail);
+      }
+      setActiveTab('signup');
+    }
+  }, [isInvite, searchParams]);
+
+  // Processar convite após login/cadastro
+  useEffect(() => {
+    const handleInviteProcessing = async () => {
+      if (user && inviteToken) {
+        console.log('Processing invite token:', inviteToken);
+        const result = await processInvite(inviteToken);
+        
+        if (result.success) {
+          toast({
+            title: "✅ Convite aceito!",
+            description: result.message,
+          });
+          // Remover parâmetros da URL e redirecionar
+          navigate('/dashboard', { replace: true });
+        } else {
+          toast({
+            title: "Erro ao processar convite",
+            description: result.message,
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    handleInviteProcessing();
+  }, [user, inviteToken, processInvite, navigate, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,11 +75,15 @@ const Auth = () => {
 
     try {
       await signIn(email, password);
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo de volta.",
-      });
-      navigate('/dashboard');
+      
+      if (!isInvite) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo de volta.",
+        });
+        navigate('/dashboard');
+      }
+      // Se há convite, o processamento será feito no useEffect
     } catch (error: any) {
       toast({
         title: "Erro no login",
@@ -60,11 +110,15 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, fullName);
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Verifique seu email para confirmar a conta.",
-      });
+      await signUp(email, password, { full_name: fullName });
+      
+      if (!isInvite) {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Verifique seu email para confirmar a conta.",
+        });
+      }
+      // Se há convite, o processamento será feito no useEffect
     } catch (error: any) {
       toast({
         title: "Erro no cadastro",
@@ -84,15 +138,29 @@ const Auth = () => {
           <p className="text-slate-600 mt-2">Sistema de Gestão Empresarial</p>
         </div>
 
+        {isInvite && (
+          <Alert className="mb-6 border-blue-200 bg-blue-50">
+            <UserPlus className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700">
+              Você foi convidado para integrar uma equipe! Complete o cadastro ou faça login para aceitar o convite.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card>
           <CardHeader>
-            <CardTitle>Acesse sua conta</CardTitle>
+            <CardTitle>
+              {isInvite ? 'Aceitar Convite' : 'Acesse sua conta'}
+            </CardTitle>
             <CardDescription>
-              Entre com suas credenciais ou crie uma nova conta
+              {isInvite 
+                ? 'Complete seu cadastro ou faça login para aceitar o convite da equipe'
+                : 'Entre com suas credenciais ou crie uma nova conta'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Entrar</TabsTrigger>
                 <TabsTrigger value="signup">Cadastrar</TabsTrigger>
@@ -112,6 +180,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
                         required
+                        disabled={isInvite} // Desabilitar se é convite
                       />
                     </div>
                   </div>
@@ -140,7 +209,7 @@ const Auth = () => {
                   </div>
                   
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Entrando..." : "Entrar"}
+                    {isLoading ? "Entrando..." : (isInvite ? "Entrar e Aceitar Convite" : "Entrar")}
                   </Button>
                 </form>
               </TabsContent>
@@ -175,6 +244,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
                         required
+                        disabled={isInvite} // Desabilitar se é convite
                       />
                     </div>
                   </div>
@@ -219,7 +289,7 @@ const Auth = () => {
                   </div>
                   
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Criando conta..." : "Criar conta"}
+                    {isLoading ? "Criando conta..." : (isInvite ? "Criar Conta e Aceitar Convite" : "Criar conta")}
                   </Button>
                 </form>
               </TabsContent>

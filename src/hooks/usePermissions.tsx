@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export interface Permission {
   module: string;
@@ -62,13 +63,14 @@ const rolePermissions: RolePermissions[] = [
 
 export const usePermissions = () => {
   const { user } = useAuth();
+  const { userRole } = useOrganization();
 
   const userPermissions = useMemo(() => {
-    if (!user?.role) return [];
+    if (!userRole) return [];
     
-    const roleConfig = rolePermissions.find(rp => rp.role === user.role);
+    const roleConfig = rolePermissions.find(rp => rp.role === userRole);
     return roleConfig?.permissions || [];
-  }, [user?.role]);
+  }, [userRole]);
 
   const hasPermission = (module: string, action: string): boolean => {
     const modulePermissions = userPermissions.find(p => p.module === module);
@@ -84,9 +86,9 @@ export const usePermissions = () => {
     return modulePermissions?.actions || [];
   };
 
-  const isAdmin = user?.role === 'admin';
-  const isManager = user?.role === 'manager';
-  const isUser = user?.role === 'user';
+  const isAdmin = userRole === 'admin';
+  const isManager = userRole === 'manager';
+  const isUser = userRole === 'user';
 
   return {
     permissions: userPermissions,
@@ -96,6 +98,6 @@ export const usePermissions = () => {
     isAdmin,
     isManager,
     isUser,
-    userRole: user?.role
+    userRole
   };
 };

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMetricsCalculation } from './useMetricsCalculation';
 
-export const useDashboardMetrics = (startDate: Date = new Date(), endDate: Date = new Date()) => {
+export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
   return useQuery({
     queryKey: ['dashboard-metrics', startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
@@ -61,7 +61,7 @@ export const useDashboardMetrics = (startDate: Date = new Date(), endDate: Date 
 };
 
 // Hook que combina os dados com os cálculos
-export const useCalculatedDashboardMetrics = (startDate: Date = new Date(), endDate: Date = new Date()) => {
+export const useCalculatedDashboardMetrics = (startDate: Date, endDate: Date) => {
   const { data: rawData, isLoading, error } = useDashboardMetrics(startDate, endDate);
   const metrics = useMetricsCalculation(rawData || { clients: [], opportunities: [], tasks: [], allOpportunities: [] }, startDate, endDate);
 

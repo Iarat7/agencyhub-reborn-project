@@ -1,26 +1,19 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  BarChart3,
+  Building2,
+  Calendar,
   Users,
   Target,
   CheckSquare,
-  Calendar,
-  BarChart3,
   DollarSign,
   FileText,
-  Brain,
+  Lightbulb,
+  PieChart,
   Settings,
-  Link
+  UsersIcon,
+  Puzzle
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -36,25 +29,20 @@ import {
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
-      name: "CRM Inteligente",
-      logo: GalleryVerticalEnd,
+      name: "Acme Inc",
+      logo: Building2,
       plan: "Enterprise",
     },
     {
-      name: "Vendas Corp",
-      logo: AudioWaveform,
+      name: "Acme Corp.",
+      logo: Building2,
       plan: "Startup",
     },
     {
-      name: "Marketing Plus",
-      logo: Command,
+      name: "Evil Corp.",
+      logo: Building2,
       plan: "Free",
     },
   ],
@@ -63,7 +51,11 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: BarChart3,
-      isActive: true,
+    },
+    {
+      title: "Organizações",
+      url: "/organizations",
+      icon: Building2,
     },
     {
       title: "Clientes",
@@ -86,11 +78,6 @@ const data = {
       icon: Calendar,
     },
     {
-      title: "Relatórios",
-      url: "/relatorios",
-      icon: PieChart,
-    },
-    {
       title: "Financeiro",
       url: "/financeiro",
       icon: DollarSign,
@@ -103,17 +90,22 @@ const data = {
     {
       title: "Estratégias",
       url: "/estrategias",
-      icon: Brain,
+      icon: Lightbulb,
+    },
+    {
+      title: "Relatórios",
+      url: "/relatorios",
+      icon: PieChart,
     },
     {
       title: "Equipe",
       url: "/equipe",
-      icon: Users,
+      icon: UsersIcon,
     },
     {
       title: "Integrações",
       url: "/integracoes",
-      icon: Link,
+      icon: Puzzle,
     },
     {
       title: "Configurações",
@@ -133,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

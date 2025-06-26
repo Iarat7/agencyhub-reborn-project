@@ -1,35 +1,38 @@
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/hooks/useAuth';
-import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { MobileOptimizations } from '@/components/mobile/MobileOptimizations';
-import Landing from '@/pages/Landing';
-import Auth from '@/pages/Auth';
+import { OrganizationProvider } from '@/contexts/OrganizationContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { PWAProvider } from '@/contexts/PWAContext';
+
+// Pages
+import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
+import Auth from '@/pages/Auth';
+import Landing from '@/pages/Landing';
+import Organizations from '@/pages/Organizations';
 import Clientes from '@/pages/Clientes';
-import ClienteDashboard from '@/pages/ClienteDashboard';
-import ClienteAssociacoes from '@/pages/ClienteAssociacoes';
 import Oportunidades from '@/pages/Oportunidades';
 import Tarefas from '@/pages/Tarefas';
-import Equipe from '@/pages/Equipe';
+import Agenda from '@/pages/Agenda';
 import Financeiro from '@/pages/Financeiro';
 import Contratos from '@/pages/Contratos';
+import Estrategias from '@/pages/Estrategias';
 import Relatorios from '@/pages/Relatorios';
 import Configuracoes from '@/pages/Configuracoes';
-import Agenda from '@/pages/Agenda';
-import Estrategias from '@/pages/Estrategias';
+import Equipe from '@/pages/Equipe';
 import Integracoes from '@/pages/Integracoes';
+import ClienteDashboard from '@/pages/ClienteDashboard';
+import ClienteAssociacoes from '@/pages/ClienteAssociacoes';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -37,162 +40,45 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <OrganizationProvider>
-          <MobileOptimizations />
-          <BrowserRouter>
-            <div className="App">
+      <PWAProvider>
+        <NotificationProvider>
+          <OrganizationProvider>
+            <Router>
               <Routes>
-                <Route path="/" element={<Landing />} />
+                <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route
-                  path="/dashboard"
+                  path="/"
                   element={
                     <AuthGuard>
-                      <AppLayout>
-                        <Dashboard />
-                      </AppLayout>
+                      <Index />
                     </AuthGuard>
                   }
-                />
-                <Route
-                  path="/clientes"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Clientes />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/cliente/:id"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <ClienteDashboard />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/cliente/:id/associacoes"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <ClienteAssociacoes />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/oportunidades"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Oportunidades />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/tarefas"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Tarefas />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/equipe"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Equipe />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/financeiro"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Financeiro />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/contratos"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Contratos />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/relatorios"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Relatorios />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/configuracoes"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Configuracoes />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/agenda"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Agenda />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/estrategias"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Estrategias />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/integracoes"
-                  element={
-                    <AuthGuard>
-                      <AppLayout>
-                        <Integracoes />
-                      </AppLayout>
-                    </AuthGuard>
-                  }
-                />
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
+                >
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="organizations" element={<Organizations />} />
+                  <Route path="clientes" element={<Clientes />} />
+                  <Route path="clientes/:clientId" element={<ClienteDashboard />} />
+                  <Route path="clientes/:clientId/associacoes" element={<ClienteAssociacoes />} />
+                  <Route path="oportunidades" element={<Oportunidades />} />
+                  <Route path="tarefas" element={<Tarefas />} />
+                  <Route path="agenda" element={<Agenda />} />
+                  <Route path="financeiro" element={<Financeiro />} />
+                  <Route path="contratos" element={<Contratos />} />
+                  <Route path="estrategias" element={<Estrategias />} />
+                  <Route path="relatorios" element={<Relatorios />} />
+                  <Route path="configuracoes" element={<Configuracoes />} />
+                  <Route path="equipe" element={<Equipe />} />
+                  <Route path="integracoes" element={<Integracoes />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
               </Routes>
-              <Toaster />
-            </div>
-          </BrowserRouter>
-        </OrganizationProvider>
-      </AuthProvider>
+            </Router>
+            <Toaster />
+          </OrganizationProvider>
+        </NotificationProvider>
+      </PWAProvider>
     </QueryClientProvider>
   );
 }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -118,10 +117,6 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         }
         
         localStorage.setItem('currentOrganizationId', currentOrg.id);
-      } else {
-        console.log('Nenhuma organização encontrada - criando organização padrão');
-        // Se não encontrou nenhuma organização, criar uma padrão
-        await createDefaultOrganization();
       }
     } catch (error) {
       console.error('Erro geral na busca de organizações:', error);

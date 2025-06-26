@@ -2,12 +2,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMetricsCalculation } from './useMetricsCalculation';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
+  const { currentOrganization } = useOrganization();
+
   return useQuery({
-    queryKey: ['dashboard-metrics', startDate.toISOString(), endDate.toISOString()],
+    queryKey: ['dashboard-metrics', startDate.toISOString(), endDate.toISOString(), currentOrganization?.id],
     queryFn: async () => {
-      console.log('Buscando métricas do dashboard...');
+      if (!currentOrganization) {
+        console.log('Nenhuma organização para buscar métricas');
+        return { clients: [], opportunities: [], tasks: [], allOpportunities: [] };
+      }
+
+      console.log('Buscando métricas do dashboard para organização:', currentOrganization.name);
       
       // Garantir que as datas são válidas
       const safeStartDate = startDate instanceof Date ? startDate : new Date();
@@ -16,31 +24,36 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
       const startDateISO = safeStartDate.toISOString();
       const endDateISO = safeEndDate.toISOString();
 
-      // Buscar dados com filtro de data para métricas específicas do período
+      // Buscar dados com filtro de organização e data
       const { data: clients } = await supabase
         .from('clients')
         .select('*')
+        .eq('organization_id', currentOrganization.id)
         .gte('created_at', startDateISO)
         .lte('created_at', endDateISO);
 
-      // Buscar TODOS os clientes para cálculo de clientes ativos
+      // Buscar TODOS os clientes da organização para cálculo de clientes ativos
       const { data: allClients } = await supabase
         .from('clients')
-        .select('*');
+        .select('*')
+        .eq('organization_id', currentOrganization.id);
 
       const { data: opportunities } = await supabase
         .from('opportunities')
         .select('*')
+        .eq('organization_id', currentOrganization.id)
         .gte('created_at', startDateISO)
         .lte('created_at', endDateISO);
 
       const { data: allOpportunities } = await supabase
         .from('opportunities')
-        .select('*');
+        .select('*')
+        .eq('organization_id', currentOrganization.id);
 
       const { data: tasks } = await supabase
         .from('tasks')
         .select('*')
+        .eq('organization_id', currentOrganization.id)
         .gte('created_at', startDateISO)
         .lte('created_at', endDateISO);
 
@@ -53,6 +66,7 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
 
       return rawData;
     },
+    enabled: !!currentOrganization,
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,

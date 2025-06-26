@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface ActivityData {
   clients: any[];
@@ -8,10 +9,17 @@ interface ActivityData {
 }
 
 export const useDashboardActivities = (startDate: Date, endDate: Date, data: ActivityData) => {
+  const { currentOrganization } = useOrganization();
+
   return useQuery({
-    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString(), data],
+    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString(), currentOrganization?.id, data],
     queryFn: async () => {
-      console.log('Buscando atividades recentes...');
+      if (!currentOrganization) {
+        console.log('Nenhuma organização para buscar atividades');
+        return [];
+      }
+
+      console.log('Buscando atividades recentes para organização:', currentOrganization.name);
       
       if (!data || !data.clients || !data.allOpportunities || !data.tasks) {
         return [];
@@ -41,7 +49,7 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
 
       return recentActivities;
     },
-    enabled: !!(data && data.clients && data.allOpportunities && data.tasks),
+    enabled: !!(currentOrganization && data && data.clients && data.allOpportunities && data.tasks),
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,

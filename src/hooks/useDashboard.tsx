@@ -4,20 +4,28 @@ import { useCalculatedDashboardMetrics } from './useDashboardMetrics';
 import { useDashboardActivities } from './useDashboardActivities';
 import { usePeriodUtils } from './usePeriodUtils';
 import { useMemo } from 'react';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export const useDashboardData = (selectedPeriod: string = '6m') => {
   const { calculatePeriodDates } = usePeriodUtils();
+  const { currentOrganization } = useOrganization();
   
   const periodDates = useMemo(() => {
     return calculatePeriodDates(selectedPeriod);
   }, [selectedPeriod, calculatePeriodDates]);
   
   return useQuery({
-    queryKey: ['dashboard-data', selectedPeriod],
+    queryKey: ['dashboard-data', selectedPeriod, currentOrganization?.id],
     queryFn: async () => {
+      if (!currentOrganization) {
+        console.log('Nenhuma organização selecionada');
+        return null;
+      }
+
       const { startDate, endDate, periodConfig } = periodDates;
       
-      console.log('Período selecionado:', selectedPeriod, 'Data início:', startDate, 'Data fim:', endDate);
+      console.log('Carregando dados do dashboard para organização:', currentOrganization.name);
+      console.log('Período:', selectedPeriod, 'Data início:', startDate, 'Data fim:', endDate);
 
       const now = new Date();
       
@@ -53,7 +61,8 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
         chartData
       };
     },
-    staleTime: 30 * 60 * 1000, // 30 minutos
+    enabled: !!currentOrganization,
+    staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchInterval: false,
@@ -63,6 +72,7 @@ export const useDashboardData = (selectedPeriod: string = '6m') => {
 // Hook composto que usa os hooks menores
 export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
   const { calculatePeriodDates } = usePeriodUtils();
+  const { currentOrganization } = useOrganization();
   
   const periodDates = useMemo(() => {
     return calculatePeriodDates(selectedPeriod);
@@ -78,6 +88,19 @@ export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
     endDate, 
     metricsQuery.data?.rawData || { clients: [], allOpportunities: [], tasks: [] }
   );
+
+  // Se não há organização, retornar dados vazios
+  if (!currentOrganization) {
+    return {
+      data: {
+        metrics: null,
+        charts: null,
+        recentActivities: [],
+      },
+      isLoading: false,
+      error: new Error('Nenhuma organização selecionada')
+    };
+  }
 
   const isLoading = metricsQuery.isLoading || dashboardQuery.isLoading;
   const error = metricsQuery.error || dashboardQuery.error;

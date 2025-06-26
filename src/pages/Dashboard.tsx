@@ -6,30 +6,22 @@ import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
 import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
-import { useCalculatedDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useCompleteDashboardData } from '@/hooks/useDashboard';
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
 import { useSmartInsights } from '@/hooks/useSmartInsights';
-import { useDashboardActivities } from '@/hooks/useDashboardActivities';
-import { usePeriodUtils } from '@/hooks/usePeriodUtils';
 
 const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
-  const { calculatePeriodDates } = usePeriodUtils();
   
-  const periodDates = calculatePeriodDates(selectedPeriod);
-  const { startDate, endDate } = periodDates;
+  const { data: dashboardData, isLoading: dashboardLoading, error } = useCompleteDashboardData(selectedPeriod);
+  const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics(selectedPeriod);
+  const { data: insights, isLoading: insightsLoading } = useSmartInsights(selectedPeriod);
 
-  const { data: metricsData, isLoading: metricsLoading } = useCalculatedDashboardMetrics(startDate, endDate);
-  const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics();
-  const { data: insights, isLoading: insightsLoading } = useSmartInsights();
-  
-  const { data: recentActivities } = useDashboardActivities(
-    startDate, 
-    endDate, 
-    metricsData?.rawData || { clients: [], allOpportunities: [], tasks: [] }
-  );
+  const isLoading = dashboardLoading || predictiveLoading || insightsLoading;
 
-  const isLoading = metricsLoading || predictiveLoading || insightsLoading;
+  if (error) {
+    console.error('Erro no dashboard:', error);
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -46,14 +38,14 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          <DashboardMetrics metrics={metricsData} />
-          <DashboardCharts metrics={metricsData} />
+          <DashboardMetrics metrics={dashboardData?.metrics} />
+          <DashboardCharts metrics={dashboardData?.metrics} />
           <DashboardWidgets 
-            metrics={metricsData}
+            metrics={dashboardData?.metrics}
             predictiveData={predictiveData}
             insights={insights}
           />
-          <DashboardActivities recentActivities={recentActivities || []} />
+          <DashboardActivities recentActivities={dashboardData?.recentActivities || []} />
         </>
       )}
     </div>

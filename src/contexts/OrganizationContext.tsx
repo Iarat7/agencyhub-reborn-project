@@ -48,6 +48,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
   const fetchOrganizations = async () => {
     if (!user) {
+      console.log('Nenhum usuário logado');
       setOrganizations([]);
       setCurrentOrganization(null);
       setUserRole(null);
@@ -55,8 +56,23 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       return;
     }
 
+    console.log('Buscando organizações para usuário:', user.id);
+    
     try {
-      const { data: memberships, error } = await supabase
+      // Primeiro buscar organizações onde o usuário é owner
+      const { data: ownedOrgs, error: ownedError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('owner_id', user.id);
+
+      if (ownedError) {
+        console.error('Erro ao buscar organizações próprias:', ownedError);
+      }
+
+      console.log('Organizações próprias encontradas:', ownedOrgs?.length || 0);
+
+      // Depois buscar organizações onde é membro
+      const { data: memberships, error: memberError } = await supabase
         .from('organization_members')
         .select(`
           *,
@@ -65,37 +81,105 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         .eq('user_id', user.id)
         .eq('status', 'active');
 
+      if (memberError) {
+        console.error('Erro ao buscar memberships:', memberError);
+      }
+
+      console.log('Memberships encontradas:', memberships?.length || 0);
+
+      // Combinar organizações próprias e onde é membro
+      const memberOrgs = memberships?.map(m => m.organization).filter(Boolean) || [];
+      const allOrgs = [...(ownedOrgs || []), ...memberOrgs];
+      
+      // Remover duplicatas
+      const uniqueOrgs = allOrgs.filter((org, index, self) => 
+        index === self.findIndex(o => o.id === org.id)
+      );
+
+      console.log('Total de organizações únicas:', uniqueOrgs.length);
+      
+      setOrganizations(uniqueOrgs as Organization[]);
+
+      // Definir organização atual
+      if (uniqueOrgs.length > 0) {
+        const savedOrgId = localStorage.getItem('currentOrganizationId');
+        let currentOrg = uniqueOrgs.find(org => org.id === savedOrgId) || uniqueOrgs[0];
+        
+        console.log('Organização atual definida:', currentOrg.name);
+        setCurrentOrganization(currentOrg as Organization);
+        
+        // Definir role do usuário
+        if (currentOrg.owner_id === user.id) {
+          setUserRole('admin');
+        } else {
+          // Buscar role na tabela de membros
+          const membership = memberships?.find(m => m.organization_id === currentOrg.id);
+          setUserRole(membership?.role || 'user');
+        }
+        
+        localStorage.setItem('currentOrganizationId', currentOrg.id);
+      } else {
+        console.log('Nenhuma organização encontrada - criando organização padrão');
+        // Se não encontrou nenhuma organização, criar uma padrão
+        await createDefaultOrganization();
+      }
+    } catch (error) {
+      console.error('Erro geral na busca de organizações:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createDefaultOrganization = async () => {
+    if (!user) return;
+
+    try {
+      const { data: newOrg, error } = await supabase
+        .from('organizations')
+        .insert({
+          name: 'Inflow Digital',
+          slug: `org-${user.id}`,
+          owner_id: user.id,
+          description: 'Organização padrão'
+        })
+        .select()
+        .single();
+
       if (error) {
-        console.error('Error fetching organizations:', error);
+        console.error('Erro ao criar organização padrão:', error);
         return;
       }
 
-      const orgs = memberships?.map(m => m.organization).filter(Boolean) || [];
-      setOrganizations(orgs as Organization[]);
+      console.log('Organização padrão criada:', newOrg.name);
 
-      // Definir organização atual (primeira por padrão ou a salva no localStorage)
-      if (orgs.length > 0) {
-        const savedOrgId = localStorage.getItem('currentOrganizationId');
-        let currentOrg = orgs.find(org => org.id === savedOrgId) || orgs[0];
-        
-        setCurrentOrganization(currentOrg as Organization);
-        
-        // Buscar role do usuário na organização atual
-        const membership = memberships?.find(m => m.organization_id === currentOrg.id);
-        setUserRole(membership?.role || null);
-        
-        localStorage.setItem('currentOrganizationId', currentOrg.id);
+      // Adicionar o usuário como admin da organização
+      const { error: memberError } = await supabase
+        .from('organization_members')
+        .insert({
+          organization_id: newOrg.id,
+          user_id: user.id,
+          role: 'admin',
+          status: 'active'
+        });
+
+      if (memberError) {
+        console.error('Erro ao adicionar membro:', memberError);
       }
+
+      // Atualizar estado
+      setOrganizations([newOrg]);
+      setCurrentOrganization(newOrg);
+      setUserRole('admin');
+      localStorage.setItem('currentOrganizationId', newOrg.id);
     } catch (error) {
-      console.error('Error fetching organizations:', error);
-    } finally {
-      setLoading(false);
+      console.error('Erro ao criar organização padrão:', error);
     }
   };
 
   const switchOrganization = (organizationId: string) => {
     const org = organizations.find(o => o.id === organizationId);
     if (org) {
+      console.log('Trocando para organização:', org.name);
       setCurrentOrganization(org);
       localStorage.setItem('currentOrganizationId', organizationId);
       
@@ -107,6 +191,12 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   const fetchUserRole = async (organizationId: string) => {
     if (!user) return;
 
+    const org = organizations.find(o => o.id === organizationId);
+    if (org?.owner_id === user.id) {
+      setUserRole('admin');
+      return;
+    }
+
     const { data: membership } = await supabase
       .from('organization_members')
       .select('role')
@@ -115,7 +205,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       .eq('status', 'active')
       .single();
 
-    setUserRole(membership?.role || null);
+    setUserRole(membership?.role || 'user');
   };
 
   const processInvite = async (token: string) => {
@@ -129,11 +219,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         return { success: false, message: 'Erro ao processar convite' };
       }
 
-      // Type assertion for the data returned from the RPC call
       const result = data as { success: boolean; message: string };
 
       if (result?.success) {
-        // Atualizar organizações após aceitar convite
         await fetchOrganizations();
         return { success: true, message: result.message };
       }
@@ -150,7 +238,11 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   };
 
   useEffect(() => {
-    fetchOrganizations();
+    if (user) {
+      fetchOrganizations();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   const value = {

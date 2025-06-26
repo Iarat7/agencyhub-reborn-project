@@ -3,14 +3,18 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMetricsCalculation } from './useMetricsCalculation';
 
-export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
+export const useDashboardMetrics = (startDate: Date = new Date(), endDate: Date = new Date()) => {
   return useQuery({
     queryKey: ['dashboard-metrics', startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
       console.log('Buscando métricas do dashboard...');
       
-      const startDateISO = startDate.toISOString();
-      const endDateISO = endDate.toISOString();
+      // Garantir que as datas são válidas
+      const safeStartDate = startDate instanceof Date ? startDate : new Date();
+      const safeEndDate = endDate instanceof Date ? endDate : new Date();
+      
+      const startDateISO = safeStartDate.toISOString();
+      const endDateISO = safeEndDate.toISOString();
 
       // Buscar dados com filtro de data para métricas específicas do período
       const { data: clients } = await supabase
@@ -57,7 +61,7 @@ export const useDashboardMetrics = (startDate: Date, endDate: Date) => {
 };
 
 // Hook que combina os dados com os cálculos
-export const useCalculatedDashboardMetrics = (startDate: Date, endDate: Date) => {
+export const useCalculatedDashboardMetrics = (startDate: Date = new Date(), endDate: Date = new Date()) => {
   const { data: rawData, isLoading, error } = useDashboardMetrics(startDate, endDate);
   const metrics = useMetricsCalculation(rawData || { clients: [], opportunities: [], tasks: [], allOpportunities: [] }, startDate, endDate);
 

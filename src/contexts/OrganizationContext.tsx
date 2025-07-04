@@ -240,6 +240,14 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     }
   }, [user]);
 
+  // Verificar se precisa criar organização padrão
+  useEffect(() => {
+    if (user && !loading && organizations.length === 0 && !currentOrganization) {
+      console.log('Nenhuma organização encontrada, criando organização padrão...');
+      createDefaultOrganization();
+    }
+  }, [user, loading, organizations.length, currentOrganization]);
+
   const value = {
     organizations,
     currentOrganization,

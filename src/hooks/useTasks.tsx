@@ -1,13 +1,35 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { tasksService } from '@/services';
 import { Task } from '@/services/api/types';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export const useTasks = () => {
+  const { currentOrganization } = useOrganization();
+
   return useQuery({
-    queryKey: ['tasks'],
-    queryFn: () => tasksService.list<Task>(),
+    queryKey: ['tasks', currentOrganization?.id],
+    queryFn: async () => {
+      if (!currentOrganization) {
+        return [];
+      }
+      
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('organization_id', currentOrganization.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        throw error;
+      }
+      
+      return (data || []) as Task[];
+    },
+    enabled: !!currentOrganization,
   });
 };
 

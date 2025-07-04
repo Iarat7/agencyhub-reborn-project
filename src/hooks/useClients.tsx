@@ -1,16 +1,37 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { clientsService } from '@/services';
 import { Client } from '@/services/api/types';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export const useClients = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { currentOrganization } = useOrganization();
 
   const query = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => clientsService.list<Client>(),
+    queryKey: ['clients', currentOrganization?.id],
+    queryFn: async () => {
+      if (!currentOrganization) {
+        return [];
+      }
+      
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('organization_id', currentOrganization.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching clients:', error);
+        throw error;
+      }
+      
+      return (data || []) as Client[];
+    },
+    enabled: !!currentOrganization,
   });
 
   return {

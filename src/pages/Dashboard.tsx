@@ -9,7 +9,7 @@ import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
 import { useCompleteDashboardData } from '@/hooks/useDashboard';
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
 import { useSmartInsights } from '@/hooks/useSmartInsights';
-import { useFixOrphanData } from '@/hooks/useFixOrphanData';
+import { useOrganizationData } from '@/hooks/useOrganizationData';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -19,8 +19,8 @@ const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('6m');
   const { currentOrganization, loading: orgLoading, refreshOrganizations } = useOrganization();
   
-  // Hook para corrigir dados órfãos
-  useFixOrphanData();
+  // Hook para garantir que os dados estão na organização correta
+  useOrganizationData();
   
   const { data: dashboardData, isLoading: dashboardLoading, error } = useCompleteDashboardData(selectedPeriod);
   const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics(selectedPeriod);

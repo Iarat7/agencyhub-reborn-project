@@ -89,7 +89,7 @@ export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
     metricsQuery.data?.rawData || { clients: [], allOpportunities: [], tasks: [] }
   );
 
-  // Se não há organização, retornar dados vazios
+  // Se não há organização, retornar dados vazios sem erro
   if (!currentOrganization) {
     return {
       data: {
@@ -98,7 +98,7 @@ export const useCompleteDashboardData = (selectedPeriod: string = '6m') => {
         recentActivities: [],
       },
       isLoading: false,
-      error: new Error('Nenhuma organização selecionada')
+      error: null
     };
   }
 

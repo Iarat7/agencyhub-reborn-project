@@ -1,24 +1,38 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { opportunitiesService } from '@/services';
 import { Opportunity } from '@/services/api/types';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 export const useOpportunities = () => {
+  const { currentOrganization } = useOrganization();
+
   return useQuery({
-    queryKey: ['opportunities'],
+    queryKey: ['opportunities', currentOrganization?.id],
     queryFn: async () => {
-      console.log('Buscando oportunidades...');
-      try {
-        const result = await opportunitiesService.list<Opportunity>();
-        console.log('Oportunidades encontradas:', result);
-        console.log('Total de oportunidades:', result?.length || 0);
-        return result || [];
-      } catch (error) {
+      if (!currentOrganization) {
+        return [];
+      }
+      
+      console.log('Buscando oportunidades para organização:', currentOrganization.name);
+      
+      const { data, error } = await supabase
+        .from('opportunities')
+        .select('*')
+        .eq('organization_id', currentOrganization.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
         console.error('Erro ao buscar oportunidades:', error);
         throw error;
       }
+      
+      console.log('Oportunidades encontradas:', data?.length || 0);
+      return (data || []) as Opportunity[];
     },
+    enabled: !!currentOrganization,
   });
 };
 

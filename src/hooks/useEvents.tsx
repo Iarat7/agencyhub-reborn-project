@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import type { Event } from '@/services/api/types';
 
 // Tipo específico para criação de eventos
@@ -28,16 +29,22 @@ type UpdateEventData = {
 
 export const useEvents = () => {
   const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
 
   const eventsQuery = useQuery({
-    queryKey: ['events'],
+    queryKey: ['events', currentOrganization?.id],
     queryFn: async () => {
+      if (!currentOrganization) {
+        return [];
+      }
+      
       const { data, error } = await supabase
         .from('events')
         .select(`
           *,
           client:clients(id, name)
         `)
+        .eq('organization_id', currentOrganization.id)
         .order('start_date', { ascending: true });
 
       if (error) {
@@ -47,6 +54,7 @@ export const useEvents = () => {
 
       return data as Event[];
     },
+    enabled: !!currentOrganization,
   });
 
   const createEvent = useMutation({

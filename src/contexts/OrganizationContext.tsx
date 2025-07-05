@@ -117,6 +117,13 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         }
         
         localStorage.setItem('currentOrganizationId', currentOrg.id);
+      } else {
+        console.log('Aguardando criação automática de organização...');
+        // As organizações são criadas automaticamente pelo trigger
+        // Se não há organizações, aguardar um pouco e tentar novamente
+        setTimeout(() => {
+          if (user) fetchOrganizations();
+        }, 1000);
       }
     } catch (error) {
       console.error('Erro geral na busca de organizações:', error);
@@ -125,51 +132,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     }
   };
 
-  const createDefaultOrganization = async () => {
-    if (!user) return;
-
-    try {
-      const { data: newOrg, error } = await supabase
-        .from('organizations')
-        .insert({
-          name: 'Inflow Digital',
-          slug: `org-${user.id}`,
-          owner_id: user.id,
-          description: 'Organização padrão'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro ao criar organização padrão:', error);
-        return;
-      }
-
-      console.log('Organização padrão criada:', newOrg.name);
-
-      // Adicionar o usuário como admin da organização
-      const { error: memberError } = await supabase
-        .from('organization_members')
-        .insert({
-          organization_id: newOrg.id,
-          user_id: user.id,
-          role: 'admin',
-          status: 'active'
-        });
-
-      if (memberError) {
-        console.error('Erro ao adicionar membro:', memberError);
-      }
-
-      // Atualizar estado
-      setOrganizations([newOrg]);
-      setCurrentOrganization(newOrg);
-      setUserRole('admin');
-      localStorage.setItem('currentOrganizationId', newOrg.id);
-    } catch (error) {
-      console.error('Erro ao criar organização padrão:', error);
-    }
-  };
+  // Função removida - organizações são criadas automaticamente pelo trigger do banco
 
   const switchOrganization = (organizationId: string) => {
     const org = organizations.find(o => o.id === organizationId);
@@ -240,13 +203,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     }
   }, [user]);
 
-  // Verificar se precisa criar organização padrão
-  useEffect(() => {
-    if (user && !loading && organizations.length === 0 && !currentOrganization) {
-      console.log('Nenhuma organização encontrada, criando organização padrão...');
-      createDefaultOrganization();
-    }
-  }, [user, loading, organizations.length, currentOrganization]);
+  // Organizações são criadas automaticamente pelo trigger do banco quando um usuário é criado
 
   const value = {
     organizations,

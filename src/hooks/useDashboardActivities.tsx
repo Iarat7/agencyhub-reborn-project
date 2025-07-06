@@ -12,7 +12,7 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
   const { currentOrganization } = useOrganization();
 
   return useQuery({
-    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString(), currentOrganization?.id, data],
+    queryKey: ['dashboard-activities', startDate.toISOString(), endDate.toISOString(), currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) {
         console.log('Nenhuma organização para buscar atividades');
@@ -49,7 +49,7 @@ export const useDashboardActivities = (startDate: Date, endDate: Date, data: Act
 
       return recentActivities;
     },
-    enabled: !!(currentOrganization && data && data.clients && data.allOpportunities && data.tasks),
+    enabled: !!(currentOrganization && data?.clients?.length !== undefined),
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,

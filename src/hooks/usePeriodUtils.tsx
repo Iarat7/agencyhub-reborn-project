@@ -12,7 +12,7 @@ export interface PeriodDates {
 }
 
 export const usePeriodUtils = () => {
-  const calculatePeriodDates = (selectedPeriod: string): PeriodDates => {
+  const calculatePeriodDates = useMemo(() => (selectedPeriod: string): PeriodDates => {
     const now = new Date();
     
     switch (selectedPeriod) {
@@ -94,7 +94,7 @@ export const usePeriodUtils = () => {
           periodConfig: { type: 'months', months: 6 }
         };
     }
-  };
+  }, []);
 
   return { calculatePeriodDates };
 };

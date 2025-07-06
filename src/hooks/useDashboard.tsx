@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { useCalculatedDashboardMetrics } from './useDashboardMetrics';
 import { useDashboardActivities } from './useDashboardActivities';

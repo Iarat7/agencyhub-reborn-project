@@ -1,16 +1,14 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useCompleteDashboardData } from './useDashboard';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
-export const usePredictiveAnalytics = (selectedPeriod: string = '6m') => {
-  const { data: dashboardData } = useCompleteDashboardData(selectedPeriod);
+export const usePredictiveAnalytics = (selectedPeriod: string = '6m', metrics?: any) => {
+  const { currentOrganization } = useOrganization();
 
   return useQuery({
-    queryKey: ['predictive-analytics', selectedPeriod, dashboardData],
+    queryKey: ['predictive-analytics', selectedPeriod, currentOrganization?.id],
     queryFn: async () => {
-      if (!dashboardData?.metrics) return null;
-
-      const metrics = dashboardData.metrics;
+      if (!metrics) return null;
       
       // Simulação de análise preditiva baseada nos dados históricos
       const predictedRevenue = calculatePredictedRevenue(metrics);
@@ -33,7 +31,7 @@ export const usePredictiveAnalytics = (selectedPeriod: string = '6m') => {
         alerts
       };
     },
-    enabled: !!dashboardData?.metrics,
+    enabled: !!metrics,
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   });

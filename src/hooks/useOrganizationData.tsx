@@ -153,11 +153,10 @@ export const useOrganizationData = () => {
 
   useEffect(() => {
     if (currentOrganization && user) {
-      // Aguardar um pouco para garantir que a organização foi carregada
-      const timer = setTimeout(ensureOrganizationData, 1000);
-      return () => clearTimeout(timer);
+      // Executar apenas uma vez quando a organização muda
+      ensureOrganizationData();
     }
-  }, [currentOrganization?.id, user?.id]);
+  }, [currentOrganization?.id]);
 
   return { ensureOrganizationData };
 };

@@ -55,6 +55,8 @@ export const useCreateClient = () => {
     mutationFn: (data: Partial<Client>) => clientsService.create<Client>(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['optimized-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       toast({
         title: 'Cliente criado',
         description: 'Cliente criado com sucesso!',
@@ -79,6 +81,8 @@ export const useUpdateClient = () => {
       clientsService.update<Client>(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['optimized-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       toast({
         title: 'Cliente atualizado',
         description: 'Cliente atualizado com sucesso!',
@@ -102,6 +106,8 @@ export const useDeleteClient = () => {
     mutationFn: (id: string) => clientsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['optimized-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       toast({
         title: 'Cliente excluído',
         description: 'Cliente excluído com sucesso!',

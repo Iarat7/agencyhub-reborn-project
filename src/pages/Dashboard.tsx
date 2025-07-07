@@ -6,7 +6,7 @@ import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts';
 import { DashboardActivities } from '@/components/dashboard/DashboardActivities';
 import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
-import { useCompleteDashboardData } from '@/hooks/useDashboard';
+import { useOptimizedDashboard } from '@/hooks/useOptimizedDashboard';
 import { usePredictiveAnalytics } from '@/hooks/usePredictiveAnalytics';
 import { useSmartInsights } from '@/hooks/useSmartInsights';
 import { useOrganizationData } from '@/hooks/useOrganizationData';
@@ -22,9 +22,9 @@ const Dashboard = () => {
   // Hook para garantir que os dados estão na organização correta
   useOrganizationData();
   
-  const { data: dashboardData, isLoading: dashboardLoading, error } = useCompleteDashboardData(selectedPeriod);
-  const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics(selectedPeriod);
-  const { data: insights, isLoading: insightsLoading } = useSmartInsights(selectedPeriod);
+  const { data: dashboardData, isLoading: dashboardLoading, error } = useOptimizedDashboard(selectedPeriod);
+  const { data: predictiveData, isLoading: predictiveLoading } = usePredictiveAnalytics(selectedPeriod, dashboardData?.metrics);
+  const { data: insights, isLoading: insightsLoading } = useSmartInsights(selectedPeriod, dashboardData?.metrics);
 
   const isLoading = dashboardLoading || predictiveLoading || insightsLoading || orgLoading;
 

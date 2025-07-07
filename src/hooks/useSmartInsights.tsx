@@ -1,16 +1,14 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useCompleteDashboardData } from './useDashboard';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
-export const useSmartInsights = (selectedPeriod: string = '6m') => {
-  const { data: dashboardData } = useCompleteDashboardData(selectedPeriod);
+export const useSmartInsights = (selectedPeriod: string = '6m', metrics?: any) => {
+  const { currentOrganization } = useOrganization();
 
   return useQuery({
-    queryKey: ['smart-insights', selectedPeriod, dashboardData],
+    queryKey: ['smart-insights', selectedPeriod, currentOrganization?.id],
     queryFn: async () => {
-      if (!dashboardData?.metrics) return [];
-
-      const metrics = dashboardData.metrics;
+      if (!metrics) return [];
       const insights = [];
 
       // Insight sobre oportunidades
@@ -100,7 +98,7 @@ export const useSmartInsights = (selectedPeriod: string = '6m') => {
 
       return insights;
     },
-    enabled: !!dashboardData?.metrics,
+    enabled: !!metrics,
     staleTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,
   });

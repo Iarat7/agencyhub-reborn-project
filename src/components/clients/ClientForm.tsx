@@ -7,12 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import {
   Form,
   FormControl,
@@ -33,10 +27,6 @@ const clientSchema = z.object({
   monthly_value: z.number().optional(),
   project_cost: z.number().optional(),
   observations: z.string().optional(),
-  payment_day: z.number().min(1).max(31).optional(),
-  contract_start_date: z.date().optional(),
-  contract_end_date: z.date().optional(),
-  payment_frequency: z.enum(['monthly', 'quarterly', 'yearly']).optional(),
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;
@@ -61,10 +51,6 @@ export const ClientForm = ({ client, onSubmit, onCancel, isLoading }: ClientForm
       monthly_value: client?.monthly_value || undefined,
       project_cost: client?.project_cost || undefined,
       observations: client?.observations || '',
-      payment_day: client?.payment_day || undefined,
-      contract_start_date: client?.contract_start_date ? new Date(client.contract_start_date) : undefined,
-      contract_end_date: client?.contract_end_date ? new Date(client.contract_end_date) : undefined,
-      payment_frequency: client?.payment_frequency || 'monthly',
     },
   });
 
@@ -76,8 +62,6 @@ export const ClientForm = ({ client, onSubmit, onCancel, isLoading }: ClientForm
       company: data.company || null,
       segment: data.segment || null,
       observations: data.observations || null,
-      contract_start_date: data.contract_start_date || null,
-      contract_end_date: data.contract_end_date || null,
     };
     onSubmit(submitData);
   };
@@ -219,123 +203,6 @@ export const ClientForm = ({ client, onSubmit, onCancel, isLoading }: ClientForm
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="payment_day"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Dia de Pagamento</FormLabel>
-                <Select value={field.value?.toString()} onValueChange={(value) => field.onChange(parseInt(value))}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o dia" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                      <SelectItem key={day} value={day.toString()}>
-                        Dia {day}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="payment_frequency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Frequência de Pagamento</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a frequência" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="monthly">Mensal</SelectItem>
-                    <SelectItem value="quarterly">Trimestral</SelectItem>
-                    <SelectItem value="yearly">Anual</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="contract_start_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Início do Contrato</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar data"}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <CalendarComponent
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="contract_end_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fim do Contrato (opcional)</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar data"}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <CalendarComponent
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <FormField

@@ -23,13 +23,10 @@ export interface Client {
   monthly_value?: number;
   project_cost?: number;
   observations?: string;
-  payment_day?: number;
-  contract_start_date?: string;
-  contract_end_date?: string;
-  payment_frequency?: 'monthly' | 'quarterly' | 'yearly';
   created_by?: string;
   created_at?: string;
   updated_at?: string;
+  organization_id?: string;
 }
 
 export interface Opportunity {
